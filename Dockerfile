@@ -27,7 +27,7 @@ WORKDIR /app
 
 COPY composer.json composer.lock symfony.lock ./
 
-RUN composer install --no-dev --optimize-autoloader --no-scripts --no-autoloader --ignore-platform-reqs
+RUN composer install --no-dev --optimize-autoloader --no-scripts --no-autoloader
 
 COPY . .
 

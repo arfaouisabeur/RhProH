@@ -1,0 +1,5 @@
+# Production Doctrine configuration
+# Uncomment when you have a production database
+# doctrine:
+#     dbal:
+#         url: '%env(resolve:DATABASE_URL)%'
