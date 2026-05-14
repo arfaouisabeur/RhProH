@@ -2,6 +2,7 @@
 
 namespace App\Command;
 
+use App\Entity\User;
 use App\Entity\RH;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -9,7 +10,6 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 #[AsCommand(
     name: 'app:create-admin',
@@ -18,8 +18,7 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 class CreateAdminCommand extends Command
 {
     public function __construct(
-        private EntityManagerInterface $entityManager,
-        private UserPasswordHasherInterface $passwordHasher
+        private EntityManagerInterface $entityManager
     ) {
         parent::__construct();
     }
@@ -29,28 +28,34 @@ class CreateAdminCommand extends Command
         $io = new SymfonyStyle($input, $output);
 
         // Check if admin already exists
-        $existingAdmin = $this->entityManager->getRepository(RH::class)->findOneBy(['email' => 'admin@rhpro.com']);
+        $existingAdmin = $this->entityManager->getRepository(User::class)->findOneBy(['email' => 'admin@rhpro.com']);
         
         if ($existingAdmin) {
             $io->warning('Admin user already exists!');
             return Command::SUCCESS;
         }
 
-        // Create admin user
-        $admin = new RH();
-        $admin->setEmail('admin@rhpro.com');
-        $admin->setNom('Admin');
-        $admin->setPrenom('RHPro');
-        $admin->setTelephone('+21600000000');
-        $admin->setAdresse('Tunis, Tunisia');
-        $admin->setRoles(['ROLE_RH', 'ROLE_ADMIN']);
-        
-        // Hash password
-        $hashedPassword = $this->passwordHasher->hashPassword($admin, 'admin123');
-        $admin->setPassword($hashedPassword);
+        // Create admin user (password stored in plain text for compatibility)
+        $user = new User();
+        $user->setEmail('admin@rhpro.com');
+        $user->setNom('Admin');
+        $user->setPrenom('RHPro');
+        $user->setTelephone('+21600000000');
+        $user->setAdresse('Tunis, Tunisia');
+        $user->setRole('RH');
+        $user->setMotDePasse('admin123'); // Plain text password for Java compatibility
+        $user->setStatut('actif');
 
-        // Save to database
-        $this->entityManager->persist($admin);
+        // Save user first to get ID
+        $this->entityManager->persist($user);
+        $this->entityManager->flush();
+
+        // Create RH profile linked to user
+        $rh = new RH();
+        $rh->setUser($user);
+
+        // Save RH profile
+        $this->entityManager->persist($rh);
         $this->entityManager->flush();
 
         $io->success('Admin user created successfully!');
