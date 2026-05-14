@@ -34,13 +34,10 @@ COPY . .
 
 RUN composer dump-autoload --optimize --no-dev
 
-# Create PostgreSQL schema from entities (skip MySQL migrations)
-RUN php bin/console doctrine:schema:drop --force --full-database || true
-RUN php bin/console doctrine:schema:create || true
-
-# Create admin user automatically
-RUN php bin/console app:create-admin --no-interaction || true
-
 EXPOSE 10000
 
-CMD php -S 0.0.0.0:10000 -t public
+# Run database setup and start server
+CMD php bin/console doctrine:schema:drop --force --full-database && \
+    php bin/console doctrine:schema:create && \
+    php bin/console app:create-admin --no-interaction && \
+    php -S 0.0.0.0:10000 -t public
