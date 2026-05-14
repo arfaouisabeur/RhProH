@@ -38,6 +38,5 @@ RUN composer dump-autoload --optimize --no-dev
 EXPOSE 10000
 
 # Run database setup and start server
-CMD psql $DATABASE_URL -f /app/database_schema.sql && \
-    php /app/create_admin.php && \
+CMD (psql $DATABASE_URL -f /app/database_schema.sql || echo "Schema already exists") && \
     php -S 0.0.0.0:10000 -t public
