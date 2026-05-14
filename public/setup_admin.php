@@ -39,9 +39,9 @@ if (pg_num_rows($result) > 0) {
     echo "Email: admin@rhpro.com<br>";
     echo "Password: admin123";
 } else {
-    // Create admin user
-    $insertQuery = "INSERT INTO \"user\" (email, roles, password) 
-                    VALUES ('admin@rhpro.com', '[\"ROLE_ADMIN\"]', 'admin123')
+    // Create admin user with correct column names
+    $insertQuery = "INSERT INTO \"user\" (nom, prenom, email, mot_de_passe, role, statut) 
+                    VALUES ('Admin', 'RHPro', 'admin@rhpro.com', 'admin123', 'ROLE_ADMIN', 'actif')
                     RETURNING id, email";
     
     $result = pg_query($conn, $insertQuery);
@@ -51,6 +51,12 @@ if (pg_num_rows($result) > 0) {
         echo "✅ SUCCESS! Admin user created!<br><br>";
         echo "ID: " . $admin['id'] . "<br>";
         echo "Email: " . $admin['email'] . "<br><br>";
+        
+        // Also create RH entry for admin
+        $rhQuery = "INSERT INTO rh (user_id) VALUES (" . $admin['id'] . ")";
+        pg_query($conn, $rhQuery);
+        echo "✅ RH role assigned!<br><br>";
+        
         echo "You can now login at: <a href='/login'>https://rhproh.onrender.com/login</a><br>";
         echo "Email: admin@rhpro.com<br>";
         echo "Password: admin123<br><br>";
