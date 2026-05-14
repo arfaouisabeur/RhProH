@@ -1,4 +1,4 @@
-FROM php:8.2-cli
+FROM php:8.4-cli
 
 RUN apt-get update && apt-get install -y \
     git \
@@ -25,9 +25,9 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /app
 
-COPY composer.json composer.lock ./
+COPY composer.json composer.lock symfony.lock ./
 
-RUN composer install --no-dev --optimize-autoloader --no-scripts --no-autoloader
+RUN composer install --no-dev --optimize-autoloader --no-scripts --no-autoloader --ignore-platform-reqs
 
 COPY . .
 
