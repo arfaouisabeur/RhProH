@@ -1,0 +1,592 @@
+{% extends 'candidat/base.html.twig' %}
+
+{% block title %}Postuler{% endblock %}
+
+{% block body %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">
+            <i class="bi bi-send-check-fill"></i>
+            Postuler à une offre
+        </h1>
+        <p class="page-subtitle">Remplissez le formulaire pour envoyer votre candidature.</p>
+    </div>
+    <div class="header-actions">
+        <a href="{{ path('candidat_offres') }}" class="btn-soft">
+            <i class="bi bi-arrow-left me-2"></i>Retour
+        </a>
+    </div>
+</div>
+
+{# ── Offre concernée ── #}
+<div class="panel mb-3">
+    <div class="panel-head">
+        <h2 class="panel-title">
+            <i class="bi bi-briefcase-fill"></i>
+            Offre concernée
+        </h2>
+    </div>
+    <div class="panel-body">
+        <div class="offer-summary">
+            <div class="offer-summary-left">
+                <div class="offer-summary-title">{{ offre.titre }}</div>
+                <div class="offer-summary-meta">
+                    <span><i class="bi bi-geo-alt me-1"></i>{{ offre.localisation }}</span>
+                    <span><i class="bi bi-calendar3 me-1"></i>Publiée le {{ offre.datePublication|date('d M Y') }}</span>
+                    <span><i class="bi bi-clock me-1"></i>Expire le {{ offre.dateExpiration|date('d M Y') }}</span>
+                </div>
+                <div class="offer-summary-badges mt-2">
+                    {% if offre.typeContrat %}
+                        <span class="badge-contract">{{ offre.typeContrat }}</span>
+                    {% endif %}
+                    {% if offre.statut %}
+                        <span class="badge-mode">{{ offre.statut }}</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+{# ── Formulaire ── #}
+<div class="panel form-card">
+    <div class="panel-head">
+        <h2 class="panel-title">
+            <i class="bi bi-pencil-square"></i>
+            Formulaire de candidature
+        </h2>
+    </div>
+    <div class="panel-body">
+
+        {% for message in app.flashes('error') %}
+            <div class="alert alert-danger mb-3">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ message }}
+            </div>
+        {% endfor %}
+
+        {% if not form.vars.valid and form.vars.submitted %}
+            {% set hasErrors = false %}
+            {% set errorList = [] %}
+            
+            {# Collecter toutes les erreurs #}
+            {% if form.cvFile.vars.errors|length > 0 and not has_tmp_cv %}
+                {% set errorList = errorList|merge(['CV : ' ~ form.cvFile.vars.errors[0].message]) %}
+                {% set hasErrors = true %}
+            {% endif %}
+            
+            {% if form.lettreMotivation.vars.errors|length > 0 %}
+                {% for error in form.lettreMotivation.vars.errors %}
+                    {% set errorList = errorList|merge(['Lettre de motivation : ' ~ error.message]) %}
+                    {% set hasErrors = true %}
+                {% endfor %}
+            {% endif %}
+            
+            {% if form.disponibilite.vars.errors|length > 0 %}
+                {% for error in form.disponibilite.vars.errors %}
+                    {% set errorList = errorList|merge(['Disponibilité : ' ~ error.message]) %}
+                    {% set hasErrors = true %}
+                {% endfor %}
+            {% endif %}
+            
+            {% if form.pretentionSalariale.vars.errors|length > 0 %}
+                {% for error in form.pretentionSalariale.vars.errors %}
+                    {% set errorList = errorList|merge(['Prétentions salariales : ' ~ error.message]) %}
+                    {% set hasErrors = true %}
+                {% endfor %}
+            {% endif %}
+            
+            {% if hasErrors %}
+            <div class="alert alert-danger mb-3">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                <strong>Veuillez corriger les erreurs suivantes :</strong>
+                <ul class="mb-0 mt-2">
+                    {% for error in errorList %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+        {% endif %}
+
+        <div class="modern-form">
+            {{ form_start(form, {
+                'attr': {
+                    'enctype': 'multipart/form-data',
+                    'novalidate': 'novalidate',
+                    'id': 'candidatureForm'
+                }
+            }) }}
+
+            {# ── 1. CV ── #}
+            <div class="form-group mb-4" id="cvGroup">
+                <label class="form-label fw-medium">
+                    <i class="bi bi-file-earmark-pdf me-1"></i>
+                    CV (PDF, DOC, DOCX) 
+                    {% if not has_tmp_cv %}<span class="text-danger">*</span>{% endif %}
+                </label>
+                {% if has_tmp_cv %}
+                <div class="alert alert-success py-2 px-3 mb-2" style="font-size:14px;">
+                    <i class="bi bi-check-circle-fill me-1"></i>
+                    <strong>CV déjà uploadé :</strong> {{ tmp_cv_name }}
+                    <br>
+                    <small class="text-success-emphasis">Vous pouvez soumettre le formulaire avec ce CV ou en uploader un nouveau.</small>
+                </div>
+                {% endif %}
+
+                <div class="cv-drop-zone" id="cvDropZone">
+                    <div class="cv-drop-inner">
+                        <i class="bi bi-cloud-upload fs-3"></i>
+                        <p class="mt-2 mb-1 fw-medium">Glissez votre CV ici ou cliquez pour parcourir</p>
+                        <p class="text-muted small">PDF, DOC ou DOCX · Taille max 5 Mo</p>
+                    </div>
+                    {{ form_widget(form.cvFile, {
+                        'attr': {'class': 'cv-file-input'}
+                    }) }}
+                </div>
+
+                <div class="cv-preview d-none" id="cvPreview">
+                    <i class="bi bi-file-earmark-fill"></i>
+                    <div class="cv-preview-info">
+                        <span class="cv-preview-name" id="cvPreviewName"></span>
+                        <span class="cv-preview-size text-muted small" id="cvPreviewSize"></span>
+                    </div>
+                    <button type="button" class="cv-preview-remove" id="cvRemoveBtn">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+
+                {% if form.cvFile.vars.errors|length > 0 %}
+                    <div class="invalid-feedback d-block">{{ form_errors(form.cvFile) }}</div>
+                {% endif %}
+                <div class="invalid-feedback" id="cvError"></div>
+            </div>
+
+            <hr class="form-divider">
+
+            {# ── 2. Lettre de motivation ── #}
+            <div class="form-group mb-4">
+                {{ form_label(form.lettreMotivation, null, {
+                    'label_attr': {'class': 'form-label fw-medium'}
+                }) }}
+                <span class="text-danger">*</span>
+
+                <button type="button" class="btn-generate" id="generateBtn"
+                        data-offre-id="{{ offre.id }}">
+                    <span id="generateBtnContent">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                             stroke-linejoin="round" style="margin-right:6px;vertical-align:middle">
+                            <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
+                        </svg>
+                        Générer avec l'IA
+                    </span>
+                </button>
+
+                <div class="generate-info d-none" id="generateInfo">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2" style="flex-shrink:0">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8" x2="12" y2="12"/>
+                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                    Ébauche générée — relisez et personnalisez avant d'envoyer.
+                </div>
+
+                {{ form_widget(form.lettreMotivation, {
+                    'attr': {
+                        'class': 'form-control modern-textarea' ~ (form.lettreMotivation.vars.errors|length > 0 ? ' is-invalid' : ''),
+                        'placeholder': 'Rédigez votre lettre ici ou utilisez le bouton IA… (50 caractères minimum)',
+                        'maxlength': '1500',
+                        'rows': '8',
+                    }
+                }) }}
+
+                <div class="d-flex justify-content-between mt-1">
+                    <div class="invalid-feedback d-block" id="lettreError">
+                        {{ form_errors(form.lettreMotivation) }}
+                    </div>
+                    <small id="charCount" class="text-muted ms-auto">0 / 1500</small>
+                </div>
+            </div>
+
+            <hr class="form-divider">
+
+            {# ── 3. Disponibilité + Prétention salariale ── #}
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        {{ form_label(form.disponibilite, null, {
+                            'label_attr': {'class': 'form-label fw-medium'}
+                        }) }}
+                        {{ form_widget(form.disponibilite, {
+                            'attr': {'class': 'form-select modern-select'}
+                        }) }}
+                        {{ form_errors(form.disponibilite) }}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        {{ form_label(form.pretentionSalariale, null, {
+                            'label_attr': {'class': 'form-label fw-medium'}
+                        }) }}
+                        <div class="input-with-suffix">
+                            {{ form_widget(form.pretentionSalariale, {
+                                'attr': {
+                                    'class': 'form-control' ~ (form.pretentionSalariale.vars.errors|length > 0 ? ' is-invalid' : ''),
+                                    'placeholder': 'ex. 2500',
+                                    'min': '0',
+                                    'step': '50',
+                                }
+                            }) }}
+                            <span class="input-suffix">TND / mois</span>
+                        </div>
+                        <small class="text-muted">Optionnel — laissez vide si vous préférez en discuter.</small>
+                        <div class="invalid-feedback d-block" id="pretentionError">
+                            {{ form_errors(form.pretentionSalariale) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {# ── 4. Submit ── #}
+            <div class="mt-4 d-flex align-items-center gap-3">
+                <button type="submit" class="btn-main" id="submitBtn">
+                    <i class="bi bi-send-fill me-2"></i>Envoyer ma candidature
+                </button>
+                <span class="text-muted small">
+                    <span class="text-danger">*</span> Champs obligatoires
+                </span>
+            </div>
+
+            {{ form_end(form) }}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+(function () {
+
+    {# ── Passer les vrais IDs Symfony au JS ── #}
+var CV_FILE_ID     = '{{ form.cvFile.vars.id }}';
+var LETTRE_ID      = '{{ form.lettreMotivation.vars.id }}';
+var PRETENTION_ID  = '{{ form.pretentionSalariale.vars.id }}';
+
+    function init() {
+
+        var dropZone    = document.getElementById('cvDropZone');
+        var fileInput   = document.getElementById(CV_FILE_ID);
+        var preview     = document.getElementById('cvPreview');
+        var previewName = document.getElementById('cvPreviewName');
+        var previewSize = document.getElementById('cvPreviewSize');
+        var removeBtn   = document.getElementById('cvRemoveBtn');
+        var textarea    = document.getElementById(LETTRE_ID);
+        var charCount   = document.getElementById('charCount');
+        var generateBtn = document.getElementById('generateBtn');
+        var pretention  = document.getElementById(PRETENTION_ID);
+
+        if (!dropZone || !fileInput || !generateBtn || !textarea) return;
+
+        // ── Utilitaires ──
+        function showError(id, msg) {
+            var el = document.getElementById(id);
+            if (el) { el.textContent = msg; el.style.display = 'block'; }
+        }
+        function clearError(id) {
+            var el = document.getElementById(id);
+            if (el) { el.textContent = ''; el.style.display = 'none'; }
+        }
+        function setGroupState(id, isValid) {
+            var el = document.getElementById(id);
+            if (!el) return;
+            el.classList.toggle('has-error',  !isValid);
+            el.classList.toggle('has-success', isValid);
+        }
+
+        // ── CV drag & drop ──
+        var ALLOWED  = [
+            'application/pdf',
+            'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        ];
+        var MAX_SIZE = 5 * 1024 * 1024;
+
+        function formatSize(b) {
+            if (b < 1024)        return b + ' o';
+            if (b < 1024 * 1024) return Math.round(b / 1024) + ' Ko';
+            return (b / (1024 * 1024)).toFixed(1) + ' Mo';
+        }
+
+        function validateCV(file) {
+            if (!file) {
+                showError('cvError', 'Veuillez joindre votre CV.');
+                setGroupState('cvGroup', false); return false;
+            }
+            if (!ALLOWED.includes(file.type)) {
+                showError('cvError', 'Format invalide. Utilisez PDF, DOC ou DOCX uniquement.');
+                setGroupState('cvGroup', false); return false;
+            }
+            if (file.size > MAX_SIZE) {
+                showError('cvError', 'Fichier trop volumineux. Maximum : 5 Mo.');
+                setGroupState('cvGroup', false); return false;
+            }
+            clearError('cvError');
+            setGroupState('cvGroup', true);
+            return true;
+        }
+
+        function showPreview(file) {
+            if (!validateCV(file)) return;
+            previewName.textContent = file.name;
+            previewSize.textContent = formatSize(file.size);
+            dropZone.classList.add('d-none');
+            preview.classList.remove('d-none');
+        }
+
+        function resetCV() {
+            fileInput.value = '';
+            preview.classList.add('d-none');
+            dropZone.classList.remove('d-none');
+            clearError('cvError');
+            setGroupState('cvGroup', false);
+        }
+
+        dropZone.addEventListener('click',   function() { fileInput.click(); });
+        removeBtn.addEventListener('click',  function(e) { e.stopPropagation(); resetCV(); });
+        fileInput.addEventListener('change', function() { if (this.files[0]) showPreview(this.files[0]); });
+
+        dropZone.addEventListener('dragover',  function(e) { e.preventDefault(); dropZone.classList.add('drag-over'); });
+        dropZone.addEventListener('dragleave', function()  { dropZone.classList.remove('drag-over'); });
+        dropZone.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.classList.remove('drag-over');
+            var file = e.dataTransfer.files[0];
+            if (file) {
+                var dt = new DataTransfer();
+                dt.items.add(file);
+                fileInput.files = dt.files;
+                showPreview(file);
+            }
+        });
+
+        // ── Lettre de motivation ──
+        function validateLettre() {
+            var val = textarea.value.trim();
+            if (val.length === 0) {
+                showError('lettreError', 'La lettre de motivation est obligatoire.');
+                textarea.classList.add('is-invalid'); textarea.classList.remove('is-valid');
+                return false;
+            }
+            if (val.length < 50) {
+                showError('lettreError', 'Minimum 50 caractères (actuellement : ' + val.length + ').');
+                textarea.classList.add('is-invalid'); textarea.classList.remove('is-valid');
+                return false;
+            }
+            clearError('lettreError');
+            textarea.classList.remove('is-invalid'); textarea.classList.add('is-valid');
+            return true;
+        }
+
+        textarea.addEventListener('input', function() {
+            var len = this.value.length;
+            charCount.textContent = len + ' / 1500';
+            charCount.className   = len > 1400 ? 'text-danger ms-auto small'
+                                  : len > 1200 ? 'text-warning ms-auto small'
+                                  : 'text-muted ms-auto small';
+            validateLettre();
+        });
+        textarea.addEventListener('blur', validateLettre);
+
+        // ── Génération IA ──
+        generateBtn.addEventListener('click', async function() {
+            var offreId = this.dataset.offreId;
+            var info    = document.getElementById('generateInfo');
+
+            this.disabled = true;
+            document.getElementById('generateBtnContent').innerHTML =
+                '<span class="spinner-border spinner-border-sm me-1" style="width:13px;height:13px"></span>Génération en cours…';
+
+            try {
+                var formData = new FormData();
+                formData.append('offre_id', offreId);
+
+                var res  = await fetch('{{ path("app_generate_lettre") }}', {
+                    method: 'POST',
+                    body:   formData,
+                });
+
+                var text = await res.text();
+                var data;
+                try {
+                    data = JSON.parse(text);
+                } catch (e) {
+                    alert('Réponse invalide : ' + text.substring(0, 300));
+                    return;
+                }
+
+                if (data.error) {
+                    alert('Erreur : ' + data.error);
+                    return;
+                }
+
+                textarea.value = data.lettre;
+                textarea.dispatchEvent(new Event('input'));
+                info.classList.remove('d-none');
+                textarea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                textarea.focus();
+
+            } catch (err) {
+                alert('Erreur réseau : ' + err.message);
+            } finally {
+                this.disabled = false;
+                document.getElementById('generateBtnContent').innerHTML =
+                    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;vertical-align:middle"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>Regénérer';
+            }
+        });
+
+        // ── Prétention salariale ──
+        function validatePretention() {
+            if (!pretention || !pretention.value) {
+                clearError('pretentionError');
+                if (pretention) pretention.classList.remove('is-invalid', 'is-valid');
+                return true;
+            }
+            var val = parseInt(pretention.value, 10);
+            if (isNaN(val) || val < 0) {
+                showError('pretentionError', 'Veuillez entrer un montant positif.');
+                pretention.classList.add('is-invalid'); pretention.classList.remove('is-valid');
+                return false;
+            }
+            if (val > 100000) {
+                showError('pretentionError', 'Montant trop élevé.');
+                pretention.classList.add('is-invalid'); pretention.classList.remove('is-valid');
+                return false;
+            }
+            clearError('pretentionError');
+            pretention.classList.remove('is-invalid'); pretention.classList.add('is-valid');
+            return true;
+        }
+
+        if (pretention) {
+            pretention.addEventListener('input', validatePretention);
+            pretention.addEventListener('blur',  validatePretention);
+        }
+
+        // ── Soumission ──
+        var form = document.getElementById('candidatureForm');
+        var hasTmpCv = {{ has_tmp_cv ? 'true' : 'false' }}; // Vérifier si CV déjà en session
+        
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                // Bloquer si génération IA en cours
+                if (generateBtn.disabled) {
+                    e.preventDefault();
+                    alert('Veuillez attendre la fin de la génération de la lettre avant de soumettre.');
+                    return;
+                }
+
+                // Valider le CV seulement si pas de CV en session ET pas de nouveau fichier
+                var cvOk = true;
+                if (!hasTmpCv && !fileInput.files[0]) {
+                    cvOk = validateCV(null);
+                } else if (fileInput.files[0]) {
+                    cvOk = validateCV(fileInput.files[0]);
+                }
+                
+                var lettreOk     = validateLettre();
+                var pretentionOk = validatePretention();
+
+                if (!cvOk || !lettreOk || !pretentionOk) {
+                    e.preventDefault();
+                    var first = document.querySelector('.has-error, .is-invalid');
+                    if (first) first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    return;
+                }
+
+                var btn = document.getElementById('submitBtn');
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Envoi en cours…';
+            });
+        }
+
+    }
+
+    document.addEventListener('DOMContentLoaded', init);
+    document.addEventListener('turbo:load', init);
+
+}());
+</script>
+
+<style>
+.cv-drop-zone {
+    border: 1.5px dashed #ccc;
+    border-radius: 10px;
+    padding: 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color .2s, background .2s;
+    position: relative;
+}
+.cv-drop-zone:hover,
+.cv-drop-zone.drag-over    { border-color: #7F77DD; background: #EEEDFE; }
+.cv-file-input             { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.has-error .cv-drop-zone   { border-color: #dc3545; }
+.has-success .cv-drop-zone { border-color: #198754; }
+
+.cv-preview {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border: 0.5px solid #ddd;
+    border-radius: 8px;
+    margin-top: 8px;
+}
+.cv-preview-info         { display: flex; flex-direction: column; flex: 1; }
+.cv-preview-name         { font-size: 14px; font-weight: 500; }
+.cv-preview-remove       { background: none; border: none; cursor: pointer; color: #888; padding: 2px 6px; border-radius: 4px; }
+.cv-preview-remove:hover { color: #D85A30; }
+
+.btn-generate {
+    display: inline-flex;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 7px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #534AB7;
+    background: #EEEDFE;
+    border: 1px solid #AFA9EC;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background .15s;
+}
+.btn-generate:hover    { background: #CECBF6; }
+.btn-generate:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.generate-info {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12px;
+    color: #3B6D11;
+    background: #EAF3DE;
+    border: 0.5px solid #97C459;
+    border-radius: 6px;
+    padding: 6px 12px;
+    margin-bottom: 8px;
+}
+
+.input-with-suffix               { position: relative; display: flex; align-items: center; }
+.input-with-suffix .form-control { padding-right: 90px; }
+.input-suffix                    { position: absolute; right: 12px; font-size: 13px; color: #888; pointer-events: none; white-space: nowrap; }
+
+.modern-textarea  { resize: vertical; min-height: 130px; }
+.form-divider     { border-color: #eee; margin: 1.5rem 0; }
+.invalid-feedback { font-size: 13px; color: #dc3545; margin-top: 4px; }
+</style>
+{% endblock %}

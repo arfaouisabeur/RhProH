@@ -1,0 +1,157 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Visioconférence - {{ projet.titre }}{% endblock %}
+
+{% block styles %}
+<style>
+    .meeting-container {
+        width: 100%;
+        height: calc(100vh - 150px);
+        background-color: #f8fafc;
+        border-radius: 15px;
+        overflow: hidden;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    }
+    
+    .meeting-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 2rem;
+        background: white;
+        border-bottom: 1px solid var(--border-color);
+        margin-bottom: 1.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid" style="padding-top: 1.5rem; height: 100vh; display: flex; flex-direction: column;">
+    <div class="meeting-header" style="border-radius: 12px; margin-bottom: 1rem; box-shadow: 0 2px 10px rgba(0,0,0,0.02); flex-shrink: 0;">
+        <div class="d-flex align-items-center gap-3">
+            <div class="d-flex align-items-center justify-content-center text-white" style="width: 45px; height: 45px; border-radius: 12px; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); font-size: 1.25rem;">
+                <i class="bi bi-camera-video"></i>
+            </div>
+            <div>
+                <h4 class="mb-0 fw-bold" style="color: var(--primary-color);">Rencontre: {{ projet.titre }}</h4>
+                <small class="text-muted">Projet #{{ projet.id }} - Visioconférence sécurisée</small>
+            </div>
+        </div>
+        <div>
+            <!-- Lien de secours au cas où l'iframe est bloquée -->
+            <a href="#" id="jitsi-direct-link" target="_blank" class="btn btn-outline-secondary rounded-pill me-2" style="display: none;">
+                <i class="bi bi-box-arrow-up-right me-2"></i>Ouvrir dans un nouvel onglet
+            </a>
+            
+            {% if is_granted('ROLE_RH') %}
+                <a href="{{ path('app_projet_show', {'id': projet.id}) }}" class="btn btn-outline-primary rounded-pill">
+                    <i class="bi bi-arrow-left me-2"></i>Retour au projet
+                </a>
+            {% else %}
+                <a href="{{ path('app_projet_employe_index') }}" class="btn btn-outline-primary rounded-pill">
+                    <i class="bi bi-arrow-left me-2"></i>Retour aux projets
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="meeting-container" style="flex-grow: 1; margin-bottom: 1.5rem;">
+        <div id="meet" style="width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; background: #e2e8f0; color: #475569; border-radius: 12px;">
+            <div id="meet-loading" class="text-center">
+                <div class="spinner-border text-primary mb-3" role="status"></div>
+                <h5>Chargement de la visioconférence...</h5>
+                <p class="text-muted small">Veuillez patienter pendant l'initialisation de Jitsi Meet.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block footer %}{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <!-- On charge le script Jitsi -->
+    <script src="https://meet.jit.si/external_api.js"></script>
+    <script>
+        // Fonction d'initialisation de Jitsi
+        function initJitsi() {
+            const meetContainer = document.querySelector('#meet');
+            if (!meetContainer || meetContainer.getAttribute('data-jitsi-loaded') === 'true') return;
+            
+            console.log("Initialisation de Jitsi Meet...");
+            
+            const domain = 'meet.jit.si';
+            
+            // On crée un nom de salle unique basé sur l'id et le titre du projet
+            const roomNameRaw = 'RHProApp_Projet_{{ projet.id }}_{{ projet.titre|replace({" ": "_", "-": "_"})|escape("js") }}';
+            const roomName = roomNameRaw.replace(/[^a-zA-Z0-9_]/g, '');
+            
+            // Mise à jour du lien de secours
+            const directLink = document.getElementById('jitsi-direct-link');
+            if (directLink) {
+                directLink.href = 'https://' + domain + '/' + roomName;
+                directLink.style.display = 'inline-flex';
+            }
+
+            console.log("Room Name:", roomName);
+
+            try {
+                if (typeof JitsiMeetExternalAPI === 'undefined') {
+                    throw new Error("L'API Jitsi n'a pas pu être chargée. Vérifiez votre connexion ou votre bloqueur de publicités.");
+                }
+
+                // On vide le conteneur de chargement
+                meetContainer.innerHTML = '';
+                meetContainer.style.background = 'transparent';
+                meetContainer.setAttribute('data-jitsi-loaded', 'true');
+
+                const options = {
+                    roomName: roomName,
+                    width: '100%',
+                    height: '100%',
+                    parentNode: meetContainer,
+                    userInfo: {
+                        displayName: '{{ app.user.fullName|escape("js") }}'
+                    }
+                };
+                
+                const api = new JitsiMeetExternalAPI(domain, options);
+                console.log("Jitsi API initialisée avec succès.");
+                
+            } catch (error) {
+                console.error("Erreur Jitsi:", error);
+                const meetLoading = document.getElementById('meet-loading');
+                if (meetLoading) {
+                    meetLoading.innerHTML = `
+                        <div class="text-danger mb-3"><i class="bi bi-exclamation-triangle fs-1"></i></div>
+                        <h5>Erreur de chargement</h5>
+                        <p class="text-muted">Le module de visioconférence n'a pas pu se charger.</p>
+                        <p class="small">${error.message}</p>
+                        <a href="https://${domain}/${roomName}" target="_blank" class="btn btn-primary mt-2">
+                            Ouvrir Jitsi dans une nouvelle fenêtre
+                        </a>
+                    `;
+                } else if (meetContainer) {
+                    meetContainer.innerHTML = `
+                        <div class="text-center">
+                            <div class="text-danger mb-3"><i class="bi bi-exclamation-triangle fs-1"></i></div>
+                            <h5>Erreur de chargement</h5>
+                            <a href="https://${domain}/${roomName}" target="_blank" class="btn btn-primary mt-2">
+                                Ouvrir Jitsi dans une nouvelle fenêtre
+                            </a>
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        // Lancer l'initialisation de suite (quand le script est exécuté)
+        initJitsi();
+
+        // Ajout d'un écouteur Turbo si présent dans le projet
+        document.addEventListener('turbo:load', initJitsi);
+        document.addEventListener('turbolinks:load', initJitsi);
+    </script>
+{% endblock %}

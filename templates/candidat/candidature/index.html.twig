@@ -1,0 +1,111 @@
+{% extends 'candidat/base.html.twig' %}
+
+{% block title %}Mes candidatures{% endblock %}
+
+{% block body %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">
+            <i class="bi bi-file-earmark-text-fill"></i>
+            Mes candidatures
+        </h1>
+        <p class="page-subtitle">Suivez l'historique des offres auxquelles vous avez postulé.</p>
+    </div>
+
+    <div class="header-actions">
+        <a href="{{ path('candidat_offres') }}" class="btn btn-main">
+            <i class="bi bi-plus-circle me-2"></i>Voir les offres
+        </a>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-head">
+        <h2 class="panel-title">
+            <i class="bi bi-clock-history"></i>
+            Historique des candidatures
+        </h2>
+    </div>
+
+    <div class="panel-body">
+        <div class="table-responsive">
+            <table class="table-modern">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Offre</th>
+                        <th>Statut</th>
+                        <th>Certification</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for c in candidatures %}
+                    <tr>
+                        <td>{{ c.dateCandidature ? c.dateCandidature|date('d/m/Y') : '-' }}</td>
+                        <td>{{ c.offreEmploi.titre }}</td>
+                        <td>
+                            {% if c.statut == 'acceptee' %}
+                                <span class="badge-soft badge-accepted">Acceptée</span>
+                            {% elseif c.statut == 'refusee' %}
+                                <span class="badge-soft badge-rejected">Refusée</span>
+                            {% elseif c.statut == 'entretien' %}
+                                <span class="badge-soft badge-interview">Entretien</span>
+                            {% else %}
+                                <span class="badge-soft badge-pending">En attente</span>
+                            {% endif %}
+                        </td>
+
+                        {# ── Certification Blockchain ── #}
+                        <td>
+                            {% if c.signatureRequestId %}
+                                <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                                    <span style="display:inline-flex; align-items:center; gap:4px; background:#EAF3DE; border:0.5px solid #97C459; border-radius:999px; padding:3px 10px; font-size:11px; font-weight:500; color:#3B6D11;">
+                                        <i class="bi bi-shield-check-fill"></i>
+                                        Certifié
+                                    </span>
+                                    <a href="{{ path('candidat_certificat', {id: c.id}) }}"
+                                       target="_blank"
+                                       title="Télécharger le certificat PDF"
+                                       style="display:inline-flex; align-items:center; gap:4px; background:#EEEDFE; border:0.5px solid #AFA9EC; border-radius:999px; padding:3px 10px; font-size:11px; font-weight:500; color:#534AB7; text-decoration:none;">
+                                        <i class="bi bi-download"></i>
+                                        Certificat
+                                    </a>
+                                    <a href="{{ path('candidature_verify', {hash: c.signatureRequestId}) }}"
+                                       target="_blank"
+                                       title="Vérifier l'authenticité"
+                                       style="display:inline-flex; align-items:center; gap:4px; background:#F8F7FF; border:0.5px solid #AFA9EC; border-radius:999px; padding:3px 10px; font-size:11px; font-weight:500; color:#534AB7; text-decoration:none;">
+                                        <i class="bi bi-patch-check"></i>
+                                        Vérifier
+                                    </a>
+                                </div>
+                            {% else %}
+                                <span style="font-size:12px; color:#aaa;">
+                                    <i class="bi bi-dash-circle me-1"></i>Non certifié
+                                </span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            <a href="{{ path('candidat_offre_show', {'id': c.offreEmploi.id}) }}"
+                               class="action-circle" title="Voir l'offre">
+                                <i class="bi bi-eye-fill"></i>
+                            </a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="5">
+                            <div class="empty-box">
+                                <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+                                Aucune candidature trouvée.
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

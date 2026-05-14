@@ -1,0 +1,107 @@
+{% if candidatures is empty %}
+    <tr id="empty-row">
+        <td colspan="7">
+            <div class="empty-box" style="margin:16px;">
+                <i class="bi bi-inbox" style="font-size:2rem; display:block; margin-bottom:10px;"></i>
+                Aucune candidature trouvée.
+            </div>
+        </td>
+    </tr>
+{% else %}
+    {% for candidature in candidatures %}
+        {% set statut = candidature.statut ?? 'en_attente' %}
+        {% set sl = statut|lower|replace({' ':'_','é':'e','è':'e','ê':'e'}) %}
+        <tr>
+            <td>
+                <div class="cand-cell">
+                    <div class="cand-avatar">
+                        {% if candidature.candidat is not null and candidature.candidat.user is not null %}
+                            {{ candidature.candidat.user.prenom|first|upper }}{{ candidature.candidat.user.nom|first|upper }}
+                        {% else %}?{% endif %}
+                    </div>
+                    <div>
+                        <div class="cand-name">
+                            {% if candidature.candidat is not null and candidature.candidat.user is not null %}
+                                {{ candidature.candidat.user.fullName }}
+                            {% else %}Candidat #{{ candidature.id }}{% endif %}
+                        </div>
+                        <div class="cand-email">
+                            {% if candidature.candidat is not null and candidature.candidat.user is not null %}
+                                {{ candidature.candidat.user.email }}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </td>
+
+            <td>
+                {% if candidature.offreEmploi is not null %}
+                    <div class="cand-offre">{{ candidature.offreEmploi.titre }}</div>
+                {% else %}
+                    <span style="color:var(--muted);">—</span>
+                {% endif %}
+            </td>
+
+            <td style="font-size:13px;color:var(--muted);">
+                {{ candidature.dateCandidature ? candidature.dateCandidature|date('d/m/Y') : '—' }}
+            </td>
+
+            <td>
+                {% if sl in ['acceptee','accepted'] %}
+                    <span class="badge-s bs-ok"><i class="bi bi-check-circle-fill"></i>Acceptée</span>
+                {% elseif sl in ['refusee','rejected','refuse'] %}
+                    <span class="badge-s bs-no"><i class="bi bi-x-circle-fill"></i>Refusée</span>
+                {% elseif sl in ['entretien','interview'] %}
+                    <span class="badge-s bs-review"><i class="bi bi-camera-video-fill"></i>Entretien</span>
+                {% else %}
+                    <span class="badge-s bs-wait"><i class="bi bi-hourglass-split"></i>En attente</span>
+                {% endif %}
+            </td>
+
+            <td>
+                {% if candidature.matchScore is not null %}
+                    <div class="score-bar">
+                        <div class="score-track">
+                            <div class="score-fill" style="width: {{ candidature.matchScore }}%;"></div>
+                        </div>
+                        <span style="font-size:13px;font-weight:700;color:#7a36d8;">{{ candidature.matchScore }}%</span>
+                    </div>
+                {% else %}
+                    <span style="color:var(--muted);font-size:12px;">—</span>
+                {% endif %}
+            </td>
+
+            <td>
+                {% if candidature.cvPath %}
+                    {% set cleanCvPath = candidature.cvPath|split('/')|last|split('\\')|last %}
+                    <a href="{{ path('app_cv_download', {'filename': cleanCvPath}) }}" target="_blank" class="cv-pill">
+                        <i class="bi bi-file-earmark-pdf-fill"></i>
+                        {{ candidature.cvOriginalName ?: 'Voir le CV' }}
+                    </a>
+                {% else %}
+                    <span style="color:var(--muted);font-size:12px;">Aucun CV</span>
+                {% endif %}
+            </td>
+
+            <td style="text-align:center;">
+                <div style="display:inline-flex; gap:8px;">
+                    <a href="{{ path('app_candidature_show', {'id': candidature.id}) }}" class="action-circle" title="Voir">
+                        <i class="bi bi-eye"></i>
+                    </a>
+                    <a href="{{ path('app_candidature_edit', {'id': candidature.id}) }}" class="action-circle action-edit" title="Modifier">
+                        <i class="bi bi-pencil"></i>
+                    </a>
+                    <form method="post"
+                          action="{{ path('app_candidature_delete', {'id': candidature.id}) }}"
+                          onsubmit="return confirm('Supprimer cette candidature ?')"
+                          style="display:inline;">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ candidature.id) }}">
+                        <button type="submit" class="action-circle action-delete" title="Supprimer" style="border:none;">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </form>
+                </div>
+            </td>
+        </tr>
+    {% endfor %}
+{% endif %}

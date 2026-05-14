@@ -1,0 +1,73 @@
+{% extends 'base.html.twig' %}
+{% block title %}{{ activite.titre }} — RHPro{% endblock %}
+
+{% block styles %}
+:root { --green: #7c3aed; --green-dark: #6d28d9; --surface: #f5f0ff; --border: #e5e7eb; --text-dark: #111827; --text-muted: #6b7280; }
+body { background: var(--surface); }
+.act-show { min-height: 100vh; background: var(--surface); font-family: 'Inter', sans-serif; padding-bottom: 60px; }
+.act-show-header { background: var(--surface); padding: 36px 0 0; }
+.act-show-header-inner { max-width: 700px; margin: 0 auto; padding: 0 32px; }
+.breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-muted); margin-bottom: 20px; }
+.breadcrumb a { color: var(--green-dark); text-decoration: none; font-weight: 500; }
+.breadcrumb a:hover { text-decoration: underline; }
+.act-show-title { font-size: 26px; font-weight: 700; color: var(--green-dark); margin: 0; }
+.act-content { max-width: 700px; margin: 24px auto 0; padding: 0 32px; }
+.act-card { background: #fff; border-radius: 16px; border: 1px solid var(--border); padding: 28px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+.act-desc-full { font-size: 15px; color: #374151; line-height: 1.75; margin: 0 0 24px; }
+.act-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.btn-edit {
+  display: inline-flex; align-items: center; gap: 6px; padding: 10px 18px;
+  background: #ede9fe; color: var(--green-dark); border-radius: 9px; font-size: 13px;
+  font-weight: 600; text-decoration: none; transition: background 0.2s;
+}
+.btn-edit:hover { background: #c4b5fd; text-decoration: none; color: var(--green-dark); }
+.btn-del {
+  display: inline-flex; align-items: center; gap: 6px; padding: 10px 18px;
+  background: #fee2e2; color: #991b1b; border-radius: 9px; font-size: 13px;
+  font-weight: 600; border: none; cursor: pointer; font-family: 'Inter', sans-serif; transition: background 0.2s;
+}
+.btn-del:hover { background: #fecaca; }
+{% endblock %}
+
+{% block body %}
+<div class="act-show">
+  <div class="act-show-header">
+    <div class="act-show-header-inner">
+      <div class="breadcrumb">
+        <a href="{{ path('app_activite_index') }}">Activités</a>
+        {% if activite.evenement %}
+          <span>›</span>
+          <a href="{{ path('app_evenement_show', {'id': activite.evenement.id}) }}">{{ activite.evenement.titre }}</a>
+        {% endif %}
+        <span>›</span>
+        <span>{{ activite.titre }}</span>
+      </div>
+      <h1 class="act-show-title">{{ activite.titre }}</h1>
+    </div>
+  </div>
+
+  <div class="act-content">
+    <div class="act-card">
+      {% if activite.description %}
+        <p class="act-desc-full">{{ activite.description }}</p>
+      {% else %}
+        <p class="act-desc-full" style="color:var(--text-muted);font-style:italic;">Aucune description pour cette activité.</p>
+      {% endif %}
+
+      <div class="act-actions">
+        <a href="{{ path('app_activite_edit', {'id': activite.id}) }}" class="btn-edit">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Modifier
+        </a>
+        <form method="post" action="{{ path('app_activite_delete', {'id': activite.id}) }}" onsubmit="return confirm('Supprimer cette activité ?');" style="display:inline;">
+          <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ activite.id) }}">
+          <button type="submit" class="btn-del">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+            Supprimer
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

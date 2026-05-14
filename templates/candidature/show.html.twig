@@ -1,0 +1,468 @@
+{% extends 'base.html.twig' %}
+{% block title %}Détail candidature{% endblock %}
+
+{% block styles %}
+<style>
+    body { background:#F7F4FB !important; }
+    .pg { max-width:1060px; margin:0 auto; padding:36px 24px 60px; }
+    .btn-op { display:inline-flex; align-items:center; gap:7px; padding:9px 18px; border-radius:99px; background:transparent; color:#6D2269; border:1.5px solid #6D2269; font-size:13px; font-weight:600; text-decoration:none; transition:all .22s; }
+    .btn-op:hover { background:#6D2269; color:#fff; }
+    .hero { background:linear-gradient(135deg,#4E1A4B,#6D2269); border-radius:18px; padding:28px 32px; color:#fff; margin-bottom:22px; display:flex; align-items:center; gap:18px; position:relative; overflow:hidden; }
+    .hero::after { content:''; position:absolute; top:-30px; right:-30px; width:140px; height:140px; background:rgba(255,255,255,0.05); border-radius:50%; }
+    .hero-av { width:60px; height:60px; background:rgba(255,255,255,0.18); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:700; flex-shrink:0; }
+    .hero-name { font-size:20px; font-weight:700; margin-bottom:4px; }
+    .hero-sub  { font-size:14px; opacity:.8; }
+    .layout { display:grid; grid-template-columns:1fr 300px; gap:20px; align-items:start; }
+    .cs { background:#fff; border-radius:14px; box-shadow:0 2px 12px rgba(109,34,105,0.08); border:1px solid rgba(109,34,105,0.07); overflow:hidden; margin-bottom:18px; }
+    .csh { padding:14px 20px; border-bottom:1px solid rgba(109,34,105,0.07); font-size:14px; font-weight:700; color:#4E1A4B; display:flex; align-items:center; gap:8px; }
+    .csb { padding:18px 20px; }
+    .info-r { display:flex; align-items:center; gap:12px; padding:11px 18px; border-bottom:1px solid rgba(109,34,105,0.05); }
+    .info-r:last-child { border-bottom:none; }
+    .info-ico { width:32px; height:32px; background:#F7F4FB; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#6D2269; font-size:14px; flex-shrink:0; }
+    .info-lb { font-size:10px; color:#6c757d; font-weight:700; text-transform:uppercase; letter-spacing:.5px; }
+    .info-v  { font-size:13px; font-weight:600; }
+    .bs { display:inline-flex; align-items:center; gap:4px; padding:5px 12px; border-radius:99px; font-size:12px; font-weight:600; }
+    .bs-wait { background:#fff8e1; color:#f59e0b; }
+    .bs-ok   { background:#e8f5e9; color:#22c55e; }
+    .bs-no   { background:#fce8e8; color:#ef4444; }
+    .bs-rev  { background:#ede9fe; color:#7c3aed; }
+    .cv-pill { display:inline-flex; align-items:center; gap:6px; padding:8px 16px; border-radius:99px; background:rgba(109,34,105,0.07); color:#6D2269; font-size:13px; font-weight:600; text-decoration:none; transition:all .22s; }
+    .cv-pill:hover { background:#6D2269; color:#fff; }
+    .stat-btn { display:inline-flex; align-items:center; gap:6px; padding:9px 16px; border-radius:99px; font-size:13px; font-weight:600; border:1.5px solid; cursor:pointer; transition:all .22s; background:transparent; }
+    .sb-wait { color:#f59e0b; border-color:#f59e0b; } .sb-wait:hover { background:#f59e0b; color:#fff; }
+    .sb-int  { color:#7c3aed; border-color:#7c3aed; } .sb-int:hover { background:#7c3aed; color:#fff; }
+    .sb-ok   { color:#22c55e; border-color:#22c55e; } .sb-ok:hover { background:#22c55e; color:#fff; }
+    .sb-no   { color:#ef4444; border-color:#ef4444; } .sb-no:hover { background:#ef4444; color:#fff; }
+
+    /* ── Bouton principal pour ouvrir le modal Analyse ── */
+    .ai-btn-open { width:100%; padding:14px; border-radius:99px; background:linear-gradient(135deg,#6D2269,#8B3A86); color:#fff; font-size:14px; font-weight:700; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px; transition:all .22s; font-family:"Inter", sans-serif; }
+    .ai-btn-open:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(109,34,105,.35); background:linear-gradient(135deg,#8B3A86,#A64EA1); }
+
+    /* ── Modal Analyse IA ── */
+    .ai-modal-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(20,10,25,0.6); backdrop-filter:blur(6px); z-index:9999; display:flex; align-items:center; justify-content:center; opacity:0; visibility:hidden; transition:all 0.3s ease; }
+    .ai-modal-overlay.show { opacity:1; visibility:visible; }
+    .ai-modal-content { background:#fff; width:650px; max-width:95%; border-radius:24px; box-shadow:0 25px 50px rgba(0,0,0,0.3); transform:translateY(30px) scale(0.95); opacity:0; transition:all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); display:flex; flex-direction:column; overflow:hidden; }
+    .ai-modal-overlay.show .ai-modal-content { transform:translateY(0) scale(1); opacity:1; }
+    .ai-modal-header { background:linear-gradient(135deg,#4E1A4B,#6D2269); padding:24px 30px; color:#fff; display:flex; align-items:center; justify-content:space-between; position:relative; overflow:hidden; }
+    .ai-modal-header::after { content:''; position:absolute; top:-20px; right:-20px; width:100px; height:100px; background:rgba(255,255,255,0.06); border-radius:50%; }
+    .ai-modal-header h3 { margin:0; font-size:20px; font-weight:800; display:flex; align-items:center; gap:12px; z-index:1; }
+    .btn-close-modal { background:rgba(255,255,255,0.15); border:none; width:36px; height:36px; border-radius:50%; color:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background 0.2s; z-index:1; font-size:18px; }
+    .btn-close-modal:hover { background:rgba(255,255,255,0.3); }
+    .ai-modal-body { padding:30px; max-height:calc(100vh - 120px); overflow-y:auto; background:#FDFCFE; }
+    
+    .ai-launch-btn { width:100%; padding:14px; border-radius:99px; background:linear-gradient(135deg,#6D2269,#8B3A86); color:#fff; font-size:15px; font-weight:700; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px; transition:all .22s; margin-bottom:20px; }
+    .ai-launch-btn:hover { transform:translateY(-2px); box-shadow:0 6px 18px rgba(109,34,105,.35); }
+    .ai-launch-btn:disabled { opacity:.6; cursor:not-allowed; transform:none; box-shadow:none; }
+
+    /* Elements d'analyse */
+    .score-ring { position:relative; width:100px; height:100px; margin:10px auto 14px; }
+    .score-ring svg { transform:rotate(-90deg); }
+    .score-ring-val { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:24px; font-weight:800; }
+    .skill-tag { display:inline-block; padding:6px 14px; background:rgba(109,34,105,.08); color:#6D2269; border-radius:99px; font-size:12px; font-weight:700; margin:4px; border:1px solid rgba(109,34,105,.1); transition:transform 0.2s; cursor:default; }
+    .skill-tag:hover { transform:scale(1.05); }
+    .ai-box { background:#fff; border:1px solid rgba(109,34,105,.12); border-radius:16px; padding:20px; font-size:14px; color:#4E1A4B; line-height:1.7; white-space:pre-line; margin-top:20px; box-shadow:0 4px 15px rgba(109,34,105,0.03); }
+    
+    .ai-err { background:#fef2f2; color:#ef4444; border:1px solid #fca5a5; border-radius:12px; padding:16px; font-size:14px; font-weight:600; text-align:center; }
+
+    /* Loader Scanning Animation */
+    .ai-scanning-zone { position:relative; background:#f0ebf7; border-radius:16px; height:160px; overflow:hidden; display:none; flex-direction:column; align-items:center; justify-content:center; border:2px dashed #d9b8ff; margin-bottom:20px; }
+    .ai-scanning-zone.active { display:flex; animation:pulse-bg 2s infinite alternate;}
+    .ai-scanner-line { position:absolute; top:0; left:0; width:100%; height:4px; background:#8B3A86; box-shadow:0 0 15px 4px rgba(139,58,134,0.6); animation:scan 2.5s ease-in-out infinite; opacity:0.8; }
+    .scan-icon { font-size:40px; color:#6D2269; animation:pulse 1s infinite alternate; }
+    .scan-text { margin-top:10px; font-weight:700; color:#6D2269; font-size:15px; }
+    
+    @keyframes scan { 0% { top:0; } 50% { top:100%; } 100% { top:0; } }
+    @keyframes pulse { 0% { transform:scale(1); opacity:0.8; } 100% { transform:scale(1.1); opacity:1; } }
+    @keyframes pulse-bg { 0% { background:#f0ebf7; } 100% { background:#e7dcf5; } }
+
+    @media(max-width:800px){ .layout{grid-template-columns:1fr;} }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="pg">
+
+    <div style="margin-bottom:20px;">
+        <a href="{{ path('app_candidature_index') }}" class="btn-op"><i class="bi bi-arrow-left"></i> Retour à la liste</a>
+    </div>
+
+    <div class="hero">
+        <div class="hero-av">
+            {% if candidature.candidat is not null and candidature.candidat.user is not null %}
+                {{ candidature.candidat.user.prenom|first|upper }}{{ candidature.candidat.user.nom|first|upper }}
+            {% else %}?{% endif %}
+        </div>
+        <div>
+            <div class="hero-name">
+                {% if candidature.candidat is not null and candidature.candidat.user is not null %}
+                    {{ candidature.candidat.user.nom }} {{ candidature.candidat.user.prenom }}
+                {% else %}Candidat #{{ candidature.id }}{% endif %}
+            </div>
+            <div class="hero-sub">
+                <i class="bi bi-envelope" style="margin-right:5px;"></i>
+                {% if candidature.candidat is not null and candidature.candidat.user is not null %}
+                    {{ candidature.candidat.user.email }}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="layout">
+        <div>
+            {# Offre liée #}
+            <div class="cs">
+                <div class="csh"><i class="bi bi-briefcase" style="color:#6D2269;"></i> Offre concernée</div>
+                <div class="csb" style="display:flex;align-items:center;gap:14px;">
+                    <div style="width:46px;height:46px;background:#F7F4FB;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#6D2269;font-size:20px;flex-shrink:0;">
+                        <i class="bi bi-briefcase-fill"></i>
+                    </div>
+                    <div style="flex:1;">
+                        <div style="font-weight:700;font-size:15px;color:#4E1A4B;">
+                            {% if candidature.offreEmploi is not null %}{{ candidature.offreEmploi.titre }}{% else %}—{% endif %}
+                        </div>
+                        <div style="font-size:13px;color:#6c757d;margin-top:3px;">
+                            {% if candidature.offreEmploi is not null %}
+                                {{ candidature.offreEmploi.typeContrat }} — {{ candidature.offreEmploi.localisation }}
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% if candidature.offreEmploi is not null %}
+                    <a href="{{ path('app_offre_emploi_show', {'id': candidature.offreEmploi.id}) }}" class="btn-op" style="padding:7px 14px;font-size:12px;">
+                        Voir l'offre
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            {# Lettre de motivation #}
+            {% if candidature.lettreMotivation is defined and candidature.lettreMotivation %}
+            <div class="cs">
+                <div class="csh"><i class="bi bi-chat-text" style="color:#6D2269;"></i> Lettre de motivation</div>
+                <div class="csb" style="font-size:15px;line-height:1.8;color:#333;">{{ candidature.lettreMotivation|nl2br }}</div>
+            </div>
+            {% endif %}
+
+            {# Changer statut #}
+            <div class="cs">
+                <div class="csh"><i class="bi bi-sliders" style="color:#6D2269;"></i> Changer le statut</div>
+                <div class="csb">
+                    <form method="post" action="{{ path('app_candidature_statut', {'id': candidature.id}) }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('statut'~candidature.id) }}">
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                            <button type="submit" name="statut" value="en_attente" class="stat-btn sb-wait"><i class="bi bi-hourglass-split"></i> En attente</button>
+                            <button type="submit" name="statut" value="entretien"  class="stat-btn sb-int"><i class="bi bi-camera-video"></i> Entretien</button>
+                            <button type="submit" name="statut" value="acceptee"   class="stat-btn sb-ok"><i class="bi bi-check-circle"></i> Accepter</button>
+                            <button type="submit" name="statut" value="refusee"    class="stat-btn sb-no"><i class="bi bi-x-circle"></i> Refuser</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <div class="cs">
+                <div class="csh"><i class="bi bi-info-circle" style="color:#6D2269;"></i> Résumé</div>
+
+                <div class="info-r">
+                    <div class="info-ico"><i class="bi bi-calendar3"></i></div>
+                    <div>
+                        <div class="info-lb">Date de candidature</div>
+                        <div class="info-v">{{ candidature.dateCandidature ? candidature.dateCandidature|date('d/m/Y') : '—' }}</div>
+                    </div>
+                </div>
+
+                <div class="info-r">
+                    <div class="info-ico"><i class="bi bi-flag-fill"></i></div>
+                    <div>
+                        <div class="info-lb">Statut actuel</div>
+                        <div class="info-v">
+                            {% set sl = (candidature.statut ?? '')|lower|replace({' ':'_','é':'e'}) %}
+                            {% if sl in ['acceptee','accepted'] %}
+                                <span class="bs bs-ok"><i class="bi bi-check-circle-fill"></i>Acceptée</span>
+                            {% elseif sl in ['refusee','rejected'] %}
+                                <span class="bs bs-no"><i class="bi bi-x-circle-fill"></i>Refusée</span>
+                            {% elseif sl in ['entretien','interview'] %}
+                                <span class="bs bs-rev"><i class="bi bi-camera-video-fill"></i>Entretien</span>
+                            {% else %}
+                                <span class="bs bs-wait"><i class="bi bi-hourglass-split"></i>En attente</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                {% if candidature.matchScore is not null %}
+                <div class="info-r">
+                    <div class="info-ico"><i class="bi bi-bar-chart-fill"></i></div>
+                    <div>
+                        <div class="info-lb">Score IA (Précédent)</div>
+                        <div class="info-v">
+                            <span style="background:linear-gradient(135deg,#6D2269,#8B3A86);color:#fff;border-radius:99px;padding:3px 12px;font-size:12px;font-weight:700;">
+                                {{ candidature.matchScore }}%
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="info-r">
+                    <div class="info-ico"><i class="bi bi-file-earmark-pdf-fill"></i></div>
+                    <div>
+                        <div class="info-lb">CV fourni</div>
+                        <div class="info-v">
+                            {% if candidature.cvPath %}
+                                {% set cleanCvPath = candidature.cvPath|split('/')|last|split('\\')|last %}
+                                <a href="{{ path('app_cv_download', {'filename': cleanCvPath}) }}" target="_blank" class="cv-pill">
+                                    <i class="bi bi-file-earmark-pdf-fill"></i>
+                                    {{ candidature.cvOriginalName ?? 'Télécharger CV' }}
+                                </a>
+                            {% else %}Non fourni{% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                {% if candidature.contractStatus is defined and candidature.contractStatus %}
+                <div class="info-r">
+                    <div class="info-ico"><i class="bi bi-file-earmark-check-fill"></i></div>
+                    <div>
+                        <div class="info-lb">Statut contrat</div>
+                        <div class="info-v">{{ candidature.contractStatus }}</div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            {# ── Panneau latéral (Bouton d'ouverture) ─────────────────────── #}
+            <div class="cs">
+                <div class="csh">
+                    <i class="bi bi-cpu-fill" style="color:#6D2269;"></i>
+                    Intelligence Artificielle
+                </div>
+                <div class="csb" style="text-align:center;">
+                    <img src="https://cdn-icons-png.flaticon.com/512/3616/3616853.png" width="60" style="margin-bottom:15px; opacity:0.8;">
+                    <p style="font-size:12px; color:#6c757d; margin-bottom:16px;">
+                        L'IA analyse le CV du candidat et le compare aux exigences de l'offre pour vous donner un score précis et les compétences clés.
+                    </p>
+                    {% if candidature.cvPath %}
+                        <button type="button" class="ai-btn-open" onclick="openModal()">
+                            <i class="bi bi-stars"></i>
+                            {% if candidature.matchScore is not null %}Voir l'analyse / Relancer{% else %}Lancer l'analyse IA{% endif %}
+                        </button>
+                    {% else %}
+                        <div style="background:#fce8e8;color:#ef4444;border-radius:10px;padding:12px;font-size:13px;font-weight:600;">
+                            <i class="bi bi-exclamation-triangle-fill"></i> Impossible sans CV
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+{# ── Modal Overlay ────────────────────────────────────── #}
+<div class="ai-modal-overlay" id="aiModal">
+    <div class="ai-modal-content">
+        <div class="ai-modal-header">
+            <h3><i class="bi bi-cpu-fill"></i> Tableau de bord IA</h3>
+            <button class="btn-close-modal" onclick="closeModal()">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+        
+        <div class="ai-modal-body">
+            
+            {# Bloc principal pour lancer/relancer #}
+            <div id="ai-modal-controls" style="margin-bottom:20px;">
+                <button class="ai-launch-btn" id="btn-analyse" onclick="lancerAnalyse()">
+                    <i class="bi bi-play-circle-fill"></i> Lancer une nouvelle analyse
+                </button>
+            </div>
+
+            {# Animation de scan #}
+            <div class="ai-scanning-zone" id="ai-loading">
+                <div class="ai-scanner-line"></div>
+                <i class="bi bi-file-earmark-text scan-icon"></i>
+                <div class="scan-text">Lecture et analyse du document par l'IA...</div>
+            </div>
+
+            {# Erreur #}
+            <div id="ai-error" class="ai-err" style="display:none; margin-bottom:20px;"></div>
+
+            {# Résultats (s'affiche dynamiquement ou si déjà présent) #}
+            <div id="ai-result">
+                {# Initialisation avec les résultats existants s'ils existent #}
+                {% if candidature.matchScore is not null %}
+                    {% set sc = candidature.matchScore %}
+                    {% set col = sc >= 75 ? '#22c55e' : (sc >= 50 ? '#f59e0b' : '#ef4444') %}
+                    {% set label_txt = sc >= 75 ? 'Excellent profil' : (sc >= 50 ? 'Bon profil' : 'Profil éloigné') %}
+                    {% set circ = (sc * 2.136)|round %}
+                    
+                    <div class="score-ring">
+                        <svg width="100" height="100" viewBox="0 0 80 80">
+                            <circle cx="40" cy="40" r="34" fill="none" stroke="#F0E6FF" stroke-width="8"/>
+                            <circle cx="40" cy="40" r="34" fill="none" stroke="{{ col }}" stroke-width="8"
+                                    stroke-dasharray="{{ circ }} 213.6" stroke-linecap="round"/>
+                        </svg>
+                        <div class="score-ring-val" style="color:{{ col }};">{{ sc }}%</div>
+                    </div>
+                    <div style="text-align:center;font-size:16px;font-weight:700;color:{{ col }};margin-bottom:24px;">{{ label_txt }}</div>
+
+                    {% if candidature.cvSkills %}
+                        <div style="font-size:12px;color:#6c757d;font-weight:800;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Compétences détectées</div>
+                        <div style="margin-bottom:16px;">
+                            {% for skill in candidature.cvSkills|split(',') %}
+                                {% if skill|trim %}<span class="skill-tag">{{ skill|trim }}</span>{% endif %}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    {% if candidature.aiAnalysis %}
+                        <div class="ai-box">
+                            <h4 style="margin:0 0 12px 0;font-size:15px;color:#6D2269;"><i class="bi bi-chat-right-quote-fill"></i> Rapport détaillé</h4>
+                            {{ candidature.aiAnalysis|nl2br }}
+                        </div>
+                    {% endif %}
+
+                    {% if candidature.matchUpdatedAt %}
+                    <div style="text-align:center;font-size:11px;color:#9c8ab0;margin-top:20px;">
+                        Dernière analyse complète :  {{ candidature.matchUpdatedAt|date('d/m/Y H:i') }}
+                    </div>
+                    {% endif %}
+                {% else %}
+                    <div style="text-align:center; padding:40px 0; color:#9c8ab0;" id="ai-empty-state">
+                        <i class="bi bi-stars" style="font-size:48px; color:#e0d4f5; margin-bottom:12px; display:block;"></i>
+                        <h4 style="font-size:16px; font-weight:700; color:#4E1A4B; margin-bottom:8px;">Aucune analyse effectuée</h4>
+                        <p style="font-size:13px; max-width:400px; margin:0 auto;">Cliquez sur le bouton ci-dessus pour lancer l'analyse intelligente et découvrir à quel point ce candidat correspond à votre offre.</p>
+                    </div>
+                {% endif %}
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+const modalOverlay = document.getElementById('aiModal');
+const ANALYSE_URL = "{{ path('candidature_analyse_cv', {'id': candidature.id}) }}";
+const CSRF_TOKEN  = "{{ csrf_token('analyse_cv_' ~ candidature.id) }}";
+
+function openModal() {
+    modalOverlay.classList.add('show');
+    document.body.style.overflow = 'hidden'; // Empêche le scroll derrière
+}
+
+function closeModal() {
+    modalOverlay.classList.remove('show');
+    document.body.style.overflow = '';
+}
+
+// Fermer le modal en cliquant à l'extérieur
+modalOverlay.addEventListener('click', function(e) {
+    if(e.target === modalOverlay) {
+        closeModal();
+    }
+});
+
+function lancerAnalyse() {
+    const btn        = document.getElementById('btn-analyse');
+    const loading    = document.getElementById('ai-loading');
+    const resultBox  = document.getElementById('ai-result');
+    const errBox     = document.getElementById('ai-error');
+    const emptyState = document.getElementById('ai-empty-state');
+
+    // UI state loading
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm" style="width:16px;height:16px;margin-right:8px;"></span> Analyse en cours...';
+    
+    loading.classList.add('active');
+    errBox.style.display = 'none';
+    if(emptyState) emptyState.style.display = 'none';
+    
+    // Hide old results nicely
+    resultBox.style.opacity = '0.3';
+    resultBox.style.pointerEvents = 'none';
+
+    fetch(ANALYSE_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+        body: JSON.stringify({ _token: CSRF_TOKEN })
+    })
+    .then(r => r.json())
+    .then(data => {
+        loading.classList.remove('active');
+        resultBox.style.opacity = '1';
+        resultBox.style.pointerEvents = 'auto';
+        
+        if (!data.success) {
+            errBox.innerHTML     = '<i class="bi bi-exclamation-triangle-fill"></i> ' + (data.error || 'Erreur inconnue');
+            errBox.style.display = 'block';
+            btn.disabled         = false;
+            btn.innerHTML        = '<i class="bi bi-arrow-repeat"></i> Réessayer';
+            return;
+        }
+
+        const sc    = data.score;
+        const col   = sc >= 75 ? '#22c55e' : sc >= 50 ? '#f59e0b' : '#ef4444';
+        const label = sc >= 75 ? 'Excellent profil' : sc >= 50 ? 'Bon profil' : sc >= 30 ? 'Profil moyen' : 'Profil éloigné';
+        const circ  = 2 * Math.PI * 34;
+        const dash  = (sc * circ / 100).toFixed(1);
+
+        const skills = (data.skills || '').split(',').map(s => s.trim()).filter(Boolean);
+        const skillsHtml = skills.map(s => `<span class="skill-tag">${s}</span>`).join('');
+        const analysisHtml = data.analysis
+            ? `<div class="ai-box">
+                <h4 style="margin:0 0 12px 0;font-size:15px;color:#6D2269;"><i class="bi bi-chat-right-quote-fill"></i> Rapport détaillé</h4>
+                ${data.analysis.replace(/\n/g,'<br>')}
+              </div>` : '';
+
+        // Animer l'apparition des nouveaux résultats
+        resultBox.style.transform = 'translateY(10px)';
+        resultBox.style.opacity = '0';
+        
+        setTimeout(() => {
+            resultBox.innerHTML = `
+                <div class="score-ring">
+                    <svg width="100" height="100" viewBox="0 0 80 80">
+                        <circle cx="40" cy="40" r="34" fill="none" stroke="#F0E6FF" stroke-width="8"/>
+                        <circle cx="40" cy="40" r="34" fill="none" stroke="${col}" stroke-width="8"
+                                stroke-dasharray="${dash} ${circ.toFixed(1)}"
+                                stroke-linecap="round" transform="rotate(-90 40 40)"/>
+                    </svg>
+                    <div class="score-ring-val" style="color:${col};">${sc}%</div>
+                </div>
+                <div style="text-align:center;font-size:16px;font-weight:700;color:${col};margin-bottom:24px;">${label}</div>
+                
+                ${skills.length ? `<div style="font-size:12px;color:#6c757d;font-weight:800;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Compétences détectées</div><div style="margin-bottom:16px;">${skillsHtml}</div>` : ''}
+                
+                ${analysisHtml}
+                
+                <div style="text-align:center;font-size:11px;color:#9c8ab0;margin-top:20px;">
+                    Dernière analyse complète : À l'instant
+                </div>
+            `;
+            
+            resultBox.style.transition = 'all 0.4s ease';
+            resultBox.style.transform = 'translateY(0)';
+            resultBox.style.opacity = '1';
+        }, 150);
+
+        btn.disabled  = false;
+        btn.innerHTML = '<i class="bi bi-arrow-repeat"></i> Refaire une analyse';
+    })
+    .catch(err => {
+        loading.classList.remove('active');
+        resultBox.style.opacity = '1';
+        resultBox.style.pointerEvents = 'auto';
+        errBox.innerHTML     = '<i class="bi bi-exclamation-triangle-fill"></i> Erreur réseau : ' + err.message;
+        errBox.style.display = 'block';
+        btn.disabled         = false;
+        btn.innerHTML        = '<i class="bi bi-arrow-repeat"></i> Réessayer';
+    });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,14 @@
+knpu_oauth2_client:
+    clients:
+        # Google OAuth2 Client
+        google:
+            type: google
+            client_id: '%env(OAUTH_GOOGLE_ID)%'
+            client_secret: '%env(OAUTH_GOOGLE_SECRET)%'
+            redirect_route: connect_google_check
+            redirect_params: {}
+            # Scopes demandés à Google
+            # https://developers.google.com/identity/protocols/oauth2/scopes
+            # email: accès à l'email de l'utilisateur
+            # profile: accès au nom, prénom, photo de profil
+            use_state: true

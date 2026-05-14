@@ -1,0 +1,585 @@
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  .rh-navbar-candidat {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    font-family: 'DM Sans', sans-serif;
+    background: rgba(26, 10, 46, 0.97);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    box-shadow: 0 4px 32px rgba(0,0,0,0.3);
+  }
+
+  .rh-navbar-candidat::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #c9a84c 30%, #e8c97a 50%, #c9a84c 70%, transparent);
+    opacity: 0.6;
+  }
+
+  .rh-navbar-candidat .container {
+    display: flex;
+    align-items: center;
+    height: 68px;
+    gap: 0;
+  }
+
+  .nb-c-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    flex-shrink: 0;
+    margin-right: 36px;
+  }
+
+  .nb-c-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #c9a84c;
+    box-shadow: 0 0 8px rgba(201,168,76,0.7);
+    flex-shrink: 0;
+  }
+
+  .nb-c-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: -0.01em;
+  }
+
+  .nb-c-links {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex: 1;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .nb-c-links .nb-c-item {
+    position: relative;
+  }
+
+  .nb-c-links .nb-c-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.6);
+    text-decoration: none;
+    border-radius: 9px;
+    transition: color 0.2s, background 0.2s;
+    white-space: nowrap;
+    position: relative;
+  }
+
+  .nb-c-links .nb-c-link svg,
+  .nb-c-mobile .nb-c-link svg {
+    opacity: 0.6;
+    transition: opacity 0.2s;
+    flex-shrink: 0;
+  }
+
+  .nb-c-links .nb-c-link:hover,
+  .nb-c-links .nb-c-link.active,
+  .nb-c-mobile .nb-c-link:hover,
+  .nb-c-mobile .nb-c-link.active {
+    color: #ffffff;
+    background: rgba(255,255,255,0.07);
+  }
+
+  .nb-c-links .nb-c-link:hover svg,
+  .nb-c-links .nb-c-link.active svg,
+  .nb-c-mobile .nb-c-link:hover svg,
+  .nb-c-mobile .nb-c-link.active svg {
+    opacity: 1;
+  }
+
+  .nb-c-links .nb-c-link.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 14px;
+    right: 14px;
+    height: 2px;
+    background: #a84cc9;
+    border-radius: 1px;
+  }
+
+  .nb-c-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+    margin-left: 16px;
+  }
+
+  .nb-c-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(201,168,76,0.12);
+    border: 1px solid rgba(201,168,76,0.25);
+    color: #e8c97a;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    padding: 3px 9px;
+    border-radius: 6px;
+  }
+
+  .nb-c-badge-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #e8c97a;
+  }
+
+  .nb-c-dropdown {
+    position: relative;
+  }
+
+  .nb-c-pill {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 5px 14px 5px 5px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 100px;
+    cursor: pointer;
+    transition: background 0.2s;
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.8);
+  }
+
+  .nb-c-pill:hover {
+    background: rgba(255,255,255,0.1);
+  }
+
+  .nb-c-avatar-img {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(201,168,76,0.4);
+  }
+
+  .nb-c-avatar-initials {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #5b2b82, #7c3dac);
+    border: 2px solid rgba(201,168,76,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: #ffffff;
+    flex-shrink: 0;
+  }
+
+  .nb-c-pill .nb-c-chevron {
+    opacity: 0.5;
+    transition: transform 0.2s;
+  }
+
+  .nb-c-dropdown:hover .nb-c-chevron {
+    transform: rotate(180deg);
+  }
+
+  .nb-c-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    min-width: 210px;
+    background: #1e0d35;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 14px;
+    padding: 8px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.18s, transform 0.18s;
+    transform: translateY(-6px);
+    z-index: 100;
+  }
+
+  .nb-c-dropdown-menu::after {
+    content: '';
+    position: absolute;
+    top: -12px;
+    left: 0;
+    right: 0;
+    height: 12px;
+  }
+
+  .nb-c-dropdown-menu::before {
+    content: '';
+    position: absolute;
+    top: -5px;
+    right: 20px;
+    width: 10px;
+    height: 10px;
+    background: #1e0d35;
+    border-left: 1px solid rgba(255,255,255,0.1);
+    border-top: 1px solid rgba(255,255,255,0.1);
+    transform: rotate(45deg);
+  }
+
+  .nb-c-dropdown:hover .nb-c-dropdown-menu {
+    opacity: 1;
+    pointer-events: all;
+    transform: translateY(0);
+  }
+
+  .nb-c-dd-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 9px;
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.6);
+    text-decoration: none;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .nb-c-dd-item:hover {
+    background: rgba(255,255,255,0.07);
+    color: #ffffff;
+  }
+
+  .nb-c-dd-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #e8c97a;
+    flex-shrink: 0;
+    transition: background 0.15s;
+  }
+
+  .nb-c-dd-item:hover .nb-c-dd-icon {
+    background: rgba(201,168,76,0.12);
+    border-color: rgba(201,168,76,0.25);
+  }
+
+  .nb-c-dd-item.danger {
+    color: #f87171;
+  }
+
+  .nb-c-dd-item.danger .nb-c-dd-icon {
+    color: #f87171;
+  }
+
+  .nb-c-dd-item.danger:hover {
+    background: rgba(248,113,113,0.08);
+  }
+
+  .nb-c-dd-sep {
+    height: 1px;
+    background: rgba(255,255,255,0.07);
+    margin: 6px 4px;
+  }
+
+  .nb-c-toggle {
+    display: none;
+    background: none;
+    border: 1.5px solid rgba(255,255,255,0.15);
+    border-radius: 8px;
+    padding: 6px 10px;
+    cursor: pointer;
+    color: rgba(255,255,255,0.7);
+    margin-left: auto;
+    transition: background 0.2s;
+  }
+
+  .nb-c-toggle:hover {
+    background: rgba(255,255,255,0.07);
+  }
+
+  .nb-c-mobile {
+    display: none;
+    flex-direction: column;
+    padding: 12px 16px 20px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    gap: 2px;
+  }
+
+  .nb-c-mobile .nb-c-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.6);
+    text-decoration: none;
+    border-radius: 9px;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .nb-c-mobile-sep {
+    height: 1px;
+    background: rgba(255,255,255,0.07);
+    margin: 8px 0;
+  }
+
+  @media (max-width: 768px) {
+    .nb-c-links {
+      display: none;
+    }
+
+    .nb-c-right {
+      display: none;
+    }
+
+    .nb-c-toggle {
+      display: flex;
+      align-items: center;
+    }
+
+    .rh-navbar-candidat .container {
+      flex-wrap: wrap;
+      height: auto;
+      min-height: 62px;
+    }
+
+    .nb-c-mobile.open {
+      display: flex;
+    }
+  }
+</style>
+
+<nav class="rh-navbar-candidat">
+  <div class="container">
+
+    <a class="nb-c-brand" href="{{ path('app_landing') }}">
+      <span class="nb-c-dot"></span>
+      <span class="nb-c-name">RH Pro</span>
+    </a>
+
+    <ul class="nb-c-links">
+      <li class="nb-c-item">
+        <a class="nb-c-link" href="{{ path('app_landing') }}">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+          Accueil
+        </a>
+      </li>
+
+      <li class="nb-c-item">
+        <a class="nb-c-link" href="{{ path('app_home') }}">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7"/>
+            <rect x="14" y="3" width="7" height="7"/>
+            <rect x="14" y="14" width="7" height="7"/>
+            <rect x="3" y="14" width="7" height="7"/>
+          </svg>
+          Dashboard
+        </a>
+      </li>
+
+      <li class="nb-c-item">
+        <a class="nb-c-link" href="{{ path('candidat_candidatures') }}">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+          </svg>
+          Mes Candidatures
+        </a>
+      </li>
+
+      <li class="nb-c-item">
+        <a class="nb-c-link" href="{{ path('candidat_offres') }}">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          Offres disponibles
+        </a>
+      </li>
+    </ul>
+
+    <div class="nb-c-right">
+      <span class="nb-c-badge">
+        <span class="nb-c-badge-dot"></span>
+        CANDIDAT
+      </span>
+
+      <div class="nb-c-dropdown">
+        <div class="nb-c-pill">
+          {% if app.user and app.user.avatarPath is defined and app.user.avatarPath %}
+            <img src="{{ asset(app.user.avatarPath) }}" class="nb-c-avatar-img" alt="Avatar">
+          {% else %}
+            <div class="nb-c-avatar-initials">
+              {{ app.user and app.user.prenom is defined and app.user.prenom ? app.user.prenom|first|upper : 'C' }}
+            </div>
+          {% endif %}
+
+          <span>
+            {{ app.user and app.user.prenom is defined and app.user.prenom ? app.user.prenom : 'Candidat' }}
+          </span>
+
+          <svg class="nb-c-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </div>
+
+        <div class="nb-c-dropdown-menu">
+          <a class="nb-c-dd-item" href="{{ path('app_candidat_profile') }}">
+            <div class="nb-c-dd-icon">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+            </div>
+            Mon Profil
+          </a>
+
+          <a class="nb-c-dd-item" href="#">
+            <div class="nb-c-dd-icon">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+            </div>
+            Sécurité
+          </a>
+
+          <div class="nb-c-dd-sep"></div>
+
+          <a class="nb-c-dd-item danger" href="{{ path('app_logout') }}">
+            <div class="nb-c-dd-icon">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                <polyline points="16 17 21 12 16 7"/>
+                <line x1="21" y1="12" x2="9" y2="12"/>
+              </svg>
+            </div>
+            Déconnexion
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <button class="nb-c-toggle" id="nbcToggle" aria-label="Menu">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" id="nbcHamburger">
+        <line x1="3" y1="6" x2="21" y2="6"/>
+        <line x1="3" y1="12" x2="21" y2="12"/>
+        <line x1="3" y1="18" x2="21" y2="18"/>
+      </svg>
+    </button>
+  </div>
+
+  <div class="nb-c-mobile" id="nbcMobile">
+    <a class="nb-c-link" href="{{ path('app_landing') }}">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+        <polyline points="9 22 9 12 15 12 15 22"/>
+      </svg>
+      Accueil
+    </a>
+
+    <a class="nb-c-link" href="{{ path('app_home') }}">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="7" height="7"/>
+        <rect x="14" y="3" width="7" height="7"/>
+        <rect x="14" y="14" width="7" height="7"/>
+        <rect x="3" y="14" width="7" height="7"/>
+      </svg>
+      Dashboard
+    </a>
+
+    <a class="nb-c-link" href="{{ path('candidat_candidatures') }}">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+        <line x1="16" y1="13" x2="8" y2="13"/>
+        <line x1="16" y1="17" x2="8" y2="17"/>
+      </svg>
+      Mes Candidatures
+    </a>
+
+    <a class="nb-c-link" href="{{ path('candidat_offres') }}">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      Offres disponibles
+    </a>
+
+    <div class="nb-c-mobile-sep"></div>
+
+    <a class="nb-c-link" href="{{ path('app_candidat_profile') }}">
+      Mon Profil
+    </a>
+
+    <a class="nb-c-link" href="#">
+      Sécurité
+    </a>
+
+    <a class="nb-c-link" href="{{ path('app_logout') }}" style="color:#f87171;">
+      Déconnexion
+    </a>
+  </div>
+</nav>
+
+<script>
+  const nbcToggle = document.getElementById('nbcToggle');
+  const nbcMobile = document.getElementById('nbcMobile');
+  const nbcHamburger = document.getElementById('nbcHamburger');
+
+  if (nbcToggle && nbcMobile && nbcHamburger) {
+    nbcToggle.addEventListener('click', () => {
+      nbcMobile.classList.toggle('open');
+      const open = nbcMobile.classList.contains('open');
+
+      nbcHamburger.innerHTML = open
+        ? '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>'
+        : '<line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>';
+    });
+  }
+
+  const currentPath = window.location.pathname;
+
+  document.querySelectorAll('.nb-c-link').forEach(link => {
+    const href = link.getAttribute('href');
+
+    if (
+      href &&
+      href !== '#' &&
+      href !== '/' &&
+      currentPath.startsWith(href)
+    ) {
+      link.classList.add('active');
+    }
+
+    if (href === '/' && currentPath === '/') {
+      link.classList.add('active');
+    }
+  });
+</script>

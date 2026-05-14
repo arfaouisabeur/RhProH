@@ -1,0 +1,651 @@
+{% extends 'base.html.twig' %}
+{% block title %}Gestion des Participations — RHPro{% endblock %}
+
+{% block styles %}
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+:root { --green:#7c3aed; --green-dark:#6d28d9; --green-light:#ede9fe; --amber:#f59e0b; --amber-light:#fef3c7; --red:#ef4444; --red-light:#fee2e2; --surface:#f5f0ff; --border:#e5e7eb; --text-dark:#111827; --text-muted:#6b7280; }
+body { background: #f5f0ff !important; }
+.part-page { min-height:100vh; font-family:'Inter',sans-serif; padding-bottom:60px; background:#f5f0ff; }
+.part-hdr { padding:36px 0 0; }
+.part-hdr-inner { max-width:1100px; margin:0 auto; padding:0 32px; display:flex; justify-content:space-between; align-items:flex-start; gap:20px; flex-wrap:wrap; }
+.part-title { font-size:28px; font-weight:700; color:var(--green-dark); margin:0 0 6px; }
+.part-sub { font-size:14px; color:var(--text-muted); margin:0; }
+.btn-back { display:inline-flex; align-items:center; gap:7px; padding:10px 18px; border-radius:10px; font-size:13px; font-weight:600; text-decoration:none; background:#fff; color:var(--text-muted); border:1px solid var(--border); transition:background .2s; }
+.btn-back:hover { background:#ede9fe; color:var(--green-dark); text-decoration:none; }
+.part-stats { max-width:1100px; margin:28px auto 0; padding:0 32px; display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+@media(max-width:768px){ .part-stats{grid-template-columns:repeat(2,1fr);} }
+.st-card { background:#fff; border-radius:14px; border:1px solid var(--border); padding:18px 20px; box-shadow:0 2px 6px rgba(0,0,0,.04); display:flex; align-items:center; gap:14px; transition:transform .15s,box-shadow .15s; }
+.st-card:hover { transform:translateY(-2px); box-shadow:0 4px 12px rgba(0,0,0,.08); }
+.st-ico { width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+.st-ico.blue{background:#dbeafe;} .st-ico.orange{background:#fff7ed;} .st-ico.green{background:#ede9fe;} .st-ico.red{background:#fee2e2;}
+.st-num { font-size:28px; font-weight:700; color:var(--text-dark); line-height:1; }
+.st-lbl { font-size:11px; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:.06em; margin-top:3px; }
+.part-tb-section { max-width:1100px; margin:20px auto 0; padding:0 32px; }
+.part-tb { background:#fff; border:1.5px solid var(--border); border-radius:14px; padding:16px 20px; box-shadow:0 2px 8px rgba(0,0,0,.04); animation:fadeIn .25s ease; }
+.tb-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+.tb-row+.tb-row { margin-top:12px; padding-top:12px; border-top:1px solid #f3f4f6; }
+.s-combo { display:flex; align-items:stretch; flex:1; min-width:220px; max-width:480px; }
+.s-field { appearance:none; -webkit-appearance:none; background:linear-gradient(135deg,#f9fafb,#f3f4f6); border:1.5px solid var(--border); border-right:none; border-radius:10px 0 0 10px; padding:9px 28px 9px 12px; font-size:11px; font-weight:700; font-family:'Inter',sans-serif; color:var(--green-dark); cursor:pointer; outline:none; min-width:140px; text-transform:uppercase; letter-spacing:.04em; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236d28d9'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 10px center; }
+.s-field:focus { border-color:var(--green); }
+.s-box { display:flex; align-items:center; gap:8px; border:1.5px solid var(--border); border-left:none; border-radius:0 10px 10px 0; padding:9px 14px; flex:1; background:#fff; transition:border-color .2s; }
+.s-box:focus-within { border-color:var(--green); box-shadow:0 0 0 3px rgba(124,58,237,.08); }
+.s-box svg { flex-shrink:0; color:var(--text-muted); }
+.s-box input { border:none; background:transparent; font-size:13px; font-family:'Inter',sans-serif; color:var(--text-dark); outline:none; width:100%; }
+.s-box input::placeholder { color:#b0b7c3; }
+.sort-grp { display:flex; align-items:center; gap:8px; margin-left:auto; }
+.sort-lbl { font-size:11px; font-weight:700; color:var(--text-muted); white-space:nowrap; text-transform:uppercase; letter-spacing:.04em; }
+.sort-wrap { position:relative; }
+.sort-dd { appearance:none; -webkit-appearance:none; background:#fff; border:1.5px solid var(--border); border-radius:10px; padding:9px 36px 9px 14px; font-size:12px; font-weight:600; font-family:'Inter',sans-serif; color:var(--text-dark); cursor:pointer; outline:none; min-width:210px; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236b7280'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 12px center; transition:border-color .2s; }
+.sort-dd:focus { border-color:var(--green); box-shadow:0 0 0 3px rgba(124,58,237,.1); }
+.sort-dd optgroup { font-weight:700; color:var(--green-dark); font-size:11px; }
+.f-bar { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.f-chip { display:inline-flex; align-items:center; gap:5px; padding:5px 14px; border-radius:100px; font-size:11px; font-weight:600; cursor:pointer; border:1.5px solid var(--border); background:#fff; color:var(--text-muted); transition:all .2s; user-select:none; }
+.f-chip.active { background:var(--green); color:#fff; border-color:var(--green); box-shadow:0 2px 8px rgba(124,58,237,.25); }
+.f-chip:hover:not(.active) { border-color:var(--green); color:var(--green-dark); background:#f5f3ff; }
+.f-cnt { background:rgba(255,255,255,.3); padding:1px 7px; border-radius:100px; font-size:10px; font-weight:700; }
+.f-cnt-m { background:rgba(0,0,0,.06); padding:1px 7px; border-radius:100px; font-size:10px; font-weight:700; }
+.sort-tag { display:none; align-items:center; gap:5px; background:var(--green-light); color:var(--green-dark); padding:4px 12px; border-radius:100px; font-size:11px; font-weight:700; white-space:nowrap; }
+.sort-tag.show { display:inline-flex; }
+.sort-tag button { background:none; border:none; color:var(--green-dark); cursor:pointer; padding:0; margin-left:2px; font-size:14px; line-height:1; opacity:.6; }
+.sort-tag button:hover { opacity:1; }
+.btn-rst { display:inline-flex; align-items:center; gap:5px; background:transparent; border:1.5px solid var(--border); border-radius:10px; padding:8px 14px; font-size:11px; font-weight:600; font-family:'Inter',sans-serif; color:var(--text-muted); cursor:pointer; transition:all .2s; opacity:0; pointer-events:none; white-space:nowrap; }
+.btn-rst.show { opacity:1; pointer-events:auto; }
+.btn-rst:hover { border-color:var(--red); color:var(--red); background:#fff5f5; }
+.part-content { max-width:1100px; margin:18px auto 0; padding:0 32px; }
+.part-card { background:#fff; border-radius:16px; border:1px solid var(--border); box-shadow:0 2px 8px rgba(0,0,0,.05); overflow:hidden; animation:fadeIn .3s ease; }
+.part-card-hdr { display:flex; align-items:center; justify-content:space-between; padding:14px 24px; border-bottom:1px solid var(--border); background:#f9fafb; }
+.part-card-hdr h3 { font-size:15px; font-weight:600; color:var(--text-dark); margin:0; display:flex; align-items:center; gap:8px; }
+.part-res { font-size:12px; color:var(--text-muted); }
+.part-res b { color:var(--text-dark); }
+table.pt-tbl { width:100%; border-collapse:collapse; }
+.pt-tbl th { font-size:11px; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:.05em; padding:12px 20px; text-align:left; background:#f9fafb; border-bottom:1px solid var(--border); }
+.pt-tbl td { padding:14px 20px; font-size:13px; color:var(--text-dark); border-bottom:1px solid #f3f4f6; vertical-align:middle; }
+.pt-tbl tr:last-child td { border-bottom:none; }
+.pt-tbl tbody tr:hover td { background:#f0fdf9; }
+.emp-info { display:flex; align-items:center; gap:10px; }
+.emp-avatar { width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg,#7c3aed,#6d28d9); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; color:#fff; flex-shrink:0; }
+.emp-name { font-weight:600; color:var(--text-dark); font-size:13px; margin:0; }
+.emp-email { font-size:11px; color:var(--text-muted); margin:0; }
+.status-badge { display:inline-flex; align-items:center; gap:5px; padding:4px 12px; border-radius:100px; font-size:12px; font-weight:600; }
+.status-pending  { background:#fef3c7; color:#92400e; }
+.status-accepted { background:#ede9fe; color:#5b21b6; }
+.status-refused  { background:#fee2e2; color:#991b1b; }
+.ev-link { font-size: 12px; color: var(--green-dark); text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; border-radius: 8px; background: #fff; border: 1px solid var(--border); transition: all 0.2s; }
+.ev-link:hover { background: #f5f3ff; border-color: var(--green); text-decoration: none; transform: translateY(-1px); }
+.row-actions { display: flex; gap: 8px; align-items: center; }
+.act-btn { display: inline-flex; align-items: center; justify-content: center; gap: 5px; padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 700; border: none; cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.2s; height: 32px; box-sizing: border-box; }
+.act-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+.btn-accept  { background: #ede9fe; color: #5b21b6; } .btn-accept:hover  { background: #c4b5fd; }
+.btn-refuse  { background: #fee2e2; color: #991b1b; } .btn-refuse:hover  { background: #fecaca; }
+.btn-del-sm  { background: #fff; color: #ef4444; border: 1px solid #fecaca; } .btn-del-sm:hover  { background: #fee2e2; }
+.part-empty { text-align:center; padding:60px 32px; color:var(--text-muted); }
+
+/* ═══ SECTION UTILISATEURS BLOQUÉS ═══ */
+.blocked-section { max-width:1100px; margin:28px auto 0; padding:0 32px 0; }
+.blocked-header {
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:14px;
+}
+.blocked-title {
+    display:flex; align-items:center; gap:10px;
+    font-size:18px; font-weight:700; color:#991b1b;
+}
+.blocked-badge {
+    display:inline-flex; align-items:center;
+    background:#fee2e2; color:#991b1b;
+    border-radius:100px; padding:3px 12px;
+    font-size:12px; font-weight:700;
+}
+.blocked-card {
+    background:#fff; border:1.5px solid #fecaca;
+    border-radius:16px; overflow:hidden;
+    box-shadow:0 2px 8px rgba(239,68,68,.07);
+    animation:fadeIn .3s ease;
+}
+.blocked-card-hdr {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 24px; border-bottom:1px solid #fee2e2;
+    background:#fff5f5;
+}
+.blocked-card-hdr h3 {
+    font-size:14px; font-weight:600; color:#991b1b;
+    margin:0; display:flex; align-items:center; gap:8px;
+}
+table.bl-tbl { width:100%; border-collapse:collapse; }
+.bl-tbl th { font-size:11px; font-weight:600; color:#b91c1c; text-transform:uppercase; letter-spacing:.05em; padding:12px 20px; text-align:left; background:#fff5f5; border-bottom:1px solid #fee2e2; }
+.bl-tbl td { padding:14px 20px; font-size:13px; color:var(--text-dark); border-bottom:1px solid #fff1f1; vertical-align:middle; }
+.bl-tbl tr:last-child td { border-bottom:none; }
+.bl-tbl tbody tr:hover td { background:#fff8f8; }
+.avatar-red { width:34px; height:34px; border-radius:50%; background:#fee2e2; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; color:#991b1b; flex-shrink:0; }
+.badge-bloque { display:inline-flex; align-items:center; gap:5px; background:#fee2e2; color:#991b1b; border-radius:100px; padding:4px 12px; font-size:12px; font-weight:600; }
+.badge-role { display:inline-block; background:#ede9fe; color:#5b21b6; border-radius:100px; padding:3px 10px; font-size:11px; font-weight:600; }
+.btn-debloquer {
+    display:inline-flex; align-items:center; gap:6px;
+    background:#dcfce7; color:#16a34a;
+    border:1px solid #bbf7d0; border-radius:8px;
+    padding:7px 14px; font-size:11px; font-weight:600;
+    cursor:pointer; font-family:'Inter',sans-serif;
+    transition:background .15s, transform .1s;
+}
+.btn-debloquer:hover { background:#bbf7d0; transform:translateY(-1px); }
+.blocked-empty { text-align:center; padding:36px; color:#b91c1c; font-size:13px; opacity:.7; }
+
+.alert { padding:12px 16px; border-radius:10px; font-size:13px; margin:0 32px 16px; display:flex; align-items:center; gap:10px; max-width:1100px; margin-left:auto; margin-right:auto; }
+.alert-success { background:#dcfce7; color:#16a34a; border:1px solid #bbf7d0; }
+.alert-danger   { background:#fee2e2; color:#991b1b; border:1px solid #fecaca; }
+
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+@media(max-width:768px){.part-stats,.part-content,.part-tb-section,.part-hdr-inner,.blocked-section{padding:0 16px;}}
+@media(max-width:700px){.s-combo{max-width:100%;min-width:100%;}.sort-grp{margin-left:0;width:100%;}.sort-dd{width:100%;}}
+.ev-mgmt-section { max-width:1100px; margin:28px auto 0; padding:0 32px; }
+.ev-mgmt-card { background:#fff; border-radius:16px; border:1px solid var(--border); box-shadow:0 2px 8px rgba(0,0,0,0.05); overflow:hidden; }
+.ev-mgmt-hdr { padding:14px 24px; border-bottom:1px solid var(--border); background:#f9fafb; display:flex; justify-content:space-between; align-items:center; }
+.ev-mgmt-hdr h2 { font-size:15px; font-weight:700; color:var(--text-dark); margin:0; display:flex; align-items:center; gap:8px; }
+.ev-mgmt-tbl { width:100%; border-collapse:collapse; }
+.ev-mgmt-tbl th { font-size:11px; font-weight:600; color:var(--text-muted); text-transform:uppercase; padding:10px 20px; text-align:left; background:#f9fafb; border-bottom:1px solid var(--border); }
+.ev-mgmt-tbl td { padding:12px 20px; font-size:13px; color:var(--text-dark); border-bottom:1px solid #f3f4f6; }
+.btn-annuler-ev { background: #fff7ed; color: #9a3412; border: 1px solid #ffedd5; }
+.btn-annuler-ev:hover { background: #ffedd5; border-color: #fed7aa; }
+.ev-status-cancelled { background: #fee2e2; color: #991b1b; }
+.btn-ai-analyze { background: linear-gradient(135deg, #7c3aed, #a78bfa); color: white; border: none; padding: 0 14px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s; box-shadow: 0 2px 8px rgba(124, 58, 237, 0.2); height: 32px; }
+.btn-ai-analyze:hover { transform: translateY(-1.5px); box-shadow: 0 5px 15px rgba(124, 58, 237, 0.4); }
+
+/* Modal Analysis Styles */
+.ai-modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(17, 24, 39, 0.6); backdrop-filter: blur(4px); align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s; }
+.ai-modal.show { display: flex; opacity: 1; }
+.ai-modal-content { background: white; border-radius: 20px; width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; position: relative; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); animation: zoomIn 0.3s ease; }
+@keyframes zoomIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.ai-modal-hdr { padding: 24px; background: linear-gradient(135deg, #7c3aed, #6d28d9); color: white; border-radius: 20px 20px 0 0; display: flex; justify-content: space-between; align-items: center; }
+.ai-modal-body { padding: 32px; }
+.ai-summary-box { background: #f5f3ff; border-left: 4px solid #7c3aed; padding: 16px; border-radius: 8px; margin-bottom: 24px; font-style: italic; color: #4b5563; }
+.ai-stat-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+.ai-stat-card { background: #f9fafb; padding: 16px; border-radius: 12px; text-align: center; }
+.sentiment-val { font-size: 24px; font-weight: 800; margin-bottom: 4px; }
+.theme-tag { display: inline-block; background: #ede9fe; color: #5b21b6; padding: 4px 12px; border-radius: 100px; font-size: 11px; font-weight: 700; margin: 4px; border: 1px solid #c4b5fd; }
+.ai-rec-box { background: #fffbeb; border: 1px solid #fde68a; padding: 16px; border-radius: 12px; display: flex; gap: 12px; }
+.ai-rec-box svg { color: #f59e0b; flex-shrink: 0; }
+
+{% endblock %}
+
+{% block body %}
+{{ include('partials/_confirm_modal.html.twig') }}
+
+{% set total    = event_participations|length %}
+{% set pending  = event_participations|filter(p => p.statut == 'en_attente')|length %}
+{% set accepted = event_participations|filter(p => p.statut == 'accepte')|length %}
+{% set refused  = event_participations|filter(p => p.statut == 'refuse')|length %}
+
+<div class="part-page">
+
+  {# ── Alertes flash ──────────────────────────────────────────────────────── #}
+  {% for msg in app.flashes('success') %}
+    <div class="alert alert-success" style="margin-top:16px;">✓ {{ msg }}</div>
+  {% endfor %}
+  {% for msg in app.flashes('danger') %}
+    <div class="alert alert-danger" style="margin-top:16px;">✗ {{ msg }}</div>
+  {% endfor %}
+
+  {# ── En-tête ────────────────────────────────────────────────────────────── #}
+  <div class="part-hdr">
+    <div class="part-hdr-inner">
+      <div>
+        <h1 class="part-title">👥 Gestion des Participations</h1>
+        <p class="part-sub">
+          {% if evenement is defined %}Participations pour : <strong>{{ evenement.titre }}</strong>
+          {% else %}Acceptez ou refusez les demandes des employés{% endif %}
+        </p>
+      </div>
+      <a href="{{ path('app_evenement_index') }}" class="btn-back">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        Retour aux événements
+      </a>
+    </div>
+  </div>
+
+  {# ── Stats participations ───────────────────────────────────────────────── #}
+  <div class="part-stats">
+    <div class="st-card"><div class="st-ico blue">📋</div><div><div class="st-num">{{ total }}</div><div class="st-lbl">Total</div></div></div>
+    <div class="st-card"><div class="st-ico orange">⏳</div><div><div class="st-num">{{ pending }}</div><div class="st-lbl">En attente</div></div></div>
+    <div class="st-card"><div class="st-ico green">✅</div><div><div class="st-num">{{ accepted }}</div><div class="st-lbl">Acceptées</div></div></div>
+    <div class="st-card"><div class="st-ico red">❌</div><div><div class="st-num">{{ refused }}</div><div class="st-lbl">Refusées</div></div></div>
+  </div>
+
+  {# ── SECTION GESTION GLOBALE DES ÉVÉNEMENTS ────────────────────────────── #}
+  <div class="ev-mgmt-section">
+    <div class="ev-mgmt-card">
+      <div class="ev-mgmt-hdr">
+        <h2>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Gestion Globale des Événements
+        </h2>
+        <a href="{{ path('app_evenement_new') }}" class="btn-sm-green" style="text-decoration:none;">+ Nouvel Événement</a>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="ev-mgmt-tbl">
+          <thead>
+            <tr>
+              <th>Événement</th>
+              <th>Date</th>
+              <th>Lieu</th>
+              <th>Statut</th>
+              <th style="text-align:right;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for ev in evenements %}
+            {% set isCancelled = ev.titre starts with '[ANNULÉ]' %}
+            <tr>
+              <td>
+                <div style="font-weight:600; color:{{ isCancelled ? '#991b1b' : 'inherit' }}; {{ isCancelled ? 'text-decoration:line-through;' : '' }}">
+                  {{ ev.titre }}
+                </div>
+              </td>
+              <td style="font-size:12px; color:var(--text-muted);">{{ ev.dateDebut }}</td>
+              <td style="font-size:12px; color:var(--text-muted);">{{ ev.lieu }}</td>
+              <td>
+                {% if isCancelled %}
+                  <span class="ev-status-tag ev-status-cancelled">Annulé</span>
+                {% else %}
+                  <span class="ev-status-tag ev-status-active">Actif</span>
+                {% endif %}
+              </td>
+              <td style="text-align:right;">
+                <div class="row-actions" style="justify-content:flex-end;">
+                  <a href="{{ path('app_evenement_show', {'id': ev.id}) }}" class="ev-link" title="Voir les détails">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    Voir
+                  </a>
+                  <a href="{{ path('app_evenement_edit', {'id': ev.id}) }}" class="ev-link" style="color: #7c3aed; border-color: #ddd6fe;" title="Modifier l'événement">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    Modifier
+                  </a>
+                  
+                  <button type="button" class="btn-ai-analyze" onclick="ptAnalyzeReviews('{{ path('app_evenement_analyze_reviews', {id: ev.id}) }}', '{{ ev.titre|e('js') }}')">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                    Analyse IA
+                  </button>
+
+                  {% if not isCancelled %}
+                  <form method="post" action="{{ path('app_evenement_annuler', {'id': ev.id}) }}" style="display:inline;">
+                    <button type="submit" class="act-btn btn-annuler-ev" onclick="return confirm('Annuler cet événement et notifier les employés ?');">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                      Annuler
+                    </button>
+                  </form>
+                  {% endif %}
+                  
+                  <form id="del-ev-main-{{ ev.id }}" method="post" action="{{ path('app_evenement_delete', {'id': ev.id}) }}" style="display:inline;">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ ev.id) }}">
+                    <button type="button" class="act-btn btn-del-sm" title="Supprimer définitivement"
+                      onclick="rhConfirmDelete(document.getElementById('del-ev-main-{{ ev.id }}'), 'Supprimer définitivement cet événement ?');">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                    </button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" style="text-align:center; padding:30px; color:var(--text-muted);">Aucun événement à gérer.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  {# ── Toolbar ────────────────────────────────────────────────────────────── #}
+  <div class="part-tb-section">
+    <div class="part-tb">
+      <div class="tb-row">
+        <div class="s-combo">
+          <select id="ptSearchField" class="s-field">
+            <option value="all">🔍 Tous les champs</option>
+            <option value="employe">👤 Employé</option>
+            <option value="evenement">📅 Événement</option>
+            <option value="statut">✅ Statut</option>
+            <option value="email">📧 Email</option>
+            <option value="date">📆 Date inscription</option>
+          </select>
+          <div class="s-box">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="ptSearchInput" placeholder="Rechercher une participation…" autocomplete="off">
+          </div>
+        </div>
+        <div class="sort-grp">
+          <span class="sort-lbl">Trier :</span>
+          <div class="sort-wrap">
+            <select id="ptSortSelect" class="sort-dd">
+              <option value="">— Critère de tri —</option>
+              <optgroup label="👤 Employé">
+                <option value="employe-asc">Nom employé (A → Z)</option>
+                <option value="employe-desc">Nom employé (Z → A)</option>
+              </optgroup>
+              <optgroup label="📅 Événement">
+                <option value="evenement-asc">Événement (A → Z)</option>
+                <option value="evenement-desc">Événement (Z → A)</option>
+              </optgroup>
+              <optgroup label="📆 Date">
+                <option value="date-asc">Date inscription (ancien → récent)</option>
+                <option value="date-desc">Date inscription (récent → ancien)</option>
+              </optgroup>
+              <optgroup label="✅ Statut">
+                <option value="statut-pending-first">En attente d'abord</option>
+                <option value="statut-accepted-first">Acceptées d'abord</option>
+                <option value="statut-refused-first">Refusées d'abord</option>
+              </optgroup>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="tb-row">
+        <div class="f-bar">
+          <button class="f-chip active" data-f="all" onclick="ptSetFilter('all',this)">Toutes <span class="f-cnt">{{ total }}</span></button>
+          <button class="f-chip" data-f="en_attente" onclick="ptSetFilter('en_attente',this)">⏳ En attente <span class="f-cnt-m">{{ pending }}</span></button>
+          <button class="f-chip" data-f="accepte" onclick="ptSetFilter('accepte',this)">✅ Acceptées <span class="f-cnt-m">{{ accepted }}</span></button>
+          <button class="f-chip" data-f="refuse" onclick="ptSetFilter('refuse',this)">❌ Refusées <span class="f-cnt-m">{{ refused }}</span></button>
+        </div>
+        <span class="sort-tag" id="ptSortTag"><span id="ptSortTagTxt"></span><button onclick="ptClearSort()">×</button></span>
+        <button class="btn-rst" id="ptBtnReset" onclick="ptResetAll()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+          Réinitialiser
+        </button>
+      </div>
+    </div>
+  </div>
+
+  {# ── Tableau des participations ─────────────────────────────────────────── #}
+  <div class="part-content">
+    <div class="part-card">
+      <div class="part-card-hdr">
+        <h3>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          {% if evenement is defined %}Participations — {{ evenement.titre }}{% else %}Toutes les participations{% endif %}
+        </h3>
+        <span class="part-res">Résultats : <b id="ptResultCount">{{ total }}</b></span>
+      </div>
+
+      {% if event_participations|length > 0 %}
+      <table class="pt-tbl">
+        <thead><tr><th>Employé</th><th>Événement</th><th>Date inscription</th><th>Statut</th><th>Actions</th></tr></thead>
+        <tbody id="ptTbody">
+          {% for p in event_participations %}
+          <tr data-statut="{{ p.statut }}"
+              data-employe="{{ p.employe and p.employe.user ? (p.employe.user.prenom ~ ' ' ~ p.employe.user.nom)|lower : '' }}"
+              data-email="{{ p.employe and p.employe.user ? p.employe.user.email|lower : '' }}"
+              data-evenement="{{ p.evenement ? p.evenement.titre|lower : '' }}"
+              data-date="{{ p.dateInscription|default('') }}">
+            <td>
+              <div class="emp-info">
+                <div class="emp-avatar">{% if p.employe and p.employe.user %}{{ p.employe.user.prenom|first|upper }}{% else %}?{% endif %}</div>
+                <div>
+                  {% if p.employe and p.employe.user %}
+                    <p class="emp-name">{{ p.employe.user.prenom }} {{ p.employe.user.nom }}</p>
+                    <p class="emp-email">{{ p.employe.user.email }}</p>
+                  {% else %}<p class="emp-name">—</p>{% endif %}
+                </div>
+              </div>
+            </td>
+            <td>{% if p.evenement %}<a href="{{ path('app_evenement_show', {'id': p.evenement.id}) }}" class="ev-link">📅 {{ p.evenement.titre }}</a>{% else %}—{% endif %}</td>
+            <td>{{ p.dateInscription|default('—') }}</td>
+            <td>
+              {% if p.statut == 'en_attente' %}<span class="status-badge status-pending">● En attente</span>
+              {% elseif p.statut == 'accepte' %}<span class="status-badge status-accepted">● Acceptée</span>
+              {% else %}<span class="status-badge status-refused">● Refusée</span>{% endif %}
+            </td>
+            <td>
+              <div class="row-actions">
+                <a href="{{ path('app_evenement_show', {'id': p.evenement.id}) }}" class="ev-link">Voir</a>
+                {% if not p.evenement.titre starts with '[ANNULÉ]' %}
+                <form method="post" action="{{ path('app_evenement_annuler', {'id': p.evenement.id}) }}" style="display:inline;">
+                  <button type="submit" class="act-btn btn-refuse" onclick="return confirm('Annuler cet événement ?');">Annuler</button>
+                </form>
+                {% endif %}
+                <form id="del-part-{{ p.id }}" method="post" action="{{ path('app_event_participation_delete', {'id': p.id}) }}" style="display:inline;">
+                  <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ p.id) }}">
+                  <button type="button" class="act-btn btn-del-sm" title="Supprimer"
+                    onclick="rhConfirmDelete(document.getElementById('del-part-{{ p.id }}'), 'Supprimer la participation de {{ p.employe.user.prenom|default('') ~ ' ' ~ p.employe.user.nom|default('')|e('js') }} ?')">🗑️</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+          <tr id="ptNoResults" style="display:none;"><td colspan="5" style="text-align:center;padding:40px;color:var(--text-muted);font-size:13px;">🔍 Aucun résultat.</td></tr>
+        </tbody>
+      </table>
+      {% else %}
+      <div class="part-empty">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="1.5" style="margin-bottom:12px;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+        <p>Aucune participation enregistrée.</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  {# ══════════════════════════════════════════════════════════════════════════
+     🚫 SECTION UTILISATEURS BLOQUÉS (bad words)
+     ══════════════════════════════════════════════════════════════════════════ #}
+  <div class="blocked-section">
+
+    <div class="blocked-header">
+      <div class="blocked-title">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#991b1b" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+        </svg>
+        Utilisateurs bloqués — Bad Words
+        <span class="blocked-badge">{{ users_bloques|length }} bloqué{{ users_bloques|length > 1 ? 's' : '' }}</span>
+      </div>
+    </div>
+
+    <div class="blocked-card">
+      <div class="blocked-card-hdr">
+        <h3>
+          🔒 Comptes bloqués automatiquement après 3 infractions de langage inapproprié
+        </h3>
+      </div>
+
+      {% if users_bloques|length == 0 %}
+        <div class="blocked-empty">
+          ✅ Aucun compte bloqué pour le moment — tous les utilisateurs sont actifs.
+        </div>
+      {% else %}
+      <table class="bl-tbl">
+        <thead>
+          <tr>
+            <th>Utilisateur</th>
+            <th>Email</th>
+            <th>Rôle</th>
+            <th>Statut</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for user in users_bloques %}
+          <tr>
+            <td>
+              <div class="emp-info">
+                <div class="avatar-red">{{ user.prenom|first|upper }}{{ user.nom|first|upper }}</div>
+                <div>
+                  <p class="emp-name">{{ user.prenom }} {{ user.nom }}</p>
+                </div>
+              </div>
+            </td>
+            <td style="color:var(--text-muted);">{{ user.email }}</td>
+            <td><span class="badge-role">{{ user.role }}</span></td>
+            <td><span class="badge-bloque">🔒 Bloqué</span></td>
+            <td>
+              <form method="post"
+                    action="{{ path('app_participation_debloquer_user', {'id': user.id}) }}"
+                    onsubmit="return confirm('Débloquer {{ user.prenom }} {{ user.nom }} ?');">
+                <input type="hidden" name="_token" value="{{ csrf_token('debloquer' ~ user.id) }}">
+                <button type="submit" class="btn-debloquer">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <rect x="3" y="11" width="18" height="11" rx="2"/>
+                    <path d="M7 11V7a5 5 0 0 1 9.9-1"/>
+                  </svg>
+                  Débloquer
+                </button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% endif %}
+    </div>
+
+  </div>
+  {# ══ FIN SECTION BLOQUÉS ══ #}
+
+</div>{# end .part-page #}
+
+<script>
+(function(){
+  var filter='all', sort='', search='', field='all';
+  var tbody=document.getElementById('ptTbody');
+  if(!tbody) return;
+  var searchInput=document.getElementById('ptSearchInput');
+  var searchField=document.getElementById('ptSearchField');
+  var sortSelect=document.getElementById('ptSortSelect');
+  var sortTag=document.getElementById('ptSortTag');
+  var sortTagTxt=document.getElementById('ptSortTagTxt');
+  var btnReset=document.getElementById('ptBtnReset');
+  var PH={all:'Rechercher une participation…',employe:'Rechercher un employé…',evenement:'Rechercher un événement…',statut:'Rechercher un statut…',email:'Rechercher un email…',date:'Rechercher par date…'};
+  var SL={'employe-asc':'Employé A→Z','employe-desc':'Employé Z→A','evenement-asc':'Événement A→Z','evenement-desc':'Événement Z→A','date-asc':'Date ↑','date-desc':'Date ↓','statut-pending-first':'En attente ↑','statut-accepted-first':'Acceptées ↑','statut-refused-first':'Refusées ↑'};
+  function getRows(){ return Array.from(tbody.querySelectorAll('tr[data-statut]')); }
+  searchField.addEventListener('change',function(){ field=this.value; searchInput.placeholder=PH[field]||PH.all; searchInput.focus(); run(); });
+  searchInput.addEventListener('input',function(){ search=this.value.toLowerCase().trim(); run(); });
+  sortSelect.addEventListener('change',function(){ sort=this.value; updTag(); run(); });
+  window.ptSetFilter=function(v,btn){ filter=v; document.querySelectorAll('.f-chip').forEach(function(c){c.classList.remove('active');}); btn.classList.add('active'); run(); };
+  window.ptClearSort=function(){ sort=''; sortSelect.value=''; updTag(); run(); };
+  window.ptResetAll=function(){ search='';sort='';field='all';filter='all'; searchInput.value=''; searchField.value='all'; sortSelect.value=''; searchInput.placeholder=PH.all; document.querySelectorAll('.f-chip').forEach(function(c){c.classList.remove('active');}); document.querySelector('.f-chip[data-f="all"]').classList.add('active'); updTag(); run(); };
+  function updTag(){ if(sort){sortTag.classList.add('show');sortTagTxt.textContent=SL[sort]||sort;}else{sortTag.classList.remove('show');} btnReset.classList.toggle('show',!!(search||sort||filter!=='all'||field!=='all')); }
+  function run(){
+    var rows=getRows();
+    rows.forEach(function(r){ var st=r.getAttribute('data-statut')||''; r._vis=(filter==='all')||(st===filter); });
+    if(search){ rows.forEach(function(r){ if(!r._vis) return; var hay=''; if(field==='all') hay=(r.getAttribute('data-employe')||'')+' '+(r.getAttribute('data-evenement')||'')+' '+(r.getAttribute('data-statut')||'')+' '+(r.getAttribute('data-email')||'')+' '+(r.getAttribute('data-date')||''); else if(field==='employe') hay=r.getAttribute('data-employe')||''; else if(field==='evenement') hay=r.getAttribute('data-evenement')||''; else if(field==='statut') hay=r.getAttribute('data-statut')||''; else if(field==='email') hay=r.getAttribute('data-email')||''; else if(field==='date') hay=r.getAttribute('data-date')||''; r._vis=hay.indexOf(search)!==-1; }); }
+    if(sort){ var vis=rows.filter(function(r){return r._vis;}); var dir,col; if(sort.indexOf('-first')!==-1){col=sort.replace('-first','');dir='asc';}else{var parts=sort.split('-');dir=parts.pop();col=parts.join('-');} vis.sort(function(a,b){ var va='',vb=''; if(col==='employe'){va=a.getAttribute('data-employe')||'';vb=b.getAttribute('data-employe')||'';}else if(col==='evenement'){va=a.getAttribute('data-evenement')||'';vb=b.getAttribute('data-evenement')||'';}else if(col==='date'){va=a.getAttribute('data-date')||'';vb=b.getAttribute('data-date')||'';}else if(col==='statut-pending'){va=a.getAttribute('data-statut')==='en_attente'?'0':'1';vb=b.getAttribute('data-statut')==='en_attente'?'0':'1';}else if(col==='statut-accepted'){va=a.getAttribute('data-statut')==='accepte'?'0':'1';vb=b.getAttribute('data-statut')==='accepte'?'0':'1';}else if(col==='statut-refused'){va=a.getAttribute('data-statut')==='refuse'?'0':'1';vb=b.getAttribute('data-statut')==='refuse'?'0':'1';} var c=va.localeCompare(vb,'fr',{numeric:true}); return dir==='desc'?-c:c; }); vis.forEach(function(r){tbody.appendChild(r);}); }
+  }
+})();
+
+function ptAnalyzeReviews(url, title) {
+    const modal = document.getElementById('aiAnalysisModal');
+    const content = document.getElementById('aiAnalysisContent');
+    const spinner = document.getElementById('aiAnalysisLoading');
+    
+    document.getElementById('aiEventTitle').textContent = title;
+    modal.classList.add('show');
+    content.style.display = 'none';
+    spinner.style.display = 'block';
+
+    fetch(url + '?t=' + new Date().getTime())
+        .then(response => response.json())
+        .then(data => {
+            spinner.style.display = 'none';
+            content.style.display = 'block';
+
+            document.getElementById('aiSummaryText').textContent = data.summary;
+            document.getElementById('aiSentimentVal').textContent = data.sentiment.score + '%';
+            document.getElementById('aiSentimentLabel').textContent = data.sentiment.label.toUpperCase();
+            document.getElementById('aiSentimentVal').style.color = data.sentiment.label === 'positif' ? '#16a34a' : (data.sentiment.label === 'negatif' ? '#dc2626' : '#d97706');
+            
+            // Themes globaux
+            const themesContainer = document.getElementById('aiThemes');
+            themesContainer.innerHTML = '';
+            data.themes.forEach(t => {
+                const span = document.createElement('span');
+                span.className = 'theme-tag';
+                span.textContent = t;
+                themesContainer.appendChild(span);
+            });
+
+            // Points Forts (Pros)
+            const prosContainer = document.getElementById('aiPros');
+            prosContainer.innerHTML = '';
+            if (data.pros.length > 0) {
+                data.pros.forEach(p => {
+                    const span = document.createElement('span');
+                    span.className = 'theme-tag';
+                    span.style.background = '#dcfce7'; span.style.color = '#166534'; span.style.borderColor = '#bbf7d0';
+                    span.textContent = '✓ ' + p;
+                    prosContainer.appendChild(span);
+                });
+            } else { prosContainer.innerHTML = '<span style="font-size:11px; color:var(--text-muted);">Aucun point fort spécifique détecté.</span>'; }
+
+            // Points à Améliorer (Cons)
+            const consContainer = document.getElementById('aiCons');
+            consContainer.innerHTML = '';
+            if (data.cons.length > 0) {
+                data.cons.forEach(c => {
+                    const span = document.createElement('span');
+                    span.className = 'theme-tag';
+                    span.style.background = '#fee2e2'; span.style.color = '#991b1b'; span.style.borderColor = '#fecaca';
+                    span.textContent = '⚠ ' + c;
+                    consContainer.appendChild(span);
+                });
+            } else { consContainer.innerHTML = '<span style="font-size:11px; color:var(--text-muted);">Aucun point critique majeur détecté.</span>'; }
+
+            document.getElementById('aiRecommendationText').textContent = data.recommendation;
+        })
+        .catch(err => {
+            alert('Erreur lors de l\'analyse IA. Vérifiez que HuggingFace est disponible.');
+            modal.classList.remove('show');
+        });
+}
+
+function ptCloseAiModal() {
+    document.getElementById('aiAnalysisModal').classList.remove('show');
+}
+</script>
+
+<div id="aiAnalysisModal" class="ai-modal">
+    <div class="ai-modal-content">
+        <div class="ai-modal-hdr">
+            <h2 style="margin:0; font-size:18px;">💡 Analyse IA : <span id="aiEventTitle"></span></h2>
+            <button onclick="ptCloseAiModal()" style="background:none; border:none; color:white; font-size:24px; cursor:pointer;">&times;</button>
+        </div>
+        <div class="ai-modal-body">
+            <div id="aiAnalysisLoading" style="text-align:center; padding:40px;">
+                <div class="pred-spinner" style="margin: 0 auto 15px;"></div>
+                <p style="color:var(--text-muted); font-weight:600;">L'intelligence artificielle analyse tous les commentaires...</p>
+            </div>
+            
+            <div id="aiAnalysisContent" style="display:none;">
+                <h4 style="margin-top:0; display:flex; align-items:center; gap:8px;">📝 Résumé Global</h4>
+                <div class="ai-summary-box" id="aiSummaryText"></div>
+
+                <div class="ai-stat-row">
+                    <div class="ai-stat-card">
+                        <div class="st-lbl">Sentiment Dominant</div>
+                        <div class="sentiment-val" id="aiSentimentVal">--%</div>
+                        <div style="font-size:10px; font-weight:800; letter-spacing:1px;" id="aiSentimentLabel">NEUTRE</div>
+                    </div>
+                    <div class="ai-stat-card">
+                        <div class="st-lbl">Sujets de discussion</div>
+                        <div id="aiThemes" style="margin-top:8px;"></div>
+                    </div>
+                </div>
+
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:24px;">
+                    <div>
+                        <h5 style="margin:0 0 10px; font-size:12px; color:#166534;">✅ Points Forts</h5>
+                        <div id="aiPros"></div>
+                    </div>
+                    <div>
+                        <h5 style="margin:0 0 10px; font-size:12px; color:#991b1b;">⚠️ À Améliorer</h5>
+                        <div id="aiCons"></div>
+                    </div>
+                </div>
+
+                <h4 style="display:flex; align-items:center; gap:8px;">🎯 Recommandation IA</h4>
+                <div class="ai-rec-box">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    <div id="aiRecommendationText" style="font-size:13px; line-height:1.5;"></div>
+                </div>
+            </div>
+        </div>
+        <div style="padding: 16px 24px; border-top: 1px solid #f3f4f6; text-align: right;">
+            <button class="btn-back" onclick="ptCloseAiModal()">Fermer</button>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        @page { margin: 0cm; }
+        body { 
+            font-family: 'Helvetica', 'Arial', sans-serif; 
+            color: #1e293b; 
+            margin: 0; 
+            padding: 0;
+            background-color: #ffffff;
+            font-size: 14px;
+        }
+
+        .container { padding: 30px 50px; }
+
+        /* header */
+        .color-stripe { height: 6px; background: #662283; width: 100%; }
+        .header-top { border-bottom: 1px solid #e2e8f0; padding-bottom: 15px; margin-bottom: 25px; }
+        .company-name { color: #662283; font-size: 22px; font-weight: 800; float: left; }
+        .report-meta { float: right; text-align: right; color: #64748b; font-size: 10px; margin-top: 5px; }
+
+        .main-title { font-size: 28px; font-weight: 800; color: #1e293b; margin: 0; }
+        .sub-title { font-size: 13px; color: #64748b; margin-top: 4px; margin-bottom: 30px; }
+
+        /* Unified Stats Card */
+        .hero-section { 
+            background: #f8fafc; 
+            border-radius: 20px; 
+            padding: 25px; 
+            margin-bottom: 30px;
+            border: 1px solid #f1f5f9;
+            text-align: center;
+        }
+        
+        /* SVG Fix: Large scaling */
+        .svg-box { display: inline-block; width: 280px; height: 280px; }
+
+        .legend-box { margin-top: 20px; text-align: center; }
+        .legend-pill {
+            display: inline-flex;
+            align-items: center;
+            margin: 0 8px;
+            padding: 4px 12px;
+            border-radius: 50px;
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .legend-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+
+        /* Table Area */
+        .table-title { font-size: 16px; font-weight: 700; margin-bottom: 15px; margin-top: 10px; }
+        .stats-table { width: 100%; border-collapse: collapse; page-break-inside: avoid; }
+        .stats-table th { 
+            text-align: left; 
+            padding: 12px 15px; 
+            background: #f1f5f9; 
+            font-size: 11px; 
+            text-transform: uppercase; 
+            color: #64748b;
+        }
+        .stats-table td { 
+            padding: 15px; 
+            border-bottom: 1px solid #f1f5f9;
+        }
+        
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .note-section { 
+            margin-top: 30px; 
+            border-left: 4px solid #662283; 
+            padding: 15px; 
+            background: #fafafa;
+            page-break-inside: avoid;
+        }
+
+        .cf:after { content: ""; display: table; clear: both; }
+
+        .footer { 
+            position: fixed; 
+            bottom: 20px; 
+            left: 50px; 
+            right: 50px; 
+            border-top: 1px solid #e2e8f0; 
+            padding-top: 10px;
+            text-align: center;
+            font-size: 9px;
+            color: #94a3b8;
+        }
+    </style>
+</head>
+<body>
+    <div class="color-stripe"></div>
+    
+    <div class="container">
+        <div class="header-top cf">
+            <div class="company-name">RH PRO MANAGEMENT</div>
+            <div class="report-meta">
+                ID-REP-{{ date|date('Ymd-Hi') }}<br>
+                Généré le: {{ date|date('d/m/Y H:i') }}
+            </div>
+        </div>
+
+        <h1 class="main-title">Rapport Statistique</h1>
+        <div class="sub-title">Analyse consolidée de la distribution par statut de projet</div>
+
+        <div class="hero-section">
+            <div class="svg-box">
+                <svg width="100%" height="100%" viewBox="0 0 300 300" preserveAspectRatio="xMidYMid meet">
+                    <!-- Background Circle -->
+                    <circle cx="150" cy="150" r="120" fill="#ffffff" stroke="#f1f5f9" stroke-width="1"></circle>
+                    
+                    <!-- Progress Segments -->
+                    {% for slice in slices %}
+                        <circle cx="150" cy="150" r="120" fill="transparent" 
+                                stroke="{{ slice.color }}" 
+                                stroke-width="25" 
+                                stroke-dasharray="{{ slice.dash }} {{ slice.circumference - slice.dash }}" 
+                                stroke-dashoffset="{{ slice.offset }}"
+                                transform="rotate(-90 150 150)"></circle>
+                    {% endfor %}
+                    
+                    <!-- Center Hole -->
+                    <circle cx="150" cy="150" r="85" fill="#f8fafc"></circle>
+                    
+                    <!-- Text Info -->
+                    <text x="150" y="145" text-anchor="middle" style="font-size: 50px; font-weight: 900; fill: #1e293b; font-family: Arial;">{{ total }}</text>
+                    <text x="150" y="180" text-anchor="middle" style="font-size: 16px; fill: #64748b; font-weight: 700; font-family: Arial; letter-spacing: 2px;">PROJETS</text>
+                </svg>
+            </div>
+
+            <div class="legend-box">
+                {% for slice in slices %}
+                    <div class="legend-pill">
+                        <span class="legend-dot" style="background-color: {{ slice.color }};"></span>
+                        {{ slice.percentage }}% {% if slice.statut == 'termine' %}Terminé{% elseif slice.statut == 'en_cours' %}En cours{% elseif slice.statut == 'en_attente' %}À Faire{% else %}{{ slice.statut|capitalize }}{% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="table-title">Détails de Distribution</div>
+        <table class="stats-table">
+            <thead>
+                <tr>
+                    <th>Statut</th>
+                    <th style="text-align: center;">Nombre</th>
+                    <th style="text-align: right;">Part relative</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for slice in slices %}
+                <tr>
+                    <td>
+                        {% if slice.statut == 'termine' %}<span class="status-badge" style="background: #d1fae5; color: #065f46;">Terminé</span>
+                        {% elseif slice.statut == 'en_cours' %}<span class="status-badge" style="background: #fef3c7; color: #92400e;">En cours</span>
+                        {% elseif slice.statut == 'en_attente' %}<span class="status-badge" style="background: #ede9fe; color: #5b21b6;">À Faire</span>
+                        {% else %}<span class="status-badge" style="background: #f1f5f9; color: #475569;">{{ slice.statut|capitalize }}</span>{% endif %}
+                    </td>
+                    <td style="text-align: center; font-weight: 800; font-size: 18px;">{{ slice.count }}</td>
+                    <td style="text-align: right; color: #64748b;">{{ slice.percentage }}%</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="note-section">
+            <div style="font-weight: 700; color: #1e293b; margin-bottom: 5px;">Analyse Stratégique</div>
+            <p style="margin: 0; font-size: 12px; line-height: 1.6; color: #475569;">
+                Les indicateurs présentés sont basés sur les données d'activités réelles. Cette répartition permet d'ajuster dynamiquement les capacités opérationnelles en fonction de la charge de travail observée. Document certifié conforme au système RH Pro.
+            </p>
+        </div>
+    </div>
+
+    <div class="footer">
+        Confidentiel - Généré par RH Pro Suite - Page 1 / 1
+    </div>
+</body>
+</html>

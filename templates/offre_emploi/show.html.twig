@@ -1,0 +1,109 @@
+{% extends 'base.html.twig' %}
+{% block title %}{{ offre_emploi.titre }}{% endblock %}
+
+{% block styles %}
+<style>
+    body { background:#F7F4FB !important; }
+    .pg { max-width:1100px; margin:0 auto; padding:36px 24px 60px; }
+    .btn-p { display:inline-flex; align-items:center; gap:7px; padding:10px 20px; border-radius:99px; background:linear-gradient(135deg,#6D2269,#8B3A86); color:#fff; font-size:14px; font-weight:600; text-decoration:none; border:none; cursor:pointer; box-shadow:0 4px 14px rgba(109,34,105,0.3); transition:all .22s; }
+    .btn-p:hover { transform:translateY(-2px); box-shadow:0 8px 22px rgba(109,34,105,0.4); color:#fff; }
+    .btn-op { display:inline-flex; align-items:center; gap:7px; padding:9px 18px; border-radius:99px; background:transparent; color:#6D2269; border:1.5px solid #6D2269; font-size:13px; font-weight:600; text-decoration:none; cursor:pointer; transition:all .22s; }
+    .btn-op:hover { background:#6D2269; color:#fff; }
+    .btn-warn { display:inline-flex; align-items:center; gap:7px; padding:9px 18px; border-radius:99px; background:transparent; color:#f59e0b; border:1.5px solid #f59e0b; font-size:13px; font-weight:600; text-decoration:none; cursor:pointer; transition:all .22s; }
+    .btn-warn:hover { background:#f59e0b; color:#fff; }
+    .btn-dan { display:inline-flex; align-items:center; gap:7px; padding:9px 18px; border-radius:99px; background:transparent; color:#ef4444; border:1.5px solid #ef4444; font-size:13px; font-weight:600; border:none; cursor:pointer; transition:all .22s; }
+    .btn-dan:hover { background:#ef4444; color:#fff; }
+    .hero { background:linear-gradient(135deg,#4E1A4B,#6D2269,#8B3A86); border-radius:18px; padding:32px 36px; color:#fff; margin-bottom:22px; position:relative; overflow:hidden; }
+    .hero::after { content:''; position:absolute; top:-40px; right:-40px; width:160px; height:160px; background:rgba(255,255,255,0.05); border-radius:50%; }
+    .hero h1 { font-size:26px; font-weight:700; margin-bottom:8px; }
+    .hero-tags { display:flex; gap:8px; flex-wrap:wrap; margin-top:14px; }
+    .htag { background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.15); border-radius:99px; padding:5px 14px; font-size:13px; display:flex; align-items:center; gap:5px; }
+    .layout { display:grid; grid-template-columns:1fr 300px; gap:22px; align-items:start; }
+    .card-sec { background:#fff; border-radius:14px; box-shadow:0 2px 12px rgba(109,34,105,0.08); border:1px solid rgba(109,34,105,0.07); overflow:hidden; margin-bottom:18px; }
+    .csh { padding:16px 22px; border-bottom:1px solid rgba(109,34,105,0.07); font-size:14px; font-weight:700; color:#4E1A4B; display:flex; align-items:center; gap:8px; }
+    .csb { padding:20px 22px; font-size:15px; line-height:1.75; color:#333; }
+    .info-r { display:flex; align-items:center; gap:12px; padding:12px 20px; border-bottom:1px solid rgba(109,34,105,0.05); }
+    .info-r:last-child { border-bottom:none; }
+    .info-ico { width:34px; height:34px; background:#F7F4FB; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#6D2269; font-size:14px; flex-shrink:0; }
+    .info-lb  { font-size:10px; color:#6c757d; font-weight:700; text-transform:uppercase; letter-spacing:.5px; }
+    .info-v   { font-size:14px; font-weight:600; }
+    .bs-a { background:#e8f5e9; color:#22c55e; }
+    .bs-i { background:#f5f5f5; color:#888; }
+    .bs-p { background:#fff8e1; color:#f59e0b; }
+    .bs { display:inline-flex; align-items:center; gap:4px; padding:5px 12px; border-radius:99px; font-size:12px; font-weight:600; }
+    @media(max-width:800px){ .layout{grid-template-columns:1fr;} }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="pg">
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;">
+        <a href="{{ path('app_offre_emploi_index') }}" class="btn-op"><i class="bi bi-arrow-left"></i> Retour</a>
+        <a href="{{ path('app_offre_emploi_edit', {'id': offre_emploi.id}) }}" class="btn-warn"><i class="bi bi-pencil"></i> Modifier</a>
+        <form method="post" action="{{ path('app_offre_emploi_delete', {'id': offre_emploi.id}) }}"
+              onsubmit="return confirm('Supprimer cette offre ?')" style="display:inline;">
+            <input type="hidden" name="_token" value="{{ csrf_token('delete'~offre_emploi.id) }}">
+            <button type="submit" class="btn-dan"><i class="bi bi-trash"></i> Supprimer</button>
+        </form>
+    </div>
+
+    <div class="hero">
+        <div style="font-size:13px;opacity:.7;margin-bottom:10px;"><i class="bi bi-building" style="margin-right:5px;"></i>RH Pro</div>
+        <h1>{{ offre_emploi.titre }}</h1>
+        <div class="hero-tags">
+            <span class="htag"><i class="bi bi-geo-alt"></i>{{ offre_emploi.localisation }}</span>
+            <span class="htag"><i class="bi bi-file-text"></i>{{ offre_emploi.typeContrat }}</span>
+            <span class="htag"><i class="bi bi-calendar3"></i>Publié le {{ offre_emploi.datePublication|date('d/m/Y') }}</span>
+        </div>
+    </div>
+
+    <div class="layout">
+        <div>
+            <div class="card-sec">
+                <div class="csh"><i class="bi bi-file-text" style="color:#6D2269;"></i> Description du poste</div>
+                <div class="csb">{{ offre_emploi.description|nl2br }}</div>
+            </div>
+        </div>
+
+        <div>
+            <div class="card-sec">
+                <div class="csh"><i class="bi bi-info-circle" style="color:#6D2269;"></i> Informations</div>
+                <div class="info-r">
+                    <div class="info-ico"><i class="bi bi-geo-alt-fill"></i></div>
+                    <div><div class="info-lb">Localisation</div><div class="info-v">{{ offre_emploi.localisation }}</div></div>
+                </div>
+                <div class="info-r">
+                    <div class="info-ico"><i class="bi bi-file-text-fill"></i></div>
+                    <div><div class="info-lb">Type de contrat</div><div class="info-v">{{ offre_emploi.typeContrat }}</div></div>
+                </div>
+                <div class="info-r">
+                    <div class="info-ico"><i class="bi bi-calendar3"></i></div>
+                    <div><div class="info-lb">Date de publication</div><div class="info-v">{{ offre_emploi.datePublication|date('d/m/Y') }}</div></div>
+                </div>
+                <div class="info-r">
+                    <div class="info-ico"><i class="bi bi-calendar-x"></i></div>
+                    <div><div class="info-lb">Date d'expiration</div><div class="info-v">{{ offre_emploi.dateExpiration|date('d/m/Y') }}</div></div>
+                </div>
+                <div class="info-r">
+                    <div class="info-ico"><i class="bi bi-toggle-on"></i></div>
+                    <div>
+                        <div class="info-lb">Statut</div>
+                        <div class="info-v">
+                            {% set s = offre_emploi.statut|lower %}
+                            {% if s in ['active','actif','ouvert','publiée'] %}
+                                <span class="bs bs-a">{{ offre_emploi.statut }}</span>
+                            {% elseif s in ['fermée','ferme','inactif'] %}
+                                <span class="bs bs-i">{{ offre_emploi.statut }}</span>
+                            {% else %}
+                                <span class="bs bs-p">{{ offre_emploi.statut }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

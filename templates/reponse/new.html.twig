@@ -1,0 +1,179 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouvelle Décision RH{% endblock %}
+
+{% block stylesheets %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+    .hr-container {
+        font-family: 'Inter', sans-serif;
+        background: radial-gradient(circle at top right, #eef2ff 0%, #ffffff 50%, #f5f3ff 100%);
+        min-height: 90vh; padding: 40px 20px; color: #0f172a;
+    }
+    .hr-container * { box-sizing: border-box; }
+    
+    .view-wrapper { display: grid; grid-template-columns: 1fr 300px; gap: 30px; max-width: 1000px; margin: 0 auto; animation: fadeUp 0.6s ease-out; }
+
+    .header-box { display: flex; align-items: center; gap: 15px; margin-bottom: 30px; grid-column: 1 / -1; }
+    .header-icon {
+        width: 50px; height: 50px; border-radius: 14px;
+        background: linear-gradient(135deg, #4f46e5, #4338ca);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 20px; color: white; box-shadow: 0 8px 20px rgba(79,70,229,0.3);
+    }
+    .header-box h1 { font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 2rem; margin: 0; color: #312e81; }
+    .header-box p { color: #64748b; margin: 5px 0 0 0; font-size: 1rem; }
+
+    .glass-card {
+        background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.8); border-radius: 24px;
+        box-shadow: 0 10px 40px rgba(79, 70, 229, 0.08); padding: 40px;
+    }
+
+    .form-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 25px; }
+    
+    .form-label { font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #4f46e5; margin-left: 5px; display: flex; align-items: center; gap: 8px; }
+    .form-label i { color: #818cf8; }
+
+    .form-control {
+        width: 100%; padding: 14px 20px; background: #f8fafc; border: 1.5px solid #e2e8f0;
+        border-radius: 14px; font-family: 'Inter', sans-serif; font-size: 1rem; color: #0f172a; transition: all 0.3s;
+    }
+    .form-control:focus { outline: none; border-color: #4f46e5; background: #fff; box-shadow: 0 0 0 4px rgba(79,70,229,0.1); }
+    textarea.form-control { resize: vertical; min-height: 150px; }
+    
+    select.form-control {
+        appearance: none; -webkit-appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+        background-repeat: no-repeat; background-position: right 15px center; background-size: 16px; padding-right: 40px; cursor: pointer;
+    }
+
+    .form-error { color: #e11d48; font-size: 0.85rem; margin-left: 5px; }
+
+    .actions { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding-top: 25px; border-top: 1px solid rgba(0,0,0,0.05); }
+    
+    .btn-back { display: flex; align-items: center; gap: 8px; color: #64748b; text-decoration: none; font-weight: 600; padding: 12px 20px; border-radius: 50px; transition: 0.2s; border: 1px solid transparent; }
+    .btn-back:hover { background: #f1f5f9; color: #0f172a; border-color: #e2e8f0; }
+    
+    .btn-submit {
+        display: inline-flex; align-items: center; gap: 8px;
+        background: linear-gradient(135deg, #4f46e5, #4338ca); border: none; cursor: pointer;
+        color: white; font-weight: 600; padding: 14px 34px; border-radius: 50px;
+        box-shadow: 0 8px 20px rgba(79,70,229,0.3); transition: all 0.3s;
+        font-family: 'Outfit', sans-serif; font-size: 1.1rem;
+    }
+    .btn-submit:hover { transform: translateY(-3px); box-shadow: 0 12px 25px rgba(79,70,229,0.4); }
+
+    /* Visual preview of decision */
+    .decision-preview { padding: 15px 20px; border-radius: 12px; font-weight: 600; font-size: 0.95rem; display: none; align-items: center; gap: 10px; margin-top: 10px; }
+    .decision-preview.show { display: flex; animation: fadeUp 0.3s ease-out; }
+    .dp-app { background: #ecfdf5; color: #047857; border: 1px solid #10b981; }
+    .dp-ref { background: #fff1f2; color: #be123c; border: 1px solid #f43f5e; }
+
+    /* Info Sidebar */
+    .info-sidebar { display: flex; flex-direction: column; gap: 20px; }
+    .side-panel { background: rgba(255,255,255,0.7); backdrop-filter: blur(10px); border-radius: 16px; border: 1px solid #e0e7ff; padding: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
+    .side-panel h3 { font-family: 'Outfit'; font-size: 1.1rem; color: #312e81; margin: 0 0 15px 0; display: flex; align-items: center; gap: 8px; }
+    .side-tip { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 12px; font-size: 0.9rem; color: #475569; line-height: 1.5; }
+    .side-tip i { font-size: 1.1rem; margin-top: 2px; }
+    .side-tip .fa-check-circle { color: #10b981; }
+    .side-tip .fa-times-circle { color: #f43f5e; }
+    .side-tip .fa-info-circle { color: #3b82f6; }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+    @media (max-width: 800px) {
+        .view-wrapper { grid-template-columns: 1fr; }
+        .info-sidebar { display: none; } /* Hide sidebar on mobile to save space */
+        .glass-card { padding: 25px; }
+        .actions { flex-direction: column-reverse; gap: 15px; }
+        .btn-submit { width: 100%; justify-content: center; }
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="hr-container">
+    <div class="view-wrapper">
+        <div class="header-box">
+            <div class="header-icon"><i class="fas fa-gavel"></i></div>
+            <div>
+                <h1>Statuer sur une demande</h1>
+                <p>Création d'une nouvelle décision RH</p>
+            </div>
+        </div>
+
+        <div class="glass-card">
+            {{ form_start(form, {'attr': {'novalidate': 'novalidate', 'id': 'decision-form'}}) }}
+            
+            <div class="form-group">
+                {{ form_label(form.decision, null, {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.decision, {'attr': {'class': 'form-control', 'onchange': 'updatePreview(this.value)'}}) }}
+                <div class="form-error">{{ form_errors(form.decision) }}</div>
+                
+                <div id="preview-app" class="decision-preview dp-app"><i class="fas fa-check-double"></i> La demande sera officiellement <strong>Approuvée</strong>.</div>
+                <div id="preview-ref" class="decision-preview dp-ref"><i class="fas fa-ban"></i> La demande sera officiellement <strong>Refusée</strong>.</div>
+            </div>
+
+            <div class="form-group">
+                {{ form_label(form.commentaire, null, {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.commentaire, {'attr': {'class': 'form-control', 'placeholder': 'Justifiez votre décision ou indiquez des instructions spécifiques pour le collaborateur...'}}) }}
+                <div class="form-error">{{ form_errors(form.commentaire) }}</div>
+            </div>
+
+            {{ form_rest(form) }}
+
+            <div class="actions">
+                <a href="{{ path('app_reponse_index') }}" class="btn-back"><i class="fas fa-arrow-left"></i> Annuler</a>
+                <button type="submit" class="btn-submit"><i class="fas fa-paper-plane"></i> Enregistrer la décision</button>
+            </div>
+            
+            {{ form_end(form) }}
+        </div>
+
+        <!-- Sidebar for context -->
+        <div class="info-sidebar">
+            <div class="side-panel">
+                <h3><i class="fas fa-lightbulb" style="color: #f59e0b;"></i> Bon à savoir</h3>
+                <div class="side-tip">
+                    <i class="fas fa-check-circle"></i>
+                    <div><strong>Approbation:</strong> Assurez-vous d'avoir bien vérifié le solde du collaborateur.</div>
+                </div>
+                <div class="side-tip">
+                    <i class="fas fa-times-circle"></i>
+                    <div><strong>Refus:</strong> Un commentaire explicatif est fortement recommandé pour justifier le refus.</div>
+                </div>
+                <div class="side-tip">
+                    <i class="fas fa-info-circle"></i>
+                    <div>Le statut de la demande côté "Employé" sera automatiquement mis à jour.</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    function updatePreview(val) {
+        var pApp = document.getElementById('preview-app');
+        var pRef = document.getElementById('preview-ref');
+        if(!pApp || !pRef) return;
+        
+        pApp.classList.remove('show');
+        pRef.classList.remove('show');
+        
+        if(val.toLowerCase().includes('approuv')) {
+            pApp.classList.add('show');
+        } else if (val.trim() !== '') {
+            pRef.classList.add('show');
+        }
+    }
+    
+    // Initial check
+    var sel = document.querySelector('select[name*="decision"]');
+    if(sel) updatePreview(sel.value);
+</script>
+{% endblock %}

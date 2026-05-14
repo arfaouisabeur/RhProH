@@ -1,0 +1,369 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+:root {
+  --mv-950:#2e0d52; --mv-800:#5b2b82; --mv-700:#7c3dac;
+  --mv-600:#8f4cc9; --mv-500:#b39ddb; --mv-400:#c4b0e4;
+  --mv-200:#e9d5ff; --mv-100:#f3e8ff; --mv-50:#faf5ff;
+  --mv-glow: rgba(143,76,201,0.4);
+}
+*, *::before, *::after { box-sizing:border-box; }
+
+/* ── Shell ── */
+.salaires-index-shell {
+  font-family:'Inter',sans-serif;
+  background: radial-gradient(ellipse at 20% 0%, #f3e8ff 0%, #ffffff 50%, #faf5ff 100%);
+  min-height:90vh; padding:44px 20px; color:#0f172a;
+  position:relative; overflow:hidden;
+}
+.salaires-index-shell::before {
+  content:''; position:fixed; top:-180px; right:-180px;
+  width:560px; height:560px; border-radius:50%;
+  background: radial-gradient(circle, rgba(143,76,201,.16), transparent 68%);
+  pointer-events:none; z-index:0; animation:orbFloat1 9s ease-in-out infinite;
+}
+.salaires-index-shell::after {
+  content:''; position:fixed; bottom:-120px; left:-120px;
+  width:420px; height:420px; border-radius:50%;
+  background: radial-gradient(circle, rgba(179,157,219,.14), transparent 68%);
+  pointer-events:none; z-index:0; animation:orbFloat2 11s ease-in-out infinite;
+}
+.salaires-index-wrap { max-width:1400px; margin:0 auto; position:relative; z-index:1; }
+
+/* ── Header ── */
+.salaires-index-head {
+  display:flex; justify-content:space-between; align-items:flex-end;
+  gap:18px; flex-wrap:wrap; margin-bottom:32px;
+  animation:slideDown .7s cubic-bezier(.16,1,.3,1) both;
+}
+.salaires-index-title h1 {
+  font-family:'Outfit'; font-weight:900; font-size:2.6rem; margin:0;
+  background: linear-gradient(135deg, var(--mv-950), var(--mv-600));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  display:flex; align-items:center; gap:14px;
+}
+.salaires-index-title h1 i { font-size:2.2rem; -webkit-text-fill-color:var(--mv-600); }
+.salaires-index-title p { margin:8px 0 0; color:#64748b; font-size:1.05rem; font-weight:500; }
+
+/* Action buttons */
+.btn-new-salaire {
+  display:inline-flex; align-items:center; gap:9px; padding:13px 26px;
+  border-radius:999px; border:none;
+  background:linear-gradient(135deg,var(--mv-700),var(--mv-600));
+  color:#fff; font-weight:900; font-size:.95rem; cursor:pointer;
+  transition:all .2s; box-shadow:0 8px 20px var(--mv-glow);
+  font-family:'Outfit'; text-decoration:none;
+}
+.btn-new-salaire:hover { transform:translateY(-2px); box-shadow:0 12px 26px var(--mv-glow); color:#fff; }
+
+.btn-export {
+  display:inline-flex; align-items:center; gap:9px; padding:11px 22px;
+  border-radius:999px; border:1.5px solid #10b981;
+  background:rgba(16,185,129,.08); color:#059669;
+  font-weight:800; font-size:.93rem; cursor:pointer;
+  transition:all .2s; text-decoration:none; margin-left:12px;
+}
+.btn-export:hover { background:#10b981; color:#fff; transform:translateY(-2px); }
+
+/* Filter Card */
+.filter-card {
+  background:rgba(255,255,255,.87);
+  backdrop-filter:blur(22px); -webkit-backdrop-filter:blur(22px);
+  border:1.5px solid rgba(179,157,219,.28);
+  border-radius:20px; padding:24px 28px; margin-bottom:24px;
+  box-shadow:0 10px 40px rgba(143,76,201,.08);
+  animation:slideUp .7s cubic-bezier(.16,1,.3,1) .1s both;
+}
+.filter-grid {
+  display:grid; grid-template-columns:2fr 1fr 1fr; gap:20px;
+  align-items:end;
+}
+.filter-item label {
+  display:block; margin-bottom:8px; font-weight:800; font-size:.85rem;
+  color:var(--mv-700); text-transform:uppercase; letter-spacing:.05em;
+}
+.filter-input, .filter-select {
+  width:100%; padding:12px 16px; border-radius:14px;
+  border:1.5px solid rgba(179,157,219,.28); background:var(--mv-50);
+  font-family:inherit; font-size:.95rem; color:#0f172a;
+  outline:none; transition:all .2s;
+}
+.filter-input:focus, .filter-select:focus { 
+  border-color:var(--mv-600); box-shadow:0 0 0 4px rgba(143,76,201,.14); background:#fff; 
+}
+
+/* Table Card */
+.table-card {
+  background:rgba(255,255,255,.87);
+  backdrop-filter:blur(22px); -webkit-backdrop-filter:blur(22px);
+  border:1.5px solid rgba(179,157,219,.28);
+  border-radius:24px; overflow:hidden;
+  box-shadow:0 10px 40px rgba(143,76,201,.10);
+  animation:slideUp .7s cubic-bezier(.16,1,.3,1) .2s both;
+}
+.table-header {
+  background:linear-gradient(135deg,var(--mv-950),var(--mv-800));
+  color:#fff; padding:20px 24px;
+  display:flex; justify-content:space-between; align-items:center;
+}
+.table-header h5 {
+  margin:0; font-family:'Outfit'; font-weight:900; font-size:1.3rem;
+  display:flex; align-items:center; gap:10px;
+}
+.table-responsive { max-height:600px; overflow-y:auto; }
+.table {
+  margin:0; font-size:.95rem;
+}
+.table thead {
+  background:rgba(143,76,201,.08); position:sticky; top:0; z-index:10;
+}
+.table thead th {
+  border:none; padding:16px 20px; font-weight:800; font-size:.85rem;
+  color:var(--mv-700); text-transform:uppercase; letter-spacing:.05em;
+}
+.table tbody td {
+  border:none; padding:16px 20px; vertical-align:middle;
+  border-bottom:1px solid rgba(179,157,219,.12);
+}
+.table tbody tr:hover { background:rgba(143,76,201,.04); }
+
+/* Badge styles */
+.badge-amount {
+  background:linear-gradient(135deg,#10b981,#059669);
+  color:#fff; padding:6px 14px; border-radius:999px;
+  font-weight:800; font-size:.85rem;
+}
+.badge-status-paid {
+  background:linear-gradient(135deg,#10b981,#059669);
+  color:#fff; padding:6px 14px; border-radius:999px;
+  font-weight:800; font-size:.85rem;
+}
+.badge-status-pending {
+  background:linear-gradient(135deg,#f59e0b,#d97706);
+  color:#fff; padding:6px 14px; border-radius:999px;
+  font-weight:800; font-size:.85rem;
+}
+.employee-name { font-weight:700; color:var(--mv-700); }
+.month-text { color:#64748b; font-weight:600; }
+
+/* Action buttons */
+.btn-edit {
+  display:inline-flex; align-items:center; justify-content:center;
+  width:36px; height:36px; border-radius:10px; border:none;
+  background:linear-gradient(135deg,#f59e0b,#d97706);
+  color:#fff; font-size:14px; cursor:pointer;
+  transition:all .2s; margin-right:8px;
+}
+.btn-edit:hover { transform:translateY(-2px); box-shadow:0 6px 16px rgba(245,158,11,.4); }
+
+.btn-delete {
+  display:inline-flex; align-items:center; justify-content:center;
+  width:36px; height:36px; border-radius:10px; border:none;
+  background:linear-gradient(135deg,#ef4444,#dc2626);
+  color:#fff; font-size:14px; cursor:pointer;
+  transition:all .2s;
+}
+.btn-delete:hover { transform:translateY(-2px); box-shadow:0 6px 16px rgba(239,68,68,.4); }
+
+/* Animations */
+@keyframes slideDown { from{opacity:0;transform:translateY(-18px);}to{opacity:1;transform:translateY(0);} }
+@keyframes slideUp   { from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);} }
+@keyframes orbFloat1 { 0%,100%{transform:translate(0,0) scale(1);}50%{transform:translate(-28px,20px) scale(1.05);} }
+@keyframes orbFloat2 { 0%,100%{transform:translate(0,0) scale(1);}50%{transform:translate(20px,-26px) scale(1.07);} }
+
+@media(max-width:768px){
+  .salaires-index-head { flex-direction:column; align-items:flex-start; }
+  .filter-grid { grid-template-columns:1fr; gap:16px; }
+}
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="salaires-index-shell">
+  <div class="salaires-index-wrap">
+
+    <!-- 🔥 HEADER -->
+    <div class="salaires-index-head">
+      <div class="salaires-index-title">
+        <h1><i class="fas fa-money-bill-wave"></i> Salaires</h1>
+        <p>Gérez les salaires et paiements des employés</p>
+      </div>
+      <div class="d-flex align-items-center">
+        <a href="{{ path('app_rh_salaire_new') }}" class="btn-new-salaire">
+          <i class="fas fa-plus-circle"></i> Nouveau Salaire
+        </a>
+        <a href="{{ path('app_rh_salaire_export') }}" class="btn-export">
+          <i class="fas fa-file-excel"></i> Export Excel
+        </a>
+      </div>
+    </div>
+
+    <!-- 🔍 FILTER -->
+    <div class="filter-card">
+      <div class="filter-grid">
+        <div class="filter-item">
+          <label><i class="fas fa-search"></i> Rechercher</label>
+          <input id="search" type="text" class="filter-input" placeholder="Saisir un nom d'employé...">
+        </div>
+        <div class="filter-item">
+          <label><i class="fas fa-calendar"></i> Mois</label>
+          <select id="mois" class="filter-select">
+            <option value="">Tous les mois</option>
+            {% for m in 1..12 %}
+              <option value="{{ m }}">
+                {{ [
+                  'Janvier','Février','Mars','Avril','Mai','Juin',
+                  'Juillet','Août','Septembre','Octobre','Novembre','Décembre'
+                ][m-1] }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="filter-item">
+          <label><i class="fas fa-info-circle"></i> Statut</label>
+          <select id="statut" class="filter-select">
+            <option value="">Tous les statuts</option>
+            <option value="PAYE">Payé</option>
+            <option value="EN_ATTENTE">En attente</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- 💎 TABLE -->
+    <div class="table-card">
+      <div class="table-header">
+        <h5><i class="fas fa-table"></i> Liste des Salaires</h5>
+        <span class="badge bg-light text-dark">{{ salaires|length }} salaires</span>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table align-middle mb-0" id="table">
+          <thead>
+            <tr>
+              <th><i class="fas fa-user"></i> Employé</th>
+              <th><i class="fas fa-calendar-alt"></i> Mois</th>
+              <th><i class="fas fa-coins"></i> Montant</th>
+              <th><i class="fas fa-info-circle"></i> Statut</th>
+              <th><i class="fas fa-cogs"></i> Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for salaire in salaires %}
+              <tr 
+                data-name="{{ salaire.contract.employe.user.fullName|lower }}"
+                data-mois="{{ salaire.mois }}"
+                data-statut="{{ salaire.statut }}"
+              >
+                <td class="employee-name">
+                  <i class="fas fa-user-circle me-2" style="color:var(--mv-600);"></i>
+                  {{ salaire.contract.employe.user.fullName }}
+                </td>
+                <td class="month-text">
+                  <i class="fas fa-calendar me-1" style="color:var(--mv-500);"></i>
+                  {{ [
+                    'Janvier','Février','Mars','Avril','Mai','Juin',
+                    'Juillet','Août','Septembre','Octobre','Novembre','Décembre'
+                  ][salaire.mois-1] }}
+                </td>
+                <td>
+                  <span class="badge-amount">
+                    {{ salaire.montant }} {{ currency }}
+                  </span>
+                </td>
+                <td>
+                  {% if salaire.statut == 'PAYE' %}
+                    <span class="badge-status-paid">
+                      <i class="fas fa-check-circle me-1"></i> Payé
+                    </span>
+                  {% else %}
+                    <span class="badge-status-pending">
+                      <i class="fas fa-clock me-1"></i> En attente
+                    </span>
+                  {% endif %}
+                </td>
+                <td>
+                  <div class="d-flex align-items-center">
+                    <!-- ✏ EDIT -->
+                    <a href="{{ path('app_rh_salaire_edit', {'id': salaire.id}) }}" class="btn-edit">
+                      <i class="fas fa-edit"></i>
+                    </a>
+                    <!-- 🗑 DELETE -->
+                    <form method="post"
+                          action="{{ path('app_rh_salaire_delete', {'id': salaire.id}) }}"
+                          onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce salaire ?');"
+                          style="display:inline;">
+                      <input type="hidden" name="_token"
+                             value="{{ csrf_token('delete' ~ salaire.id) }}">
+                      <button class="btn-delete" type="submit">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            {% else %}
+              <tr>
+                <td colspan="5" class="text-center py-5">
+                  <div style="color:#64748b;">
+                    <i class="fas fa-inbox" style="font-size:3rem;opacity:0.5;display:block;margin-bottom:12px;"></i>
+                    <p style="font-weight:700;margin:0;">Aucun salaire trouvé</p>
+                    <p style="margin:4px 0 0;">Commencez par créer un nouveau salaire</p>
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const searchInput = document.getElementById('search');
+const moisSelect = document.getElementById('mois');
+const statutSelect = document.getElementById('statut');
+const rows = document.querySelectorAll('#table tbody tr');
+
+function filterTable() {
+    const search = searchInput.value.toLowerCase();
+    const mois = moisSelect.value;
+    const statut = statutSelect.value;
+
+    rows.forEach(row => {
+        const name = row.dataset.name;
+        const rowMois = row.dataset.mois;
+        const rowStatut = row.dataset.statut;
+
+        let show = true;
+
+        if (search && name && !name.includes(search)) {
+            show = false;
+        }
+
+        if (mois && mois !== rowMois) {
+            show = false;
+        }
+
+        if (statut && statut !== rowStatut) {
+            show = false;
+        }
+
+        row.style.display = show ? '' : 'none';
+    });
+}
+
+// Events
+searchInput.addEventListener('input', filterTable);
+moisSelect.addEventListener('change', filterTable);
+statutSelect.addEventListener('change', filterTable);
+</script>
+
+{% endblock %}

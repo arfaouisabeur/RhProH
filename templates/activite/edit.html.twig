@@ -1,0 +1,49 @@
+{% extends 'base.html.twig' %}
+{% block title %}Modifier — {{ activite.titre }}{% endblock %}
+
+{% block styles %}
+:root { --green: #7c3aed; --green-dark: #6d28d9; --surface: #f5f0ff; --border: #e5e7eb; --text-dark: #111827; --text-muted: #6b7280; }
+body { background: var(--surface); }
+.act-page { min-height: 100vh; background: var(--surface); font-family: 'Inter', sans-serif; padding-bottom: 60px; }
+.act-page-header { background: var(--surface); padding: 36px 0 0; }
+.act-page-header-inner { max-width: 700px; margin: 0 auto; padding: 0 32px; display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap; }
+.act-page-title { font-size: 24px; font-weight: 700; color: var(--green-dark); margin: 0 0 4px; }
+.act-page-subtitle { font-size: 13px; color: var(--text-muted); margin: 0; }
+.back-link { display: inline-flex; align-items: center; gap: 6px; color: var(--green-dark); font-size: 13px; font-weight: 500; text-decoration: none; }
+.back-link:hover { text-decoration: underline; }
+.act-content { max-width: 700px; margin: 28px auto 0; padding: 0 32px; }
+{% endblock %}
+
+{% block body %}
+{{ include('partials/_confirm_modal.html.twig') }}
+<div class="act-page">
+  <div class="act-page-header">
+    <div class="act-page-header-inner">
+      <div>
+        <h1 class="act-page-title">✏️ Modifier l'activité</h1>
+        <p class="act-page-subtitle">{{ activite.titre }}</p>
+      </div>
+      {% if activite.evenement %}
+        <a href="{{ path('app_evenement_show', {'id': activite.evenement.id}) }}" class="back-link">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+          Retour à l'événement
+        </a>
+      {% else %}
+        <a href="{{ path('app_activite_index') }}" class="back-link">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+          Retour aux activités
+        </a>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="act-content">
+    {% if activite.evenement %}
+      {% set back_url = path('app_evenement_show', {'id': activite.evenement.id}) %}
+    {% else %}
+      {% set back_url = path('app_activite_index') %}
+    {% endif %}
+    {{ include('activite/_form.html.twig', {'button_label': 'Enregistrer les modifications', 'back_url': back_url, 'isEdit': true}) }}
+  </div>
+</div>
+{% endblock %}

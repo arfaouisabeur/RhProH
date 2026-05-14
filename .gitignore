@@ -1,0 +1,39 @@
+###> symfony/framework-bundle ###
+/.env.local
+/.env.local.php
+/.env.*.local
+/config/secrets/prod/prod.decrypt.private.php
+/public/bundles/
+/var/
+/vendor/
+###< symfony/framework-bundle ###
+
+###> phpunit/phpunit ###
+/phpunit.xml
+###< phpunit/phpunit ###
+
+# ── Ne jamais committer ces fichiers ──────────────────────────────────────
+.env.local
+.env.test.local
+.env.prod.local
+
+# Modèle NLP (trop lourd pour git)
+/nlp_skills/models/
+/nlp_skills/venv/
+/nlp_skills/__pycache__/
+/nlp_skills/data/*.spacy
+/nlp_skills/data/extraction_result.json
+
+# Uploads
+/public/uploads/
+/public/certificats/
+
+# IDE
+/.idea/
+/.vscode/
+*.swp
+*.swo
+
+###> phpstan/phpstan ###
+phpstan.neon
+###< phpstan/phpstan ###

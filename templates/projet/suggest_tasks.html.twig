@@ -1,0 +1,158 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Assistant IA Créatif - {{ projet.titre }}{% endblock %}
+
+{% block body %}
+<div class="ai-experience-wrapper">
+    <div class="neural-blob neural-blob-1"></div>
+    <div class="neural-blob neural-blob-2"></div>
+    
+    <div class="container py-5 position-relative">
+        <div class="row justify-content-center">
+            <div class="col-xl-11">
+                
+                <div class="ai-header text-center mb-5 animate__animated animate__fadeInDown">
+                    <div class="ai-badge mb-3">
+                        <span class="online-dot"></span> ANALYSE RHPro AI v2.0
+                    </div>
+                    <h1 class="glitch-text display-3 fw-black mb-3" data-text="Assistant IA RHPro">Assistant IA RHPro</h1>
+                    <p class="ai-subtitle lead">Analyse sémantique terminée pour : <span class="text-highlight">"{{ projet.titre }}"</span></p>
+                    
+                    <div class="ai-stats-bar mt-4">
+                        <div class="stat-item">
+                            <i class="bi bi-cpu"></i>
+                            <span>Processus: Précision 98%</span>
+                        </div>
+                        <div class="stat-item">
+                            <i class="bi bi-calendar-check"></i>
+                            <span>Planning: {{ projet.dateDebut|date('d/m/Y') }} → {{ projet.dateFin|date('d/m/Y') }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <form action="{{ path('app_projet_save_suggested_tasks', {id: projet.id}) }}" method="POST" id="ai-tasks-form">
+                    <div class="row g-4 ai-grid">
+                        {% for index, tache in suggestedTasks %}
+                        <div class="col-lg-4 col-md-6 animate__animated animate__fadeInUp" style="animation-delay: {{ 0.1 * index }}s">
+                            <div class="cyber-card" onclick="toggleTask({{ index }})">
+                                <div class="cyber-card-glow"></div>
+                                <div class="card-content p-4">
+                                    <div class="d-flex justify-content-between align-items-center mb-4">
+                                        <div class="cyber-checkbox">
+                                            <input type="checkbox" name="tasks[]" value="{{ index }}" id="task_check_{{ index }}" class="task-checkbox" checked>
+                                            <span class="checkmark"></span>
+                                        </div>
+                                        <div class="token-id">REF: #AI_{{ random(100, 999) }}</div>
+                                    </div>
+
+                                    <h5 class="task-title fw-bold mb-3">
+                                        <input type="hidden" name="titles[{{ index }}]" value="{{ tache.titre }}">
+                                        {{ tache.titre }}
+                                    </h5>
+                                    
+                                    <p class="task-desc mb-4">
+                                        <input type="hidden" name="descriptions[{{ index }}]" value="{{ tache.description }}">
+                                        {{ tache.description }}
+                                    </p>
+
+                                    <div class="task-timeline">
+                                        <div class="line"></div>
+                                        <div class="nodes">
+                                            <div class="node">
+                                                <span class="n-label">Départ</span>
+                                                <span class="n-val">{{ tache.dateDebut|date('d M') }}</span>
+                                                <input type="hidden" name="starts[{{ index }}]" value="{{ tache.dateDebut|date('Y-m-d H:i:s') }}">
+                                            </div>
+                                            <div class="node text-end">
+                                                <span class="n-label">Fin</span>
+                                                <span class="n-val">{{ tache.dateFin|date('d M') }}</span>
+                                                <input type="hidden" name="ends[{{ index }}]" value="{{ tache.dateFin|date('Y-m-d H:i:s') }}">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="cyber-action-bar mt-5 p-4 animate__animated animate__fadeIn">
+                        <div class="row align-items-center">
+                            <div class="col-md-6">
+                                <div class="counter-display">
+                                    <span class="count-num" id="selected-count">{{ suggestedTasks|length }}</span>
+                                    <span class="count-label">MISSIONS SÉLECTIONNÉES SUR {{ suggestedTasks|length }}</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6 text-md-end mt-3 mt-md-0 d-flex gap-3 justify-content-md-end">
+                                <a href="{{ path('app_projet_index') }}" class="btn-cyber-outline">
+                                    IGNORER L'IA
+                                </a>
+                                <button type="submit" class="btn-cyber-primary">
+                                    DÉPLOYER LES MISSIONS <i class="bi bi-chevron-right ms-2"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&display=swap');
+:root{--primary-glow:#a855f7;--secondary-glow:#c084fc;--dark-bg:#1a0a2e;--card-bg:rgba(255,255,255,0.06);--text-main:#f8fafc}
+.ai-experience-wrapper{background-color:var(--dark-bg);min-height:100vh;color:var(--text-main);font-family:'Space Grotesk',sans-serif;overflow-x:hidden;position:relative}
+.neural-blob{position:fixed;border-radius:50%;filter:blur(80px);z-index:0;opacity:.4;animation:blobMove 20s infinite alternate ease-in-out}
+.neural-blob-1{width:600px;height:600px;background:radial-gradient(circle,#a855f7 0%,transparent 70%);top:-100px;left:-100px}
+.neural-blob-2{width:500px;height:500px;background:radial-gradient(circle,#c084fc 0%,transparent 70%);bottom:-100px;right:-100px;animation-delay:-5s}
+@keyframes blobMove{from{transform:translate(0,0) scale(1)}to{transform:translate(100px,50px) scale(1.1)}}
+.ai-badge{display:inline-flex;align-items:center;background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.3);padding:6px 16px;border-radius:50px;font-size:.8rem;letter-spacing:2px;color:var(--primary-glow)}
+.online-dot{width:8px;height:8px;background:#10b981;border-radius:50%;margin-right:10px;box-shadow:0 0 10px #10b981}
+.glitch-text{font-weight:800;background:linear-gradient(to right,#fff,#cbd5e1);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.text-highlight{color:var(--primary-glow);text-shadow:0 0 15px var(--primary-glow)}
+.ai-stats-bar{display:flex;justify-content:center;gap:30px}
+.stat-item{font-size:.9rem;color:#94a3b8;display:flex;align-items:center;gap:10px}
+.cyber-card{background:var(--card-bg);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.05);border-radius:24px;position:relative;overflow:hidden;cursor:pointer;transition:all .3s cubic-bezier(.4,0,.2,1);height:100%}
+.cyber-card:hover{transform:translateY(-8px) scale(1.02);border-color:rgba(99,102,241,.4);box-shadow:0 20px 40px rgba(0,0,0,.4)}
+.cyber-card-glow{position:absolute;top:0;left:0;right:0;bottom:0;background:radial-gradient(circle at top right,rgba(99,102,241,.1),transparent 70%);pointer-events:none}
+.token-id{font-family:monospace;font-size:.7rem;color:#64748b;border:1px solid rgba(148,163,184,.2);padding:2px 8px;border-radius:4px}
+.task-title{font-size:1.25rem;color:#fff;line-height:1.2}
+.task-desc{font-size:.95rem;color:#94a3b8;height:3.6rem;overflow:hidden}
+.task-timeline{margin-top:auto}
+.task-timeline .line{height:2px;background:rgba(255,255,255,.05);position:relative;margin-bottom:8px}
+.task-timeline .nodes{display:flex;justify-content:space-between}
+.n-label{display:block;font-size:.65rem;text-transform:uppercase;color:#64748b;letter-spacing:1px}
+.n-val{font-size:.85rem;font-weight:700;color:var(--primary-glow)}
+.cyber-checkbox{position:relative;width:24px;height:24px}
+.task-checkbox{opacity:0;position:absolute;width:100%;height:100%;cursor:pointer;z-index:2}
+.checkmark{position:absolute;top:0;left:0;width:24px;height:24px;background:rgba(255,255,255,.05);border:2px solid rgba(255,255,255,.1);border-radius:6px;transition:.2s}
+.task-checkbox:checked + .checkmark{background:var(--primary-glow);border-color:var(--primary-glow);box-shadow:0 0 15px var(--primary-glow)}
+.checkmark:after{content:"";position:absolute;display:none;left:8px;top:4px;width:5px;height:10px;border:solid white;border-width:0 2px 2px 0;transform:rotate(45deg)}
+.task-checkbox:checked + .checkmark:after{display:block}
+.cyber-action-bar{background:rgba(15,23,42,.8);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.1);border-radius:20px;box-shadow:0 -10px 40px rgba(0,0,0,.5)}
+.count-num{font-size:2.5rem;font-weight:900;color:var(--primary-glow);line-height:1}
+.count-label{display:block;font-size:.75rem;letter-spacing:2px;color:#94a3b8}
+.btn-cyber-primary{background:linear-gradient(135deg,var(--primary-glow),var(--secondary-glow));color:#fff;border:none;padding:14px 40px;border-radius:12px;font-weight:700;letter-spacing:1px;transition:.3s;box-shadow:0 10px 20px rgba(99,102,241,.3)}
+.btn-cyber-primary:hover{transform:scale(1.05);box-shadow:0 15px 30px rgba(99,102,241,.5)}
+.btn-cyber-outline{background:transparent;border:1px solid rgba(255,255,255,.1);color:#94a3b8;padding:14px 30px;border-radius:12px;font-weight:600;text-decoration:none;transition:.3s}
+.btn-cyber-outline:hover{border-color:var(--primary-glow);color:#fff;background:rgba(255,255,255,.05)}
+</style>
+
+<script>
+function toggleTask(index) {
+    const check = document.getElementById('task_check_' + index);
+    check.checked = !check.checked;
+    updateCount();
+}
+const checks = document.querySelectorAll('.task-checkbox');
+checks.forEach(c => c.addEventListener('change', (e) => { e.stopPropagation(); updateCount(); }));
+function updateCount() {
+    const count = Array.from(checks).filter(c => c.checked).length;
+    document.getElementById('selected-count').innerText = count;
+}
+</script>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+{% endblock %}

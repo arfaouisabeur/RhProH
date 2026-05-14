@@ -1,0 +1,328 @@
+{% extends 'base.html.twig' %}
+{% block title %}Modifier — {{ evenement.titre }}{% endblock %}
+
+{% block styles %}
+:root { --green: #7c3aed; --green-dark: #6d28d9; --surface: #f5f0ff; --border: #e5e7eb; --text-dark: #111827; --text-muted: #6b7280; }
+body { background: var(--surface); }
+.form-page { min-height: 100vh; background: var(--surface); font-family: 'Inter', sans-serif; padding-bottom: 60px; }
+.form-page-header { background: var(--surface); padding: 36px 0 0; }
+.form-page-header-inner { max-width: 900px; margin: 0 auto; padding: 0 32px; display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap; }
+.form-page-title { font-size: 26px; font-weight: 700; color: var(--green-dark); margin: 0 0 4px; }
+.form-page-subtitle { font-size: 13px; color: var(--text-muted); margin: 0; }
+.back-link { display: inline-flex; align-items: center; gap: 6px; color: var(--green-dark); font-size: 13px; font-weight: 500; text-decoration: none; }
+.back-link:hover { text-decoration: underline; }
+.form-card { background: #fff; border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 2px 8px rgba(0,0,0,0.05); max-width: 900px; margin: 28px auto 0; padding: 32px; }
+.form-group { margin-bottom: 20px; }
+.form-label { font-weight: 600; margin-bottom: 7px; display: block; font-size: 13px; color: #374151; }
+.form-label .req { color: #ef4444; margin-left: 2px; }
+.form-input { width: 100%; padding: 11px 14px; border-radius: 10px; border: 1.5px solid var(--border); background: #fafafa; font-size: 14px; box-sizing: border-box; transition: border-color .2s, box-shadow .2s; font-family: 'Inter', sans-serif; color: var(--text-dark); }
+.form-input:focus { border-color: var(--green); background: #fff; outline: none; box-shadow: 0 0 0 3px rgba(124,58,237,.12); }
+.form-input.is-invalid { border-color: #ef4444; background: #fff5f5; }
+input[type="datetime-local"].form-input { cursor: pointer; }
+textarea.form-input { resize: vertical; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media(max-width:600px){ .form-row { grid-template-columns: 1fr; } }
+.field-error { display: flex; align-items: center; gap: 5px; margin-top: 6px; font-size: 12px; color: #ef4444; font-weight: 500; }
+.form-alert { background: #fee2e2; border: 1px solid #fca5a5; border-radius: 10px; padding: 14px 16px; margin-bottom: 20px; display: flex; align-items: flex-start; gap: 10px; font-size: 13px; color: #991b1b; }
+.btn-submit { background: var(--green); color: #fff; padding: 13px 28px; border: none; border-radius: 12px; font-weight: 600; font-size: 15px; cursor: pointer; width: 100%; margin-top: 8px; transition: background .2s, transform .15s; font-family: 'Inter', sans-serif; }
+.btn-submit:hover { background: var(--green-dark); transform: translateY(-1px); }
+input[type="datetime-local"] { cursor: pointer; }
+.img-preview { max-width: 200px; margin-top: 10px; border-radius: 10px; }
+.upload-zone { border: 2px dashed var(--border); border-radius: 12px; padding: 24px; text-align: center; cursor: pointer; transition: border-color 0.2s, background 0.2s; margin-top: 8px; }
+.upload-zone:hover, .upload-zone.dragover { border-color: var(--green); background: rgba(124,58,237,0.04); }
+.upload-zone input[type=file] { display: none; }
+.upload-zone-icon { font-size: 28px; margin-bottom: 6px; }
+.upload-zone-text { font-size: 13px; color: var(--text-muted); }
+.upload-zone-text strong { color: var(--green); }
+.upload-zone-hint { font-size: 11px; color: #9ca3af; margin-top: 4px; }
+
+/* Map Preview + Autocomplete */
+#lieu-map-preview { width: 100%; height: 260px; border-radius: 10px; border: 1px solid var(--border); margin-top: 10px; display: none; }
+.lieu-wrapper { position: relative; }
+.lieu-suggestions { position: absolute; top: 100%; left: 0; right: 0; z-index: 200; background: #fff; border: 1px solid var(--border); border-top: none; border-radius: 0 0 10px 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); max-height: 240px; overflow-y: auto; display: none; }
+.lieu-suggestion { padding: 10px 14px; cursor: pointer; display: flex; align-items: flex-start; gap: 10px; border-bottom: 1px solid #f3f4f6; transition: background 0.12s; }
+.lieu-suggestion:last-child { border-bottom: none; }
+.lieu-suggestion:hover, .lieu-suggestion.active { background: #f8f5ff; }
+.lieu-suggestion-icon { width: 28px; height: 28px; border-radius: 8px; background: #ede9fe; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+.lieu-suggestion-text { flex: 1; min-width: 0; }
+.lieu-suggestion-name { font-size: 13px; font-weight: 600; color: var(--text-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lieu-suggestion-detail { font-size: 11px; color: var(--text-muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lieu-searching { padding: 12px 14px; font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 8px; }
+.lieu-searching .spin { width: 14px; height: 14px; border: 2px solid #e5e7eb; border-top-color: var(--green); border-radius: 50%; animation: spin 0.7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.map-selected-info { display: flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 12px; color: #22c55e; font-weight: 500; }
+.map-selected-info svg { flex-shrink: 0; }
+{% endblock %}
+
+{% block body %}
+{{ include('partials/_confirm_modal.html.twig') }}
+
+<div class="form-page">
+  <div class="form-page-header">
+    <div class="form-page-header-inner">
+      <div>
+        <h1 class="form-page-title">✏️ Modifier l'événement</h1>
+        <p class="form-page-subtitle">{{ evenement.titre }}</p>
+      </div>
+      <a href="{{ path('app_evenement_index') }}" class="back-link">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        Retour aux événements
+      </a>
+    </div>
+  </div>
+
+  <div class="form-card">
+
+    {% if form.vars.submitted and not form.vars.valid %}
+    <div class="form-alert">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg>
+      <div>Veuillez corriger les erreurs ci-dessous avant de valider.</div>
+    </div>
+    {% endif %}
+
+    {{ form_start(form, {'attr': {'novalidate': true, 'id': 'edit-ev-form'}}) }}
+
+    <div class="form-group">
+      <label class="form-label">Titre <span class="req">*</span></label>
+      {{ form_widget(form.titre, {'attr': {'class': 'form-input' ~ (form.titre.vars.errors|length > 0 ? ' is-invalid' : '')}}) }}
+      {% for error in form.titre.vars.errors %}
+        <div class="field-error"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg>{{ error.message }}</div>
+      {% endfor %}
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Date de début <span class="req">*</span></label>
+        <input type="datetime-local" id="ev_date_debut" name="evenement[date_debut]"
+          class="form-input {{ form.date_debut.vars.errors|length > 0 ? 'is-invalid' : '' }}"
+          value="{{ form.date_debut.vars.value|replace({' ': 'T'})|slice(0, 16) }}"
+          autocomplete="off">
+        {% for error in form.date_debut.vars.errors %}
+          <div class="field-error"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg>{{ error.message }}</div>
+        {% endfor %}
+      </div>
+      <div class="form-group">
+        <label class="form-label">Date de fin <span class="req">*</span></label>
+        <input type="datetime-local" id="ev_date_fin" name="evenement[date_fin]"
+          class="form-input {{ form.date_fin.vars.errors|length > 0 ? 'is-invalid' : '' }}"
+          value="{{ form.date_fin.vars.value|replace({' ': 'T'})|slice(0, 16) }}"
+          autocomplete="off">
+        {% for error in form.date_fin.vars.errors %}
+          <div class="field-error"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg>{{ error.message }}</div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Lieu <span class="req">*</span></label>
+      <div class="lieu-wrapper">
+        {{ form_widget(form.lieu, {'attr': {'class': 'form-input' ~ (form.lieu.vars.errors|length > 0 ? ' is-invalid' : ''), 'placeholder': 'Tapez pour rechercher un lieu (ex: Lac de Tunis)…', 'autocomplete': 'off', 'data-lieu': 'true'}}) }}
+        <div id="lieu-suggestions" class="lieu-suggestions"></div>
+      </div>
+      {% for error in form.lieu.vars.errors %}
+        <div class="field-error"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg>{{ error.message }}</div>
+      {% endfor %}
+      <div id="map-selected-info" class="map-selected-info" style="display:none;"></div>
+      <div id="lieu-map-preview"></div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Description</label>
+      {{ form_widget(form.description, {'attr': {'class': 'form-input', 'rows': 4}}) }}
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Image de l'événement (optionnel)</label>
+      <div class="upload-zone" id="upload-zone">
+        {{ form_widget(form.imageFile, {'attr': {'class': ''}}) }}
+        <div class="upload-zone-icon">📷</div>
+        <div class="upload-zone-text">Cliquez ou glissez une image ici</div>
+        <div class="upload-zone-hint">JPG, PNG, WEBP — max 2 Mo</div>
+      </div>
+      {% for error in form.imageFile.vars.errors %}
+        <div class="field-error"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg>{{ error.message }}</div>
+      {% endfor %}
+      {% if evenement.imageUrl %}
+        <div style="margin-top:10px;font-size:12px;color:var(--text-muted);">Image actuelle :</div>
+        <img id="img-preview" class="img-preview" src="{{ evenement.imageUrl }}" style="display:block;">
+      {% else %}
+        <img id="img-preview" class="img-preview" style="display:none;">
+      {% endif %}
+    </div>
+
+    <button type="button" class="btn-submit"
+      onclick="rhConfirmEdit(document.getElementById('edit-ev-form'), 'Êtes-vous sûr de vouloir modifier cet événement ?')">
+      💾 Enregistrer les modifications
+    </button>
+
+    {% do form.date_debut.setRendered() %}
+    {% do form.date_fin.setRendered() %}
+    {{ form_end(form) }}
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ── Upload image ─────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function(){
+  var zone = document.getElementById('upload-zone');
+  var img = document.getElementById('img-preview');
+  if (!zone) return;
+  var fileInput = zone.querySelector('input[type=file]');
+  if (!fileInput) return;
+  zone.addEventListener('click', function(e) {
+    if (e.target !== fileInput) fileInput.click();
+  });
+  fileInput.addEventListener('change', function() {
+    if (this.files && this.files[0]) {
+      var reader = new FileReader();
+      reader.onload = function(e) { img.src = e.target.result; img.style.display = 'block'; };
+      reader.readAsDataURL(this.files[0]);
+      zone.querySelector('.upload-zone-text').innerHTML = '<strong>' + this.files[0].name + '</strong>';
+    }
+  });
+  zone.addEventListener('dragover', function(e) { e.preventDefault(); zone.classList.add('dragover'); });
+  zone.addEventListener('dragleave', function() { zone.classList.remove('dragover'); });
+  zone.addEventListener('drop', function(e) { e.preventDefault(); zone.classList.remove('dragover'); fileInput.files = e.dataTransfer.files; fileInput.dispatchEvent(new Event('change')); });
+});
+</script>
+
+{# ── Leaflet.js pour la carte ── #}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var lieuInput = document.querySelector('[data-lieu="true"]') || document.querySelector('[name="evenement[lieu]"]');
+    var suggestionsEl = document.getElementById('lieu-suggestions');
+    var mapContainer = document.getElementById('lieu-map-preview');
+    var selectedInfo = document.getElementById('map-selected-info');
+
+    console.log('[Autocomplete] lieuInput:', lieuInput, 'suggestions:', suggestionsEl);
+
+    if (!lieuInput || !suggestionsEl) {
+        console.warn('[Autocomplete] Elements introuvables !');
+        return;
+    }
+
+    var map = null, marker = null, searchTimeout = null, activeIndex = -1;
+
+    function initMap(lat, lon, label) {
+        if (typeof L === 'undefined' || !mapContainer) return;
+        try {
+            if (!map) {
+                mapContainer.style.display = 'block';
+                map = L.map('lieu-map-preview', { scrollWheelZoom: false, zoomControl: true }).setView([lat, lon], 15);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap', maxZoom: 19
+                }).addTo(map);
+            } else {
+                map.setView([lat, lon], 15);
+            }
+            var icon = L.divIcon({
+                className: '',
+                html: '<div style="width:28px;height:28px;background:#ef4444;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 8px rgba(239,68,68,0.5);display:flex;align-items:center;justify-content:center;"><svg width="12" height="12" viewBox="0 0 24 24" fill="#fff" stroke="none"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/></svg></div>',
+                iconSize: [28, 28], iconAnchor: [14, 14]
+            });
+            if (marker) map.removeLayer(marker);
+            marker = L.marker([lat, lon], { icon: icon }).addTo(map)
+                .bindPopup('<strong>' + label.substring(0, 80) + '</strong>').openPopup();
+            setTimeout(function(){ map.invalidateSize(); }, 300);
+        } catch(err) { console.warn('[Map] Erreur:', err); }
+    }
+
+    function selectSuggestion(item) {
+        lieuInput.value = item.display_name.substring(0, 190);
+        suggestionsEl.style.display = 'none';
+        activeIndex = -1;
+        initMap(parseFloat(item.lat), parseFloat(item.lon), item.display_name);
+        if (selectedInfo) {
+            selectedInfo.style.display = 'flex';
+            selectedInfo.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Lieu sélectionné avec succès';
+        }
+    }
+
+    function renderSuggestions(data) {
+        if (!data || data.length === 0) {
+            suggestionsEl.innerHTML = '<div class="lieu-searching" style="color:#ef4444;">Aucun lieu trouvé</div>';
+            suggestionsEl.style.display = 'block';
+            return;
+        }
+        var html = '';
+        for (var i = 0; i < data.length; i++) {
+            var parts = data[i].display_name.split(', ');
+            var nom = parts[0];
+            var detail = parts.slice(1).join(', ');
+            html += '<div class="lieu-suggestion" data-idx="' + i + '">'
+                + '<div class="lieu-suggestion-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>'
+                + '<div class="lieu-suggestion-text">'
+                + '<div class="lieu-suggestion-name">' + nom + '</div>'
+                + '<div class="lieu-suggestion-detail">' + detail + '</div>'
+                + '</div></div>';
+        }
+        suggestionsEl.innerHTML = html;
+        suggestionsEl.style.display = 'block';
+        activeIndex = -1;
+
+        var items = suggestionsEl.querySelectorAll('.lieu-suggestion');
+        for (var j = 0; j < items.length; j++) {
+            (function(idx) {
+                items[idx].addEventListener('click', function() { selectSuggestion(data[idx]); });
+            })(j);
+        }
+    }
+
+    function searchNominatim(query) {
+        if (query.trim().length < 3) { suggestionsEl.style.display = 'none'; return; }
+
+        suggestionsEl.innerHTML = '<div class="lieu-searching"><div class="spin"></div> Recherche en cours…</div>';
+        suggestionsEl.style.display = 'block';
+
+        fetch('https://nominatim.openstreetmap.org/search?q=' + encodeURIComponent(query) + '&format=json&limit=5&addressdetails=1&accept-language=fr')
+            .then(function(r) { return r.json(); })
+            .then(function(data) { renderSuggestions(data); })
+            .catch(function() {
+                suggestionsEl.innerHTML = '<div class="lieu-searching" style="color:#ef4444;">Erreur de connexion</div>';
+            });
+    }
+
+    lieuInput.addEventListener('input', function() {
+        console.log('[AUTOCOMPLETE] Input event:', this.value);
+        if (selectedInfo) selectedInfo.style.display = 'none';
+        clearTimeout(searchTimeout);
+        var val = this.value;
+        searchTimeout = setTimeout(function() { searchNominatim(val); }, 500);
+    });
+
+    lieuInput.addEventListener('keydown', function(e) {
+        var items = suggestionsEl.querySelectorAll('.lieu-suggestion');
+        if (!items.length) return;
+        if (e.key === 'ArrowDown') { e.preventDefault(); activeIndex = Math.min(activeIndex + 1, items.length - 1); }
+        else if (e.key === 'ArrowUp') { e.preventDefault(); activeIndex = Math.max(activeIndex - 1, 0); }
+        else if (e.key === 'Enter' && activeIndex >= 0) { e.preventDefault(); items[activeIndex].click(); return; }
+        else if (e.key === 'Escape') { suggestionsEl.style.display = 'none'; return; }
+        else return;
+        for (var k = 0; k < items.length; k++) items[k].classList.toggle('active', k === activeIndex);
+    });
+
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.lieu-wrapper')) suggestionsEl.style.display = 'none';
+    });
+
+    if (lieuInput.value.trim().length >= 3) {
+        fetch('https://nominatim.openstreetmap.org/search?q=' + encodeURIComponent(lieuInput.value) + '&format=json&limit=1&accept-language=fr')
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data && data.length > 0) {
+                    initMap(parseFloat(data[0].lat), parseFloat(data[0].lon), lieuInput.value);
+                    if (selectedInfo) { selectedInfo.style.display = 'flex'; selectedInfo.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Lieu sélectionné'; }
+                }
+            }).catch(function(){});
+    }
+
+    console.log('[Autocomplete] Initialisé avec succès');
+});
+</script>
+{% endblock %}
+
+

@@ -1,0 +1,25 @@
+parameters:
+    level: 8
+    paths:
+        # Entities (should be perfect)
+        - src/Entity/Salaire.php
+        - src/Entity/Prime.php
+        - src/Entity/Contract.php
+        
+        # Repositories (should be perfect)
+        - src/Repository/SalaireRepository.php
+        - src/Repository/PrimeRepository.php
+        - src/Repository/ContractRepository.php
+    
+    # Bootstrap file
+    bootstrapFiles:
+        - tests/bootstrap.php
+    
+    # Strict mode - no ignores
+    ignoreErrors: []
+    
+    # Exclude patterns
+    excludePaths:
+        - */tests/*
+        - */var/*
+        - */vendor/*

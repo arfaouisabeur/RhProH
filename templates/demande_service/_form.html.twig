@@ -1,0 +1,614 @@
+{{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+
+{# ── Select Symfony caché (source de vérité — contient les options avec data-categorie) ── #}
+<div style="display:none;">
+  {{ form_widget(form.type) }}
+</div>
+<div style="color:#be123c;font-weight:700;margin-bottom:10px;">{{ form_errors(form.type) }}</div>
+
+{# ══════════════════════════════════════════════════════════
+   IA OPTION A — Recommandation intelligente par besoin
+══════════════════════════════════════════════════════════ #}
+<div id="svc-ai-reco-block" style="margin-bottom:24px;background:linear-gradient(135deg,rgba(109,40,217,.07),rgba(139,92,246,.04));border:1.5px solid rgba(109,40,217,.2);border-radius:18px;padding:18px 20px;position:relative;overflow:hidden;">
+  <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#8b5cf6,#6d28d9,#a78bfa);"></div>
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+    <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#8b5cf6,#6d28d9);display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px;flex-shrink:0;">
+      <i class="fas fa-robot"></i>
+    </div>
+    <div>
+      <div style="font-family:'Outfit',sans-serif;font-weight:900;color:#3b0764;font-size:1rem;">Pas sûr du type à choisir ?</div>
+      <div style="font-size:.8rem;color:#6d28d9;font-weight:600;">Décrivez votre besoin et l'IA vous recommande le bon service</div>
+    </div>
+  </div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;">
+    <input type="text" id="ai-besoin-input"
+           placeholder="Ex: Mon ordinateur ne démarre plus, j'ai besoin d'un badge d'accès…"
+           style="flex:1;min-width:200px;padding:10px 14px;border-radius:12px;border:1.5px solid rgba(109,40,217,.25);background:#fff;font-family:inherit;font-size:.9rem;outline:none;transition:border-color .2s;"
+           onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('btn-ai-reco').click();}">
+    <button type="button" id="btn-ai-reco"
+            style="display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border-radius:12px;border:none;background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:#fff;font-weight:900;cursor:pointer;font-family:inherit;font-size:.9rem;transition:all .2s;white-space:nowrap;"
+            title="Analyser avec l'IA">
+      <i class="fas fa-magic" id="btn-ai-reco-icon"></i>
+      <span id="btn-ai-reco-txt">Analyser</span>
+    </button>
+  </div>
+  {# Résultat de la recommandation IA #}
+  <div id="ai-reco-result" style="display:none;margin-top:14px;background:rgba(255,255,255,.9);border-radius:14px;padding:14px 16px;border:1px solid rgba(109,40,217,.15);">
+    <div style="font-size:.72rem;font-weight:900;text-transform:uppercase;letter-spacing:.08em;color:#6d28d9;margin-bottom:8px;">
+      <i class="fas fa-lightbulb"></i> Recommandation IA
+    </div>
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+      <div>
+        <div id="ai-reco-type" style="font-family:'Outfit',sans-serif;font-weight:900;font-size:1.1rem;color:#1e1b4b;"></div>
+        <div id="ai-reco-cat" style="font-size:.75rem;color:#8b5cf6;font-weight:700;text-transform:uppercase;letter-spacing:.07em;margin-top:2px;"></div>
+        <div id="ai-reco-expl" style="font-size:.85rem;color:#475569;margin-top:6px;line-height:1.5;"></div>
+      </div>
+      <div style="text-align:right;flex-shrink:0;">
+        <div id="ai-reco-conf-bar" style="width:80px;height:8px;border-radius:4px;background:#e9d5ff;overflow:hidden;margin-bottom:4px;">
+          <div id="ai-reco-conf-fill" style="height:100%;background:linear-gradient(90deg,#8b5cf6,#6d28d9);width:0%;transition:width .6s;"></div>
+        </div>
+        <div id="ai-reco-conf-txt" style="font-size:.75rem;font-weight:800;color:#6d28d9;"></div>
+        <button type="button" id="btn-ai-reco-appliquer"
+                style="margin-top:10px;display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:999px;border:none;background:linear-gradient(135deg,#10b981,#059669);color:#fff;font-weight:900;cursor:pointer;font-family:inherit;font-size:.82rem;transition:all .2s;"
+                title="Sélectionner ce type automatiquement">
+          <i class="fas fa-check"></i> Appliquer
+        </button>
+      </div>
+    </div>
+  </div>
+  <div id="ai-reco-error" style="display:none;margin-top:10px;color:#be123c;font-size:.85rem;font-weight:700;"></div>
+</div>
+
+{# ══════════════════════════════════════════════════════════
+   ÉTAPE 1 — Grille de cartes visuelles par catégorie
+══════════════════════════════════════════════════════════ #}
+<div id="svc-step1">
+  <div style="font-size:.78rem;font-weight:900;text-transform:uppercase;letter-spacing:.1em;color:#475569;margin-bottom:14px;display:flex;align-items:center;gap:8px;">
+    <i class="fas fa-layer-group" style="color:#10b981;"></i>
+    Étape 1 — Choisir une catégorie
+  </div>
+  <div class="svc-cat-grid" id="svc-cat-grid">
+    {# Généré par JS depuis les options du select caché #}
+  </div>
+</div>
+
+{# ══════════════════════════════════════════════════════════
+   ÉTAPE 2 — Chips cliquables par type
+══════════════════════════════════════════════════════════ #}
+<div id="svc-step2" style="display:none;margin-top:4px;">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
+    <div style="font-size:.78rem;font-weight:900;text-transform:uppercase;letter-spacing:.1em;color:#475569;display:flex;align-items:center;gap:8px;">
+      <i class="fas fa-tag" style="color:#10b981;"></i>
+      Étape 2 — Choisir le type
+      <span id="svc-cat-name" style="text-transform:none;font-size:.9rem;color:#047857;font-weight:900;"></span>
+    </div>
+    <button type="button" id="svc-back"
+      style="display:inline-flex;align-items:center;gap:6px;border:1.5px solid #e2e8f0;background:#f8fafc;border-radius:999px;padding:8px 14px;font-weight:800;color:#475569;cursor:pointer;font-family:inherit;font-size:.85rem;transition:all .16s;">
+      <i class="fas fa-arrow-left"></i> Changer
+    </button>
+  </div>
+  <div class="svc-chips" id="svc-chips"></div>
+
+  {# Aperçu de la sélection ─────────────── #}
+  <div id="svc-preview" style="display:none;margin-top:14px;
+      background:linear-gradient(135deg,rgba(16,185,129,.09),rgba(5,150,105,.04));
+      border:1.5px solid rgba(16,185,129,.28);border-radius:16px;padding:14px 18px;">
+    <div style="font-size:.72rem;font-weight:900;text-transform:uppercase;letter-spacing:.1em;color:#475569;margin-bottom:4px;">
+      ✅ Type sélectionné
+    </div>
+    <div style="font-family:'Outfit',sans-serif;font-weight:900;font-size:1.15rem;color:#064e3b;">
+      <i class="fas fa-check-circle" style="color:#10b981;margin-right:6px;"></i>
+      <span id="svc-preview-name"></span>
+    </div>
+  </div>
+</div>
+
+{# ── Priorité ── #}
+<div class="field" style="margin-top:20px;">
+  <div class="lbl">Priorité <span style="font-weight:500;text-transform:none;">(optionnel)</span></div>
+  <div style="position:relative;display:flex;align-items:center;">
+    <select id="svc-priorite-ui" class="ctl" style="appearance:none;-webkit-appearance:none;padding-right:42px;cursor:pointer;">
+      <option value="">— Sélectionner une priorité —</option>
+      <option value="Haute"   {% if form.vars.data and form.vars.data.priorite == 'Haute'   %}selected{% endif %}>🔴 Haute</option>
+      <option value="Moyenne" {% if form.vars.data and form.vars.data.priorite == 'Moyenne' %}selected{% endif %}>🟡 Moyenne</option>
+      <option value="Basse"   {% if form.vars.data and form.vars.data.priorite == 'Basse'   %}selected{% endif %}>🟢 Basse</option>
+    </select>
+    <i class="fas fa-chevron-down" style="position:absolute;right:14px;color:#94a3b8;font-size:13px;pointer-events:none;"></i>
+  </div>
+  {{ form_widget(form.priorite, {'attr': {'id': 'svc-priorite-real', 'style': 'display:none;'}}) }}
+</div>
+
+{# ── Description ── #}
+<div class="field">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+    <div class="lbl" style="margin-bottom:0;">Description</div>
+    <button type="button" id="btn-ai-service" class="btn-ai-svc" title="Générer une description professionnelle avec l'IA" disabled>
+      <span class="ai-svc-icon">✨ Générer avec l'IA</span>
+      <span class="ai-svc-spinner"></span>
+    </button>
+  </div>
+  <div style="position:relative;">
+    {{ form_widget(form.description, {'attr': {'class': 'ctl', 'placeholder': "Sélectionnez un type puis cliquez sur ✨ Générer avec l'IA…", 'rows': '4', 'id': 'svc-desc-field'}}) }}
+  </div>
+  <div id="ai-svc-badge" style="display:none;margin-top:8px;background:linear-gradient(135deg,rgba(109,40,217,.08),rgba(139,92,246,.05));border:1px solid rgba(109,40,217,.2);border-radius:10px;padding:8px 14px;font-size:.82rem;color:#5b21b6;font-weight:600;align-items:center;gap:8px;">
+    <i class="fas fa-magic" style="color:#8b5cf6;"></i> Description générée par IA — vous pouvez la modifier
+  </div>
+</div>
+
+{# ── Pièce jointe ── #}
+<div class="field">
+  <div class="lbl">Pièce jointe <span style="font-weight:500;text-transform:none;">(optionnel)</span></div>
+  {{ form_widget(form.pdf_path, {'attr': {'class': 'ctl', 'placeholder': 'Ex : uploads/justificatif.pdf'}}) }}
+</div>
+
+{{ form_rest(form) }}
+
+<div style="margin-top:16px;">
+  <button type="submit" class="btn-submit">
+    <i class="fas fa-paper-plane"></i> {{ button_label|default('Enregistrer') }}
+  </button>
+</div>
+
+{{ form_end(form) }}
+
+{# ══════ Styles ══════ #}
+<style>
+  /* ── Bouton AI service ── */
+  .btn-ai-svc {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+    color: white; border: none; cursor: pointer;
+    padding: 7px 16px; border-radius: 50px;
+    font-size: 0.78rem; font-weight: 700;
+    font-family: 'Inter', sans-serif;
+    box-shadow: 0 4px 14px rgba(109,40,217,0.3);
+    transition: all 0.25s; white-space: nowrap;
+  }
+  .btn-ai-svc:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(109,40,217,0.42); }
+  .btn-ai-svc:disabled { opacity: 0.5; cursor: not-allowed; }
+  .ai-svc-spinner {
+    display: none; width: 13px; height: 13px;
+    border: 2px solid rgba(255,255,255,0.4); border-top-color: white;
+    border-radius: 50%; animation: svcSpin 0.7s linear infinite;
+  }
+  .btn-ai-svc.loading .ai-svc-spinner { display: inline-block; }
+  .btn-ai-svc.loading .ai-svc-icon { display: none; }
+  @keyframes svcSpin { to { transform: rotate(360deg); } }
+
+  .svc-cat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+    gap: 12px;
+    margin-bottom: 4px;
+  }
+  .svc-cat-card {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 10px; padding: 18px 10px; border-radius: 18px;
+    border: 1.5px solid #e2e8f0; background: #fff;
+    cursor: pointer; text-align: center; user-select: none;
+    transition: transform .18s, box-shadow .18s, border-color .18s, background .18s;
+    min-height: 100px;
+  }
+  .svc-cat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 28px rgba(16,185,129,.14);
+    border-color: #10b981;
+    background: linear-gradient(135deg, rgba(16,185,129,.06), rgba(5,150,105,.03));
+  }
+  .svc-cat-card.svc-active {
+    border-color: #10b981;
+    background: linear-gradient(135deg, rgba(16,185,129,.12), rgba(5,150,105,.06));
+    box-shadow: 0 8px 22px rgba(16,185,129,.2);
+  }
+  .svc-cat-icon {
+    width: 46px; height: 46px; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 19px; flex-shrink: 0; transition: transform .18s;
+  }
+  .svc-cat-card:hover .svc-cat-icon { transform: scale(1.1); }
+  .svc-cat-lbl { font-family:'Inter',sans-serif; font-weight:700; font-size:.82rem; color:#0f172a; line-height:1.3; }
+
+  .svc-chips { display: flex; flex-wrap: wrap; gap: 10px; }
+  .svc-chip {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 18px; border-radius: 999px;
+    border: 1.5px solid #e2e8f0; background: #fff;
+    cursor: pointer; font-weight: 700; font-size: .88rem; color: #0f172a;
+    transition: all .18s; user-select: none;
+  }
+  .svc-chip:hover { border-color:#10b981; background:rgba(16,185,129,.08); color:#047857; transform:translateY(-2px); }
+  .svc-chip.svc-active {
+    border-color: #10b981; color: #fff;
+    background: linear-gradient(135deg, #10b981, #059669);
+    box-shadow: 0 6px 16px rgba(16,185,129,.28);
+  }
+  @keyframes svcIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+  .svc-anim { animation: svcIn .2s ease-out; }
+</style>
+
+{# ══════ Script ══════ #}
+<script>
+(function () {
+
+  /* ── Config couleurs/icônes ── */
+  var CFG = {
+    'Mat\u00e9riel informatique':    { fa:'fa-laptop',         bg:'#dbeafe', cl:'#2563eb' },
+    'V\u00e9hicule de service':      { fa:'fa-car',            bg:'#fef9c3', cl:'#ca8a04' },
+    'Fournitures de bureau':         { fa:'fa-briefcase',      bg:'#fce7f3', cl:'#db2777' },
+    'T\u00e9l\u00e9travail':         { fa:'fa-house-laptop',   bg:'#f0fdf4', cl:'#16a34a' },
+    'Formation professionnelle':     { fa:'fa-graduation-cap', bg:'#ede9fe', cl:'#7c3aed' },
+    'Maintenance / R\u00e9paration': { fa:'fa-wrench',         bg:'#ffedd5', cl:'#ea580c' },
+    'Acc\u00e8s logiciel / Licence': { fa:'fa-globe',          bg:'#e0f2fe', cl:'#0284c7' },
+    'Mission / D\u00e9placement':    { fa:'fa-plane',          bg:'#ecfdf5', cl:'#059669' },
+    'Remboursement de frais':        { fa:'fa-coins',          bg:'#fef3c7', cl:'#d97706' },
+    'Autre demande':                 { fa:'fa-lock',           bg:'#f1f5f9', cl:'#475569' }
+  };
+
+  /* ── Éléments DOM ── */
+  var hiddenSel  = document.getElementById('js-type-service')
+                || document.querySelector('select[name="demande_service[type]"]')
+                || document.querySelector('select[id$="_type"]');
+  var step1      = document.getElementById('svc-step1');
+  var step2      = document.getElementById('svc-step2');
+  var catGrid    = document.getElementById('svc-cat-grid');
+  var chipsEl    = document.getElementById('svc-chips');
+  var catNameEl  = document.getElementById('svc-cat-name');
+  var preview    = document.getElementById('svc-preview');
+  var previewNm  = document.getElementById('svc-preview-name');
+  var backBtn    = document.getElementById('svc-back');
+  var prioriteUI = document.getElementById('svc-priorite-ui');
+  var prioriteR  = document.getElementById('svc-priorite-real');
+
+  if (!hiddenSel || !catGrid) return;
+
+  /* ── Sync priorité ── */
+  if (prioriteUI && prioriteR) {
+    if (prioriteR.value) prioriteUI.value = prioriteR.value;
+    prioriteUI.addEventListener('change', function(){ prioriteR.value = this.value; });
+  }
+
+  /* ── Lire options du select Symfony → grouper par catégorie ── */
+  var cats   = [];
+  var catMap = {}; /* cat → [{value, text}, …] */
+  Array.from(hiddenSel.options).filter(function(o){ return o.value; }).forEach(function(o){
+    var cat = (o.getAttribute('data-categorie') || '').trim() || 'Autre demande';
+    if (!catMap[cat]) { catMap[cat]=[]; cats.push(cat); }
+    catMap[cat].push({ value: o.value, text: o.textContent.trim() });
+  });
+
+  if (!cats.length) return; /* aucun type en BDD */
+
+  /* ── ÉTAPE 1 : construire cartes ── */
+  cats.forEach(function(cat){
+    var c   = CFG[cat] || { fa:'fa-box-open', bg:'#f1f5f9', cl:'#475569' };
+    var card = document.createElement('div');
+    card.className = 'svc-cat-card';
+    card.dataset.cat = cat;
+    card.innerHTML =
+      '<div class="svc-cat-icon" style="background:' + c.bg + ';color:' + c.cl + ';">'
+      + '<i class="fas ' + c.fa + '"></i></div>'
+      + '<div class="svc-cat-lbl">' + cat + '</div>';
+    card.addEventListener('click', function(){ openStep2(cat); });
+    catGrid.appendChild(card);
+  });
+
+  /* ── Ouvrir ÉTAPE 2 ── */
+  function openStep2(cat) {
+    catNameEl.textContent = '\u2014 ' + cat;
+    chipsEl.innerHTML = '';
+    preview.style.display = 'none';
+
+    /* Marquer carte active */
+    catGrid.querySelectorAll('.svc-cat-card').forEach(function(c){
+      c.classList.toggle('svc-active', c.dataset.cat === cat);
+    });
+
+    /* Construire chips */
+    var items = (catMap[cat]||[]).slice().sort(function(a,b){ return a.text.localeCompare(b.text,'fr'); });
+    items.forEach(function(item){
+      var chip = document.createElement('div');
+      chip.className = 'svc-chip';
+      chip.dataset.val = item.value;
+      chip.innerHTML =
+        '<span style="width:7px;height:7px;border-radius:50%;background:currentColor;flex-shrink:0;display:inline-block;"></span>'
+        + item.text;
+      chip.addEventListener('click', function(){ selectItem(item.value, item.text, chip); });
+      chipsEl.appendChild(chip);
+    });
+
+    step1.style.display = 'none';
+    step2.style.display = 'block';
+    step2.classList.add('svc-anim');
+
+    /* Pré-cocher si déjà une valeur */
+    if (hiddenSel.value) {
+      var found = chipsEl.querySelector('[data-val="' + hiddenSel.value + '"]');
+      if (found) { found.classList.add('svc-active'); showPreview(found.textContent.trim()); }
+    }
+  }
+
+  /* ── Sélectionner un type ── */
+  function selectItem(val, nom, chip){
+    chipsEl.querySelectorAll('.svc-chip').forEach(function(c){ c.classList.remove('svc-active'); });
+    chip.classList.add('svc-active');
+    hiddenSel.value = val;
+    showPreview(nom);
+    /* Activer le bouton IA et déclencher la génération auto */
+    var btnAiSvc = document.getElementById('btn-ai-service');
+    if (btnAiSvc) {
+      btnAiSvc.disabled = false;
+      triggerAiService(nom);
+    }
+  }
+
+  function showPreview(nom){
+    previewNm.textContent = nom;
+    preview.style.display = 'block';
+  }
+
+  /* ── Retour ÉTAPE 1 ── */
+  if (backBtn) backBtn.addEventListener('click', function(){
+    step2.style.display = 'none';
+    step1.style.display = 'block';
+    step1.classList.add('svc-anim');
+    hiddenSel.value = '';
+    preview.style.display = 'none';
+    catGrid.querySelectorAll('.svc-cat-card').forEach(function(c){ c.classList.remove('svc-active'); });
+  });
+
+  /* ── Mode EDIT : pré-remplir ── */
+  if (hiddenSel.value) {
+    var cur = hiddenSel.value;
+    var opt = hiddenSel.querySelector('option[value="' + cur + '"]');
+    if (opt) {
+      var cat = (opt.getAttribute('data-categorie')||'').trim();
+      if (cat) openStep2(cat);
+    }
+  }
+
+})();
+
+/* ══════════════════════════════════════
+   IA — Génération de description (Service)
+══════════════════════════════════════ */
+(function () {
+  var aiSvcUrl  = '{{ path("app_demande_service_ai_description") }}';
+  var btnAiSvc  = document.getElementById('btn-ai-service');
+  var descSvc   = document.getElementById('svc-desc-field')
+               || document.querySelector('textarea[name$="[description]"]');
+  var aiBadge   = document.getElementById('ai-svc-badge');
+
+  window.triggerAiService = function(typeName) {
+    if (!typeName || !descSvc) return;
+    if (btnAiSvc) { btnAiSvc.disabled = true; btnAiSvc.classList.add('loading'); }
+
+    fetch(aiSvcUrl + '?type=' + encodeURIComponent(typeName))
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        if (data.description && descSvc) {
+          descSvc.value = data.description;
+          descSvc.style.borderColor = '#8b5cf6';
+          descSvc.style.boxShadow   = '0 0 0 4px rgba(139,92,246,0.12)';
+          setTimeout(function(){ descSvc.style.borderColor=''; descSvc.style.boxShadow=''; }, 1800);
+          if (aiBadge) { aiBadge.style.display = 'flex'; }
+        }
+      })
+      .catch(function(){
+        if (descSvc) descSvc.placeholder = 'Erreur IA — réessayez plus tard';
+      })
+      .finally(function(){
+        if (btnAiSvc) { btnAiSvc.disabled = false; btnAiSvc.classList.remove('loading'); }
+      });
+  };
+
+  /* Clic manuel sur le bouton IA */
+  if (btnAiSvc) {
+    btnAiSvc.addEventListener('click', function(){
+      var hiddenSel = document.getElementById('js-type-service')
+                   || document.querySelector('select[name="demande_service[type]"]')
+                   || document.querySelector('select[id$="_type"]');
+      var selOpt = hiddenSel && hiddenSel.value
+                 ? hiddenSel.options[hiddenSel.selectedIndex]
+                 : null;
+      var typeName = selOpt ? selOpt.textContent.trim() : '';
+      if (typeName) triggerAiService(typeName);
+    });
+  }
+})();
+
+/* ══════════════════════════════════════
+   VALIDATION JS SANS HTML5 — Demande Service
+══════════════════════════════════════ */
+(function () {
+  var form = document.querySelector('form');
+  if (!form) return;
+
+  /* Zone d'erreur globale (entre les étapes et priorité) */
+  var errBox = document.createElement('div');
+  errBox.id = 'svc-val-err';
+  errBox.style.cssText = 'display:none;background:#fff1f2;border:1.5px solid #fecdd3;border-radius:14px;padding:12px 16px;color:#be123c;font-weight:700;font-size:.9rem;margin-bottom:14px;display:none;align-items:center;gap:10px;';
+  errBox.innerHTML = '<i class="fas fa-exclamation-triangle"></i> <span id="svc-val-msg"></span>';
+
+  /* Insérer avant le champ priorité */
+  var prioriteField = document.querySelector('#svc-priorite-ui');
+  if (prioriteField) {
+    var fieldParent = prioriteField.closest('.field') || prioriteField.parentNode;
+    fieldParent.parentNode.insertBefore(errBox, fieldParent);
+  }
+
+  function showValErr(msg) {
+    errBox.style.display = 'flex';
+    var msgEl = document.getElementById('svc-val-msg');
+    if (msgEl) msgEl.textContent = msg;
+    errBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  function clearValErr() { errBox.style.display = 'none'; }
+
+  form.addEventListener('submit', function (e) {
+    var hiddenSel = document.getElementById('js-type-service')
+                  || document.querySelector('select[name="demande_service[type]"]')
+                  || document.querySelector('select[id$="_type"]');
+
+    /* Vérifier qu'une catégorie a été choisie */
+    var step1 = document.getElementById('svc-step1');
+    var step2 = document.getElementById('svc-step2');
+    var catChosen = step2 && step2.style.display !== 'none';
+
+    if (!catChosen) {
+      showValErr('Veuillez choisir une catégorie de service (Étape 1).');
+      e.preventDefault();
+      return;
+    }
+
+    /* Vérifier qu'un type a été sélectionné */
+    if (!hiddenSel || !hiddenSel.value) {
+      showValErr('Veuillez choisir un type de service (Étape 2).');
+      e.preventDefault();
+      return;
+    }
+
+    clearValErr();
+  });
+
+  /* Nettoyer l'erreur dès qu'un chip est cliqué */
+  document.addEventListener('click', function (e) {
+    if (e.target.closest && e.target.closest('.svc-chip')) clearValErr();
+    if (e.target.closest && e.target.closest('.svc-cat-card')) clearValErr();
+  });
+})();
+</script>
+
+<script>
+/* ══════════════════════════════════════════════
+   IA OPTION A — Recommandation de type de service
+══════════════════════════════════════════════ */
+(function () {
+  var RECO_URL   = '{{ path("app_demande_service_ai_recommander") }}';
+  var btnReco    = document.getElementById('btn-ai-reco');
+  var inputBesoin= document.getElementById('ai-besoin-input');
+  var recoResult = document.getElementById('ai-reco-result');
+  var recoError  = document.getElementById('ai-reco-error');
+  var recoType   = document.getElementById('ai-reco-type');
+  var recoCat    = document.getElementById('ai-reco-cat');
+  var recoExpl   = document.getElementById('ai-reco-expl');
+  var confFill   = document.getElementById('ai-reco-conf-fill');
+  var confTxt    = document.getElementById('ai-reco-conf-txt');
+  var btnApply   = document.getElementById('btn-ai-reco-appliquer');
+  var btnTxt     = document.getElementById('btn-ai-reco-txt');
+  var btnIcon    = document.getElementById('btn-ai-reco-icon');
+
+  if (!btnReco) return;
+
+  var _pendingTypeId = null;
+  var _pendingNom    = null;
+
+  btnReco.addEventListener('click', function () {
+    var besoin = inputBesoin ? inputBesoin.value.trim() : '';
+    if (besoin.length < 5) {
+      showRecoError('Décrivez votre besoin en quelques mots (au moins 5 caractères).');
+      return;
+    }
+
+    // État chargement
+    setLoading(true);
+    recoResult.style.display = 'none';
+    recoError.style.display  = 'none';
+
+    fetch(RECO_URL + '?besoin=' + encodeURIComponent(besoin), {
+      headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      if (data.error) { showRecoError(data.error); return; }
+      if (!data.typeRecommande || data.confiance === 0) {
+        showRecoError('Aucun service correspondant trouvé. Reformulez votre besoin.');
+        return;
+      }
+
+      // Afficher le résultat
+      _pendingTypeId = data.typeId || null;
+      _pendingNom    = data.typeRecommande;
+
+      recoType.textContent = '🎯 ' + data.typeRecommande;
+      recoCat.textContent  = data.categorie || '';
+      recoExpl.textContent = data.explication || '';
+
+      var pct = Math.min(100, Math.max(0, data.confiance));
+      confFill.style.width = pct + '%';
+      confTxt.textContent  = 'Confiance : ' + pct + '%';
+
+      // Couleur barre selon confiance
+      confFill.style.background = pct >= 70
+        ? 'linear-gradient(90deg,#10b981,#059669)'
+        : pct >= 40
+          ? 'linear-gradient(90deg,#f59e0b,#d97706)'
+          : 'linear-gradient(90deg,#f43f5e,#e11d48)';
+
+      recoResult.style.display = 'block';
+      recoResult.style.animation = 'fadeIn .35s ease both';
+    })
+    .catch(function (err) {
+      showRecoError('Erreur de connexion à l\'IA. Réessayez dans un instant.');
+      console.error('[AI Reco]', err);
+    })
+    .finally(function () { setLoading(false); });
+  });
+
+  // Bouton "Appliquer" — sélectionne automatiquement le type dans le formulaire
+  if (btnApply) {
+    btnApply.addEventListener('click', function () {
+      if (!_pendingTypeId && !_pendingNom) return;
+
+      // Trouver le select caché Symfony
+      var hiddenSel = document.querySelector('select[name="demande_service[type]"]')
+                   || document.getElementById('js-type-service')
+                   || document.querySelector('select[id$="_type"]');
+
+      if (!hiddenSel) return;
+
+      // Sélectionner l'option correspondante
+      var found = false;
+      for (var i = 0; i < hiddenSel.options.length; i++) {
+        var opt = hiddenSel.options[i];
+        if ((_pendingTypeId && String(opt.value) === String(_pendingTypeId))
+            || opt.textContent.trim() === _pendingNom) {
+          hiddenSel.selectedIndex = i;
+          hiddenSel.dispatchEvent(new Event('change'));
+          found = true;
+          break;
+        }
+      }
+
+      if (found) {
+        // Feedback visuel
+        btnApply.innerHTML = '<i class="fas fa-check-circle"></i> Appliqué !';
+        btnApply.style.background = 'linear-gradient(135deg,#8b5cf6,#6d28d9)';
+        setTimeout(function () {
+          btnApply.innerHTML = '<i class="fas fa-check"></i> Appliquer';
+          btnApply.style.background = 'linear-gradient(135deg,#10b981,#059669)';
+        }, 2000);
+
+        // Déclencher aussi l'IA description
+        setTimeout(function () {
+          var btnDesc = document.getElementById('btn-ai-service');
+          if (btnDesc && !btnDesc.disabled) btnDesc.click();
+        }, 500);
+      }
+    });
+  }
+
+  function setLoading(on) {
+    btnReco.disabled = on;
+    btnReco.style.opacity = on ? '.7' : '1';
+    if (btnTxt)  btnTxt.textContent  = on ? 'Analyse en cours…' : 'Analyser';
+    if (btnIcon) btnIcon.className   = on ? 'fas fa-spinner fa-spin' : 'fas fa-magic';
+  }
+
+  function showRecoError(msg) {
+    recoError.textContent    = '⚠️ ' + msg;
+    recoError.style.display  = 'block';
+    recoResult.style.display = 'none';
+  }
+})();
+</script>

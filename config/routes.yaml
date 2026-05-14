@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../vendor/symfony/routing/Loader/schema/routing.schema.json
+
+# This file is the entry point to configure the routes of your app.
+# Methods with the #[Route] attribute are automatically imported.
+# See also https://symfony.com/doc/current/routing.html
+
+# To list all registered routes, run the following command:
+#   bin/console debug:router
+
+controllers:
+    resource:
+        path: ../src/Controller/
+        namespace: App\Controller
+    type: attribute
+face_login:
+    path: /face-login
+    controller: App\Controller\FaceLoginController::faceLogin
+    methods: [POST]   
+
+
+# 🔥 QR CODE BUNDLE ROUTES
+qr_code_projet:
+    resource:
+        path: ../src/QrCodeProjetBundle/Controller/
+        namespace: App\QrCodeProjetBundle\Controller
+    type: attribute
+
+# 🔥 CALENDAR ROUTES
+calendar_bundle:
+    resource: '../vendor/tattali/calendar-bundle/config/routing.yaml'

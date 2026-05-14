@@ -1,0 +1,5 @@
+qr_code_projet:
+    resource:
+        path: ../../src/QrCodeProjetBundle/Controller/
+        namespace: App\QrCodeProjetBundle\Controller
+    type: attribute

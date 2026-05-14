@@ -1,0 +1,484 @@
+{% extends 'base.html.twig' %}
+{% block title %}{{ evenement.titre }} — Mon Espace{% endblock %}
+
+{% block styles %}
+:root { --green: #7c3aed; --green-dark: #6d28d9; --surface: #f5f0ff; --border: #e5e7eb; --text-dark: #111827; --text-muted: #6b7280; }
+body { background: var(--surface); }
+.emp-show { min-height: 100vh; background: var(--surface); font-family: 'Inter', sans-serif; padding-bottom: 60px; }
+
+.emp-breadcrumb { max-width: 1100px; margin: 0 auto; padding: 24px 32px 0; display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-muted); }
+.emp-breadcrumb a { color: var(--green-dark); text-decoration: none; font-weight: 500; }
+.emp-breadcrumb a:hover { text-decoration: underline; }
+
+/* Hero */
+.emp-hero {
+  position: relative; height: 300px; overflow: hidden; margin: 20px 0;
+  background: linear-gradient(135deg, #4c1d95, #7c3aed); display: flex; align-items: flex-end;
+}
+.emp-hero img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.6; }
+.emp-hero-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(6,78,59,0.9) 0%, transparent 60%); }
+.emp-hero-content { position: relative; z-index: 1; padding: 32px; max-width: 1100px; width: 100%; margin: 0 auto; }
+.emp-hero-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 100px; padding: 4px 12px; font-size: 11px; font-weight: 600; color: #a78bfa; margin-bottom: 10px;
+}
+.emp-hero-title { font-size: clamp(22px,4vw,34px); font-weight: 700; color: #fff; margin: 0; }
+
+/* Layout */
+.emp-layout { max-width: 1100px; margin: 28px auto 0; padding: 0 32px; display: grid; grid-template-columns: 1fr 300px; gap: 24px; }
+@media(max-width:768px){ .emp-layout { grid-template-columns: 1fr; padding: 0 16px; } }
+
+.emp-section { background: #fff; border-radius: 16px; border: 1px solid var(--border); padding: 24px; margin-bottom: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+.emp-section-title { font-size: 16px; font-weight: 700; color: var(--text-dark); margin: 0 0 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+.emp-desc { font-size: 14px; color: #374151; line-height: 1.75; margin: 0; }
+
+/* Activities */
+.act-item { display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; border-bottom: 1px solid #f3f4f6; }
+.act-item:last-child { border-bottom: none; }
+.act-icon { width: 32px; height: 32px; border-radius: 8px; background: #ede9fe; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--green-dark); }
+.act-title { font-size: 14px; font-weight: 600; color: var(--text-dark); margin: 0 0 2px; }
+.act-desc-text { font-size: 13px; color: var(--text-muted); margin: 0; }
+
+/* Sidebar */
+.sidebar-card { background: #fff; border-radius: 16px; border: 1px solid var(--border); padding: 22px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+.sidebar-title { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; margin: 0 0 14px; }
+.info-row { display: flex; align-items: flex-start; gap: 10px; padding: 9px 0; border-bottom: 1px solid #f3f4f6; }
+.info-row:last-child { border-bottom: none; }
+.info-icon { width: 30px; height: 30px; border-radius: 7px; background: #ede9fe; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--green-dark); }
+.info-label { font-size: 11px; color: var(--text-muted); margin-bottom: 1px; }
+.info-value { font-size: 13px; font-weight: 600; color: var(--text-dark); }
+.sentiment-badge {
+    display:inline-flex;align-items:center;gap:4px;
+    padding:3px 10px;border-radius:100px;font-size:11px;font-weight:600;
+}
+.sentiment-positif { background:#d1fae5;color:#065f46; }
+.sentiment-negatif { background:#fee2e2;color:#991b1b; }
+.sentiment-neutre  { background:#f3f4f6;color:#6b7280; }
+.sentiment-incoherent { outline: 2px dashed #f59e0b; outline-offset: -2px; }
+
+/* Participation card */
+.status-badge-full {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 8px 16px; border-radius: 100px; font-size: 12px; font-weight: 600;
+  width: 100%; justify-content: center; margin-bottom: 12px; box-sizing: border-box;
+}
+.status-pending  { background: #fef3c7; color: #92400e; }
+.status-accepted { background: #ede9fe; color: #5b21b6; }
+.status-refused  { background: #fee2e2; color: #991b1b; }
+
+.btn-participer {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 13px 20px; border-radius: 10px; font-size: 13px; font-weight: 600;
+  cursor: pointer; border: none; font-family: 'Inter', sans-serif; transition: transform 0.15s;
+  background: var(--green); color: #fff; width: 100%; margin-bottom: 10px;
+}
+.btn-participer:hover { transform: translateY(-1px); background: var(--green-dark); }
+.btn-annuler { background: #fee2e2; color: #991b1b; }
+.btn-annuler:hover { background: #fecaca; }
+.btn-back-sidebar {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 11px 20px; border-radius: 10px; font-size: 13px; font-weight: 500;
+  text-decoration: none; background: #f3f4f6; color: var(--text-muted);
+  border: 1px solid var(--border); transition: background 0.2s; width: 100%; box-sizing: border-box;
+}
+.btn-back-sidebar:hover { background: #ede9fe; color: var(--green-dark); text-decoration: none; }
+
+/* Map Section */
+.map-section { position: relative; overflow: hidden; }
+#event-map { width: 100%; height: 360px; border-radius: 12px; border: 1px solid var(--border); z-index: 1; }
+.map-info { display: flex; align-items: center; gap: 8px; margin-top: 12px; padding: 10px 14px; background: #f8f5ff; border-radius: 10px; font-size: 13px; color: var(--text-muted); }
+.map-info svg { flex-shrink: 0; }
+.btn-itineraire { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 20px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; font-family: 'Inter', sans-serif; transition: transform 0.15s, box-shadow 0.2s; background: linear-gradient(135deg, #4285f4, #34a853); color: #fff; width: 100%; margin-top: 12px; text-decoration: none; }
+.btn-itineraire:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(66,133,244,0.35); color: #fff; text-decoration: none; }
+@keyframes mfade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.map-fade-in { animation: mfade 0.5s ease-out; }
+
+/* Weather Widget */
+.weather-card {
+    background: linear-gradient(135deg, #6d28d9 0%, #7c3aed 100%);
+    border-radius: 16px; padding: 20px; color: #fff; margin-bottom: 16px;
+    box-shadow: 0 10px 25px rgba(124, 58, 237, 0.2); position: relative; overflow: hidden;
+}
+.weather-card::before {
+    content: ''; position: absolute; top: -50%; right: -20%; width: 150px; height: 150px;
+    background: rgba(255,255,255,0.1); border-radius: 50%; blur: 40px;
+}
+.weather-main { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
+.weather-temp { font-size: 32px; font-weight: 800; }
+.weather-desc { font-size: 13px; opacity: 0.9; margin-top: -4px; }
+.weather-icon-img { width: 50px; height: 50px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
+.weather-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.2); }
+.weather-stat { display: flex; align-items: center; gap: 8px; font-size: 11px; }
+.weather-stat svg { opacity: 0.8; }
+.weather-badge {
+    display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px;
+    border-radius: 100px; font-size: 11px; font-weight: 700; width: 100%;
+    justify-content: center; margin-top: 15px; text-transform: uppercase; letter-spacing: 0.05em;
+}
+.badge-favorable { background: #d1fae5; color: #065f46; }
+.badge-defavorable { background: #fee2e2; color: #991b1b; }
+{% endblock %}
+
+{% block body %}
+<div class="emp-show">
+  <div class="emp-breadcrumb">
+    <a href="{{ path('app_employe_evenements') }}">Événements</a>
+    <span>›</span>
+    <span>{{ evenement.titre }}</span>
+  </div>
+
+  {# Hero #}
+  <div class="emp-hero">
+    {% if evenement.imageUrl %}
+      <img src="{{ evenement.imageUrl }}" alt="{{ evenement.titre }}">
+    {% endif %}
+    <div class="emp-hero-overlay"></div>
+    <div class="emp-hero-content">
+      <div class="emp-hero-badge">
+        {% set today = "now"|date("Y-m-d") %}
+        {% if evenement.dateDebut <= today and evenement.dateFin >= today %}● En cours
+        {% elseif evenement.dateDebut > today %}● À venir
+        {% else %}● Terminé{% endif %}
+      </div>
+      <h1 class="emp-hero-title">{{ evenement.titre }}</h1>
+    </div>
+  </div>
+
+  <div class="emp-layout">
+    {# Main #}
+    <div>
+      {% if evenement.description %}
+      <div class="emp-section">
+        <h3 class="emp-section-title">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2"><line x1="21" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="21" y1="18" x2="3" y2="18"/></svg>
+          Description
+        </h3>
+        <p class="emp-desc">{{ evenement.description }}</p>
+      </div>
+      {% endif %}
+
+      {# ── Carte Interactive (si coordonnées disponibles) ── #}
+      {% if evenement.latitude and evenement.longitude %}
+      <div class="emp-section map-section map-fade-in">
+        <h3 class="emp-section-title">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          Localisation de l'événement
+        </h3>
+        <div id="event-map"></div>
+        <div class="map-info">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          📍 {{ evenement.lieu }}
+        </div>
+        <a class="btn-itineraire" href="https://www.google.com/maps/dir/?api=1&destination={{ evenement.latitude }},{{ evenement.longitude }}&travelmode=driving" target="_blank" rel="noopener">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2L4.5 20.3l.7.7L12 18l6.8 3 .7-.7z"/></svg>
+          Ouvrir dans Google Maps
+        </a>
+      </div>
+      {% endif %}
+
+      {% if evenement.activites|length > 0 %}
+      <div class="emp-section">
+        <h3 class="emp-section-title">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          Activités au programme ({{ evenement.activites|length }})
+        </h3>
+        {% for activite in evenement.activites %}
+        <div class="act-item">
+          <div class="act-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          </div>
+          <div>
+            <p class="act-title">{{ activite.titre }}</p>
+            {% if activite.description %}<p class="act-desc-text">{{ activite.description }}</p>{% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      {# ── Formulaire d'avis (uniquement si participation acceptée et pas encore noté) ── #}
+      {% if peutNoter %}
+      <div class="emp-section">
+        <h3 class="emp-section-title">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          Donner mon avis
+        </h3>
+        <p style="font-size:13px;color:var(--text-muted);margin:0 0 14px;line-height:1.6;">
+          Décrivez votre expérience — l'intelligence artificielle attribuera automatiquement un nombre d'étoiles en fonction de votre commentaire. ✨
+        </p>
+        <form method="post" action="{{ path('app_employe_noter', {'id': evenement.id}) }}" id="rating-form">
+          <input type="hidden" name="_token" value="{{ csrf_token('noter' ~ evenement.id) }}">
+          <textarea
+            name="commentaire"
+            id="rating-commentaire"
+            rows="4"
+            placeholder="Partagez votre expérience sur cet événement… (minimum 10 caractères)"
+            style="width:100%;border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-size:13px;font-family:'Inter',sans-serif;resize:vertical;box-sizing:border-box;transition:border-color 0.2s;"
+            onfocus="this.style.borderColor='#7c3aed'" onblur="this.style.borderColor='var(--border)'"
+            required minlength="10"
+          ></textarea>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px;">
+            <span id="char-count" style="font-size:11px;color:var(--text-muted);">0 caractères</span>
+            <button type="submit" class="btn-participer" id="btn-submit-rating" style="width:auto;padding:10px 24px;" disabled>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+              Envoyer mon avis
+            </button>
+          </div>
+        </form>
+      </div>
+      {% endif %}
+
+      {# ── Mon avis (si déjà noté) ── #}
+      {% if monRating %}
+      <div class="emp-section" style="border-left:3px solid #7c3aed;">
+        <h3 class="emp-section-title">
+          ✍️ Mon avis
+        </h3>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+          <span style="color:#f59e0b;font-size:15px;">
+            {% for i in 1..monRating.etoiles %}★{% endfor %}{% for i in monRating.etoiles + 1..5 %}☆{% endfor %}
+          </span>
+          <span style="font-size:12px;color:var(--text-muted);">({{ monRating.etoiles }}/5 — attribué par l'IA)</span>
+          <span id="emp-badge-{{ monRating.id }}"
+                class="sentiment-badge"
+                data-rating-id="{{ monRating.id }}">
+            ⏳
+          </span>
+        </div>
+        <p style="font-size:13px;color:#374151;margin:0;line-height:1.6;font-style:italic;">
+          « {{ monRating.commentaire }} »
+        </p>
+        <p style="font-size:11px;color:var(--text-muted);margin:8px 0 0;">
+          Publié le {{ monRating.dateCreation }}
+        </p>
+      </div>
+      {% endif %}
+
+      {# ── Avis des autres participants ── #}
+      {% if evenement.ratings|length > 0 %}
+      <div class="emp-section">
+        <h3 class="emp-section-title">
+          ⭐ Avis des participants ({{ evenement.ratings|length }})
+        </h3>
+
+        {% for rating in evenement.ratings %}
+        <div style="padding:14px 0;border-bottom:1px solid #f3f4f6;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
+            <span style="font-size:13px;font-weight:600;color:#111827;">
+              {{ rating.employe.user.prenom }} {{ rating.employe.user.nom }}
+            </span>
+            <span style="color:#f59e0b;font-size:13px;">
+              {% for i in 1..rating.etoiles %}★{% endfor %}
+            </span>
+            <span id="emp-badge-{{ rating.id }}"
+                  class="sentiment-badge"
+                  data-rating-id="{{ rating.id }}">
+              ⏳
+            </span>
+          </div>
+          <p style="font-size:13px;color:#374151;margin:0;line-height:1.6;">
+            {{ rating.commentaire }}
+          </p>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+
+    {# Sidebar #}
+    <div>
+      {% if weather %}
+      <div class="weather-card">
+        <p class="sidebar-title" style="color: rgba(255,255,255,0.7); margin-bottom: 8px;">Météo prévue</p>
+        <div class="weather-main">
+            <div>
+                <div class="weather-temp">{{ weather.temp }}°C</div>
+                <div class="weather-desc">{{ weather.description }}</div>
+            </div>
+            <img src="https://openweathermap.org/img/wn/{{ weather.icon }}@2x.png" class="weather-icon-img" alt="Weather Icon">
+        </div>
+        
+        <div class="weather-grid">
+            <div class="weather-stat">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.59 4.59A5 5 0 1 1 16 11V16a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-5a5 5 0 0 1 3.59-6.41z"/></svg>
+                <span>Vent: {{ weather.wind }} km/h</span>
+            </div>
+            <div class="weather-stat">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
+                <span>Humidité: {{ weather.humidity }}%</span>
+            </div>
+        </div>
+
+        {% if weather.isFavorable %}
+            <div class="weather-badge badge-favorable">✨ Météo favorable</div>
+        {% else %}
+            <div class="weather-badge badge-defavorable">⚠ Météo défavorable</div>
+        {% endif %}
+      </div>
+      {% endif %}
+
+      <div class="sidebar-card">
+        <p class="sidebar-title">Informations</p>
+        <div class="info-row">
+          <div class="info-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+          <div><div class="info-label">Début</div><div class="info-value">{{ evenement.dateDebut }}</div></div>
+        </div>
+        <div class="info-row">
+          <div class="info-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+          <div><div class="info-label">Fin</div><div class="info-value">{{ evenement.dateFin }}</div></div>
+        </div>
+        <div class="info-row">
+          <div class="info-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+          <div><div class="info-label">Lieu</div><div class="info-value">{{ evenement.lieu }}</div></div>
+        </div>
+      </div>
+
+      <div class="sidebar-card">
+        <p class="sidebar-title">Ma participation</p>
+
+        {% if maParticipation %}
+          <span class="status-badge-full {% if maParticipation.statut == 'en_attente' %}status-pending{% elseif maParticipation.statut == 'accepte' %}status-accepted{% else %}status-refused{% endif %}">
+            {% if maParticipation.statut == 'en_attente' %}⏳ En attente de validation
+            {% elseif maParticipation.statut == 'accepte' %}✓ Participation acceptée
+            {% else %}✗ Participation refusée{% endif %}
+          </span>
+          <p style="font-size:12px;color:var(--text-muted);text-align:center;margin:0 0 12px;">Inscrit le {{ maParticipation.dateInscription }}</p>
+          
+          {% if maParticipation.statut == 'accepte' %}
+            <a href="{{ path('app_employe_ticket', {'id': evenement.id}) }}" class="btn-participer" style="background: #e91e63; margin-bottom: 12px; text-decoration: none;">
+                🎟️ Télécharger mon ticket
+            </a>
+          {% endif %}
+
+          {% if maParticipation.statut == 'en_attente' %}
+          <form method="post" action="{{ path('app_employe_annuler_participation', {'id': maParticipation.id}) }}" onsubmit="return confirm('Annuler votre participation ?');">
+            <input type="hidden" name="_token" value="{{ csrf_token('annuler' ~ maParticipation.id) }}">
+            <button type="submit" class="btn-participer btn-annuler">Annuler ma participation</button>
+          </form>
+          {% endif %}
+        {% else %}
+          <p style="font-size:13px;color:var(--text-muted);margin:0 0 14px;">Vous n'êtes pas encore inscrit à cet événement.</p>
+          <form method="post" action="{{ path('app_employe_participer', {'id': evenement.id}) }}">
+            <input type="hidden" name="_token" value="{{ csrf_token('participer' ~ evenement.id) }}">
+            <button type="submit" class="btn-participer">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Participer à cet événement
+            </button>
+          </form>
+        {% endif %}
+
+        <a href="{{ path('app_employe_evenements') }}" class="btn-back-sidebar">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+          Retour aux événements
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+
+{# ── Leaflet.js CDN (uniquement si coordonnées disponibles) ── #}
+{% if evenement.latitude and evenement.longitude %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+{% endif %}
+
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+    // ─── Sentiment badges (AJAX) ───
+    const badges = document.querySelectorAll('[id^="emp-badge-"]');
+    for (const badge of badges) {
+        const ratingId = badge.dataset.ratingId;
+        try {
+            const res  = await fetch(`/sentiment/rating/${ratingId}`);
+            if (!res.ok) throw new Error(res.status);
+            const data = await res.json();
+            const s    = data.sentiment;
+
+            badge.className = `sentiment-badge ${s.color}`;
+            badge.textContent = `${s.emoji} ${s.label.charAt(0).toUpperCase() + s.label.slice(1)}`;
+
+            if (s.coherent === false) {
+                badge.classList.add('sentiment-incoherent');
+                badge.title = '⚠ Incohérence détectée entre la note et le commentaire';
+            }
+        } catch (e) {
+            badge.textContent = '';
+        }
+    }
+
+    // ─── Formulaire d'avis : compteur + validation ───
+    const textarea = document.getElementById('rating-commentaire');
+    const counter  = document.getElementById('char-count');
+    const btn      = document.getElementById('btn-submit-rating');
+    const form     = document.getElementById('rating-form');
+
+    if (textarea && counter && btn) {
+        textarea.addEventListener('input', () => {
+            const len = textarea.value.trim().length;
+            counter.textContent = len + ' caractère' + (len > 1 ? 's' : '');
+            btn.disabled = len < 10;
+            counter.style.color = len < 10 ? '#ef4444' : 'var(--text-muted)';
+        });
+    }
+
+    // Loading state au submit
+    if (form && btn) {
+        form.addEventListener('submit', () => {
+            btn.disabled = true;
+            btn.innerHTML = `
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation:spin 1s linear infinite">
+                    <circle cx="12" cy="12" r="10" stroke-dasharray="60" stroke-dashoffset="20"/>
+                </svg>
+                L'IA analyse votre commentaire…
+            `;
+        });
+    }
+
+    // ─── 🗺️ CARTE INTERACTIVE LEAFLET ───
+    {% if evenement.latitude and evenement.longitude %}
+    (function() {
+        const eventLat = {{ evenement.latitude }};
+        const eventLon = {{ evenement.longitude }};
+        const eventLieu = {{ evenement.lieu|json_encode|raw }};
+
+        // ── Initialiser la carte Leaflet ──
+        const map = L.map('event-map', {
+            scrollWheelZoom: false,
+            zoomControl: true,
+        }).setView([eventLat, eventLon], 15);
+
+        // Tuiles OpenStreetMap
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+            maxZoom: 19,
+        }).addTo(map);
+
+        // ── Marqueur rouge : lieu de l'événement 📍 ──
+        const eventIcon = L.divIcon({
+            className: '',
+            html: `<div style="
+                width: 32px; height: 32px; background: #ef4444; border: 3px solid #fff;
+                border-radius: 50%; box-shadow: 0 2px 10px rgba(239,68,68,0.5);
+                display: flex; align-items: center; justify-content: center;
+            "><svg width="14" height="14" viewBox="0 0 24 24" fill="#fff" stroke="none"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3" fill="#ef4444"/></svg></div>`,
+            iconSize: [32, 32],
+            iconAnchor: [16, 16],
+        });
+
+        L.marker([eventLat, eventLon], { icon: eventIcon })
+            .addTo(map)
+            .bindPopup(`<strong style="font-size:13px;">${eventLieu}</strong><br><span style="font-size:11px;color:#6b7280;">Lieu de l'événement</span>`)
+            .openPopup();
+    })();
+    {% endif %}
+});
+</script>
+<style>
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+{% endblock %}

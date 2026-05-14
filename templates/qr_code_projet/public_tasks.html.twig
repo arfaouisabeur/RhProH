@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tâches - {{ projet.titre }}</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --surface-color: rgba(255, 255, 255, 0.03);
+            --surface-border: rgba(255, 255, 255, 0.08);
+            --primary: #8b5cf6;
+            --primary-glow: rgba(139, 92, 246, 0.4);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(139, 92, 246, 0.15) 0%, transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(56, 189, 248, 0.1) 0%, transparent 25%);
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 480px; /* Mobile first structure */
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .app-header {
+            padding: 2rem 1.5rem;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            background: rgba(11, 15, 25, 0.7);
+            border-bottom: 1px solid var(--surface-border);
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .project-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.25rem;
+        }
+
+        .project-meta {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .status-badge.active { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.2); }
+        .status-badge.pending { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.2); }
+        .status-badge.completed { background: rgba(139, 92, 246, 0.15); color: #a78bfa; border: 1px solid rgba(139, 92, 246, 0.2); }
+
+        /* Task List */
+        .task-list {
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            flex-grow: 1;
+        }
+
+        .task-card {
+            background: var(--surface-color);
+            border: 1px solid var(--surface-border);
+            border-radius: 16px;
+            padding: 1.25rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .task-card:active {
+            transform: scale(0.98);
+        }
+
+        .task-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 4px; height: 100%;
+            background: var(--primary);
+            border-radius: 4px 0 0 4px;
+        }
+
+        .task-card[data-priority="Haute"]::before { background: var(--danger); }
+        .task-card[data-priority="Moyenne"]::before { background: var(--warning); }
+        .task-card[data-priority="Basse"]::before { background: var(--success); }
+
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.75rem;
+        }
+
+        .task-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-main);
+            line-height: 1.4;
+        }
+
+        .task-desc {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+
+        .task-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 1rem;
+            border-top: 1px solid var(--surface-border);
+        }
+
+        .assignee {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .assignee-avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: white;
+            box-shadow: 0 0 10px var(--primary-glow);
+        }
+
+        .task-dates {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .task-dates i {
+            color: var(--primary);
+        }
+
+        /* Empty State */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 300px;
+            text-align: center;
+            color: var(--text-muted);
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            background: -webkit-linear-gradient(45deg, var(--primary), #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <div>
+                    <h1 class="project-title">{{ projet.titre }}</h1>
+                    <div class="project-meta">
+                        <i class="fa-solid fa-calendar-alt"></i>
+                        Echéance : {{ projet.dateFin ? projet.dateFin|date('d M Y') : 'N/A' }}
+                    </div>
+                </div>
+                <div class="status-badge 
+                    {% if projet.statut|lower == 'en cours' %}active
+                    {% elseif projet.statut|lower == 'terminé' %}completed
+                    {% else %}pending{% endif %}">
+                    {{ projet.statut }}
+                </div>
+            </div>
+        </header>
+
+        <!-- Tasks -->
+        <main class="task-list">
+            {% if tasks is empty %}
+                <div class="empty-state">
+                    <i class="fa-solid fa-clipboard-check empty-icon"></i>
+                    <h3>Aucune tâche</h3>
+                    <p>Ce projet ne contient aucune tâche assignée pour le moment.</p>
+                </div>
+            {% else %}
+                {% for task in tasks %}
+                    <div class="task-card" data-priority="{{ task.level }}">
+                        <div class="task-header">
+                            <h3 class="task-title">{{ task.titre }}</h3>
+                        </div>
+                        
+                        <p class="task-desc">
+                            {{ task.description|length > 80 ? task.description|slice(0, 80) ~ '...' : task.description }}
+                        </p>
+                        
+                        <div class="task-footer">
+                            <div class="assignee">
+                                <div class="assignee-avatar">
+                                    {{ task.employe and task.employe.user ? task.employe.user.nom|first : '?' }}{{ task.employe and task.employe.user ? task.employe.user.prenom|first : '?' }}
+                                </div>
+                                <span>{{ task.employe and task.employe.user ? task.employe.user.nom : 'Non' }} {{ task.employe and task.employe.user ? task.employe.user.prenom : 'Assigné' }}</span>
+                            </div>
+                            
+                            <div class="task-dates">
+                                <i class="fa-regular fa-clock"></i>
+                                {{ task.dateFin ? task.dateFin|date('d/m/Y') : 'N/A' }}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </main>
+    </div>
+
+</body>
+</html>

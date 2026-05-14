@@ -1,0 +1,88 @@
+security:
+    password_hashers:
+        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
+        App\Entity\User:
+            algorithm: auto
+
+    providers:
+        app_user_provider:
+            entity:
+                class: App\Entity\User
+                property: email
+
+    firewalls:
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+
+        main:
+            lazy: true
+            provider: app_user_provider
+            custom_authenticator:
+                - App\Security\LoginFormAuthenticator
+                - App\Security\GoogleAuthenticator
+            entry_point: App\Security\LoginFormAuthenticator
+            logout:
+                path: app_logout
+                target: app_home
+
+    access_control:
+
+        # ── PUBLIC (sans connexion) ────────────────────────────────────────
+        - { path: ^/login,                        roles: PUBLIC_ACCESS }
+        - { path: ^/register,                     roles: PUBLIC_ACCESS }
+        - { path: ^/home,                         roles: PUBLIC_ACCESS }
+        - { path: ^/$,                            roles: PUBLIC_ACCESS }
+        - { path: ^/connect/google, roles: PUBLIC_ACCESS }
+        - { path: ^/connect/google/check, roles: PUBLIC_ACCESS }
+        - { path: ^/captcha, roles: PUBLIC_ACCESS }      # ✅ captcha
+        - { path: ^/send-otp, roles: PUBLIC_ACCESS }     # ✅ forgot password
+        - { path: ^/verify-otp, roles: PUBLIC_ACCESS }   # ✅ si tu as cette route aussi
+        - { path: ^/reset-password, roles: PUBLIC_ACCESS }
+        - { path: ^/face-login, roles: PUBLIC_ACCESS }
+
+
+        # Vérification certificat blockchain (lien public envoyé par email)
+        - { path: ^/candidature/verify,           roles: PUBLIC_ACCESS }
+
+        # Génération lettre de motivation IA (utilisée par le candidat)
+        - { path: ^/candidature/generate-lettre,  roles: ROLE_CANDIDAT }
+
+        # ── ESPACE RH ─────────────────────────────────────────────────────
+        - { path: ^/rh,                           roles: ROLE_RH }
+        - { path: ^/admin,                        roles: ROLE_RH }
+
+        # Gestion des candidatures (liste, détail, édition, analyse IA)
+        - { path: ^/candidature,                  roles: ROLE_RH }
+
+        # Gestion des offres d'emploi
+        - { path: ^/offres/new,                   roles: ROLE_RH }
+        - { path: ^/offres/.+/edit,               roles: ROLE_RH }
+        - { path: ^/offres/.+/delete,             roles: ROLE_RH }
+
+        - { path: ^/reponse,                      roles: ROLE_RH }
+        - { path: ^/type-service,                 roles: ROLE_RH }
+
+        # ── ESPACE CANDIDAT ───────────────────────────────────────────────
+        - { path: ^/candidat,                     roles: ROLE_CANDIDAT }
+        - { path: ^/mes-candidatures,             roles: ROLE_CANDIDAT }
+
+        # Liste des offres visible par tous les connectés
+        - { path: ^/offres,                       roles: IS_AUTHENTICATED_FULLY }
+
+        # ── ESPACE EMPLOYÉ ────────────────────────────────────────────────
+        - { path: ^/employe,                      roles: ROLE_EMPLOYE }
+        - { path: ^/conge/tt/new,                 roles: ROLE_EMPLOYE }
+        - { path: ^/conge/tt,                     roles: [ROLE_EMPLOYE, ROLE_RH] }
+        - { path: ^/demande-service,              roles: [ROLE_EMPLOYE, ROLE_RH] }
+        - { path: ^/evenement,                    roles: [ROLE_EMPLOYE, ROLE_RH] }
+        - { path: ^/participation,                roles: [ROLE_EMPLOYE, ROLE_RH] }
+
+        # ── DASHBOARD ─────────────────────────────────────────────────────
+        - { path: ^/dashboard,                    roles: IS_AUTHENTICATED_FULLY }
+
+        # ── DÉFAUT : toute route non listée nécessite une connexion ────────
+        - { path: ^/,                             roles: IS_AUTHENTICATED_FULLY }
+
+    role_hierarchy:
+        ROLE_RH: [ROLE_USER, ROLE_CANDIDAT, ROLE_EMPLOYE]

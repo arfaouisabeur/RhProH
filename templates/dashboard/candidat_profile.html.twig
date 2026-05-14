@@ -1,0 +1,619 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mon Profil - Candidat{% endblock %}
+
+{% block body %}
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --purple:       #5b2b82;
+    --purple-dark:  #3d1a5c;
+    --purple-light: #7c3dac;
+    --gold:         #b39ddb;
+    --gold-light:   #d1c4e9;
+    --white:        #ffffff;
+    --off-white:    #f7f4f0;
+    --text-dark:    #1a1020;
+    --text-muted:   #8a7a9a;
+    --danger:       #e53935;
+    --danger-soft:  #fef2f2;
+  }
+
+  body { font-family: 'DM Sans', sans-serif; background: var(--off-white); color: var(--text-dark); min-height: 100vh; }
+
+  .profile-shell { display: grid; grid-template-columns: 260px 1fr; min-height: calc(100vh - 68px); }
+
+  .profile-sidebar {
+    background: linear-gradient(180deg, #1a0a2e 0%, #3d1a5c 60%, #2a0d45 100%);
+    position: relative; overflow: hidden; padding: 36px 0 32px; display: flex; flex-direction: column;
+  }
+  .profile-sidebar::before {
+    content: ''; position: absolute; inset: 0;
+    background-image: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(201,168,76,0.08) 0%, transparent 60%), repeating-linear-gradient(45deg, transparent, transparent 30px, rgba(255,255,255,0.012) 30px, rgba(255,255,255,0.012) 31px);
+    pointer-events: none;
+  }
+  .profile-sidebar::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--gold), transparent); opacity: 0.6; }
+
+  .sidebar-avatar-wrap { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; padding: 0 24px 32px; border-bottom: 1px solid rgba(255,255,255,0.07); margin-bottom: 16px; }
+  .sidebar-avatar { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid rgba(201,168,76,0.5); box-shadow: 0 0 0 4px rgba(201,168,76,0.1); margin-bottom: 14px; }
+  .sidebar-avatar-initials { width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, var(--purple), var(--purple-light)); border: 3px solid rgba(201,168,76,0.5); box-shadow: 0 0 0 4px rgba(201,168,76,0.1); display: flex; align-items: center; justify-content: center; font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 700; color: var(--white); margin-bottom: 14px; }
+  .sidebar-name { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 700; color: var(--white); text-align: center; margin-bottom: 6px; }
+  .sidebar-badge { display: inline-flex; align-items: center; gap: 5px; background: rgba(201,168,76,0.12); border: 1px solid rgba(201,168,76,0.3); border-radius: 100px; padding: 3px 12px; font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold-light); }
+  .sidebar-badge::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 5px var(--gold); }
+
+  .sidebar-nav { position: relative; z-index: 1; padding: 0 12px; flex: 1; display: flex; flex-direction: column; gap: 2px; }
+  .sidebar-nav-section { font-size: 9px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(255,255,255,0.25); padding: 16px 10px 8px; }
+  .sidebar-nav-link { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.55); text-decoration: none; transition: background 0.15s, color 0.15s; cursor: pointer; border: none; background: none; width: 100%; text-align: left; font-family: 'DM Sans', sans-serif; }
+  .sidebar-nav-link:hover { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.9); }
+  .sidebar-nav-link.active { background: rgba(255,255,255,0.1); color: var(--white); }
+  .sidebar-nav-link.active .nav-link-icon { color: var(--gold-light); }
+  .nav-link-icon { width: 28px; height: 28px; border-radius: 7px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: rgba(255,255,255,0.4); transition: color 0.15s, background 0.15s; }
+  .sidebar-nav-link:hover .nav-link-icon { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.7); }
+  .sidebar-nav-link.danger { color: #f87171; margin-top: auto; }
+  .sidebar-nav-link.danger .nav-link-icon { color: #f87171; }
+  .sidebar-nav-link.danger:hover { background: rgba(248,113,113,0.08); }
+  .sidebar-sep { height: 1px; background: rgba(255,255,255,0.07); margin: 10px 12px; }
+
+  .profile-main { padding: 40px 48px; overflow-y: auto; }
+  .page-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 36px; animation: fadeUp 0.8s ease both; }
+  .page-label { font-size: 10px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--purple); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+  .page-label::before { content: ''; width: 18px; height: 2px; background: var(--gold); border-radius: 1px; }
+  .page-title { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 700; color: var(--text-dark); letter-spacing: -0.02em; margin-bottom: 4px; }
+  .page-title em { font-style: normal; color: var(--purple); }
+  .page-subtitle { font-size: 13px; color: var(--text-muted); }
+
+  .flash-success { background: #f0fdf4; border: 1.5px solid rgba(34,197,94,0.25); border-radius: 12px; padding: 14px 18px; font-size: 13px; color: #15803d; margin-bottom: 28px; display: flex; align-items: center; gap: 10px; animation: fadeUp 0.5s ease both; }
+
+  .profile-grid { display: grid; grid-template-columns: 1fr 300px; gap: 24px; animation: fadeUp 0.9s ease both; }
+
+  .rh-card { background: var(--white); border: 1.5px solid rgba(91,43,130,0.08); border-radius: 18px; overflow: hidden; }
+  .rh-card-header { padding: 20px 24px; border-bottom: 1px solid rgba(91,43,130,0.07); display: flex; align-items: center; gap: 10px; }
+  .rh-card-header-icon { width: 34px; height: 34px; border-radius: 9px; background: linear-gradient(135deg, rgba(91,43,130,0.1), rgba(91,43,130,0.05)); border: 1px solid rgba(91,43,130,0.1); display: flex; align-items: center; justify-content: center; color: var(--purple); }
+  .rh-card-header h5 { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 700; color: var(--text-dark); margin: 0; }
+  .rh-card-body { padding: 24px; }
+
+  .form-section-title { font-size: 10px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--purple); opacity: 0.7; margin: 24px 0 14px; display: flex; align-items: center; gap: 10px; }
+  .form-section-title:first-child { margin-top: 0; }
+  .form-section-title::after { content: ''; flex: 1; height: 1px; background: rgba(91,43,130,0.1); }
+
+  .field-group { margin-bottom: 16px; }
+  label { display: block; font-size: 11px !important; font-weight: 600 !important; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text-dark) !important; margin-bottom: 7px !important; opacity: 0.72; font-family: 'DM Sans', sans-serif !important; }
+  .form-control, input[type="text"], input[type="email"], input[type="password"], input[type="tel"], input[type="file"], select, textarea { width: 100%; padding: 12px 16px !important; border: 1.5px solid rgba(91,43,130,0.15) !important; border-radius: 11px !important; background: var(--off-white) !important; font-family: 'DM Sans', sans-serif !important; font-size: 13px !important; color: var(--text-dark) !important; transition: border-color 0.2s, box-shadow 0.2s, background 0.2s !important; outline: none !important; box-shadow: none !important; }
+  .form-control:focus, input:focus, select:focus, textarea:focus { border-color: var(--purple) !important; box-shadow: 0 0 0 4px rgba(91,43,130,0.07) !important; background: var(--white) !important; }
+  .form-control::placeholder, input::placeholder { color: rgba(26,16,32,0.3) !important; }
+  input[type="file"] { padding: 10px 14px !important; cursor: pointer; }
+  select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%235b2b82' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") !important; background-repeat: no-repeat !important; background-position: right 14px center !important; padding-right: 36px !important; }
+  .text-danger, .form-error, .invalid-feedback { font-size: 11px !important; color: var(--danger) !important; margin-top: 5px; display: block; }
+  .is-invalid { border-color: var(--danger) !important; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+  .btn-save { width: 100%; padding: 13px; background: linear-gradient(135deg, var(--purple) 0%, var(--purple-dark) 100%); color: var(--white); border: none; border-radius: 11px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; position: relative; overflow: hidden; transition: transform 0.15s, box-shadow 0.2s; box-shadow: 0 6px 20px rgba(91,43,130,0.28); margin-top: 8px; }
+  .btn-save::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, var(--purple-light), var(--purple)); opacity: 0; transition: opacity 0.2s; }
+  .btn-save:hover { transform: translateY(-1px); box-shadow: 0 10px 28px rgba(91,43,130,0.38); }
+  .btn-save:hover::before { opacity: 1; }
+  .btn-save span { position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; gap: 8px; }
+
+  .profile-photo-card .rh-card-body { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 28px 24px; }
+  .profile-photo-wrap { position: relative; margin-bottom: 18px; }
+  .profile-photo { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid rgba(91,43,130,0.2); box-shadow: 0 8px 24px rgba(91,43,130,0.15); }
+  .profile-photo-initials { width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, var(--purple), var(--purple-light)); border: 3px solid rgba(91,43,130,0.2); display: flex; align-items: center; justify-content: center; font-family: 'Playfair Display', serif; font-size: 30px; font-weight: 700; color: var(--white); box-shadow: 0 8px 24px rgba(91,43,130,0.25); }
+  .profile-photo-ring { position: absolute; inset: -5px; border-radius: 50%; border: 2px dashed rgba(201,168,76,0.3); animation: spinSlow 20s linear infinite; }
+  .profile-fullname { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; color: var(--text-dark); margin-bottom: 6px; }
+  .profile-role-badge { display: inline-flex; align-items: center; gap: 5px; background: rgba(91,43,130,0.08); border: 1px solid rgba(91,43,130,0.15); border-radius: 100px; padding: 4px 14px; font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--purple); margin-bottom: 20px; }
+  .profile-role-badge::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: var(--purple); opacity: 0.6; }
+
+  .profile-info-list { width: 100%; display: flex; flex-direction: column; gap: 10px; border-top: 1px solid rgba(91,43,130,0.07); padding-top: 18px; margin-top: 4px; }
+  .profile-info-item { display: flex; align-items: center; gap: 10px; font-size: 12px; }
+  .profile-info-icon { width: 28px; height: 28px; border-radius: 7px; background: rgba(91,43,130,0.06); display: flex; align-items: center; justify-content: center; color: var(--purple); flex-shrink: 0; opacity: 0.7; }
+  .profile-info-label { color: var(--text-muted); font-size: 11px; }
+  .profile-info-value { color: var(--text-dark); font-weight: 500; font-size: 12px; word-break: break-all; }
+
+  .danger-card .rh-card-header { background: rgba(229,57,53,0.04); border-bottom-color: rgba(229,57,53,0.1); }
+  .danger-card .rh-card-header-icon { background: rgba(229,57,53,0.08); border-color: rgba(229,57,53,0.15); color: var(--danger); }
+  .danger-desc { font-size: 12px; color: var(--text-muted); line-height: 1.6; margin-bottom: 16px; }
+  .btn-danger-rh { width: 100%; padding: 11px; background: transparent; color: var(--danger); border: 1.5px solid rgba(229,57,53,0.3); border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; transition: background 0.2s, border-color 0.2s; display: flex; align-items: center; justify-content: center; gap: 7px; }
+  .btn-danger-rh:hover { background: rgba(229,57,53,0.06); border-color: rgba(229,57,53,0.5); }
+
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(10,4,20,0.7); backdrop-filter: blur(4px); z-index: 2000; align-items: center; justify-content: center; animation: fadeIn 0.2s ease; }
+  .modal-overlay.open { display: flex; }
+  .modal-box { background: var(--white); border-radius: 20px; width: 100%; max-width: 440px; overflow: hidden; box-shadow: 0 32px 80px rgba(0,0,0,0.4); animation: fadeUp 0.25s ease; }
+  .modal-header-rh { padding: 22px 26px; background: rgba(229,57,53,0.04); border-bottom: 1px solid rgba(229,57,53,0.1); display: flex; align-items: center; justify-content: space-between; }
+  .modal-header-rh h5 { font-family: 'Playfair Display', serif; font-size: 17px; font-weight: 700; color: var(--danger); margin: 0; display: flex; align-items: center; gap: 9px; }
+  .modal-close { background: none; border: none; cursor: pointer; color: var(--text-muted); padding: 4px; border-radius: 6px; transition: background 0.15s, color 0.15s; line-height: 1; }
+  .modal-close:hover { background: rgba(0,0,0,0.06); color: var(--text-dark); }
+  .modal-body-rh { padding: 26px; }
+  .modal-body-rh p { font-size: 14px; color: var(--text-dark); line-height: 1.7; margin-bottom: 10px; }
+  .modal-body-rh p:last-child { color: var(--text-muted); font-size: 13px; margin-bottom: 0; }
+  .modal-footer-rh { padding: 18px 26px; border-top: 1px solid rgba(91,43,130,0.07); display: flex; gap: 10px; justify-content: flex-end; }
+  .btn-cancel { padding: 10px 22px; background: transparent; border: 1.5px solid rgba(91,43,130,0.18); border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; color: var(--text-muted); cursor: pointer; transition: background 0.15s, color 0.15s; }
+  .btn-cancel:hover { background: var(--off-white); color: var(--text-dark); }
+  .btn-confirm-delete { padding: 10px 22px; background: var(--danger); border: none; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; color: var(--white); cursor: pointer; transition: background 0.15s, box-shadow 0.15s; display: flex; align-items: center; gap: 7px; box-shadow: 0 4px 14px rgba(229,57,53,0.25); }
+  .btn-confirm-delete:hover { background: #c62828; box-shadow: 0 6px 18px rgba(229,57,53,0.35); }
+
+  /* ── AVATAR MODAL ── */
+  .avatar-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(10,4,20,0.75); backdrop-filter: blur(6px); z-index: 3000; align-items: center; justify-content: center; animation: fadeIn 0.2s ease; }
+  .avatar-modal-overlay.open { display: flex; }
+  .avatar-modal-box { background: var(--white); border-radius: 22px; width: 100%; max-width: 480px; overflow: hidden; box-shadow: 0 32px 80px rgba(0,0,0,0.4); animation: fadeUp 0.25s ease; }
+  .avatar-modal-header { padding: 20px 24px; background: linear-gradient(135deg, rgba(91,43,130,0.06), rgba(179,157,219,0.08)); border-bottom: 1px solid rgba(91,43,130,0.1); display: flex; align-items: center; justify-content: space-between; }
+  .avatar-modal-header h5 { font-family: 'Playfair Display', serif; font-size: 17px; font-weight: 700; color: var(--text-dark); margin: 0; display: flex; align-items: center; gap: 9px; }
+  .avatar-modal-body { padding: 28px 24px; }
+  .avatar-preview-row { display: grid; grid-template-columns: 1fr 40px 1fr; align-items: center; gap: 0; margin-bottom: 24px; }
+  .avatar-preview-box { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .avatar-preview-label { font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); }
+  .avatar-preview-img { width: 110px; height: 110px; border-radius: 50%; object-fit: cover; border: 3px solid rgba(91,43,130,0.15); box-shadow: 0 6px 20px rgba(91,43,130,0.12); }
+  .avatar-preview-placeholder { width: 110px; height: 110px; border-radius: 50%; background: linear-gradient(135deg, rgba(91,43,130,0.06), rgba(179,157,219,0.12)); border: 2px dashed rgba(91,43,130,0.2); display: flex; align-items: center; justify-content: center; color: var(--text-muted); }
+  .avatar-arrow { display: flex; align-items: center; justify-content: center; color: var(--gold); }
+  .avatar-style-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 20px; }
+  .avatar-style-btn { padding: 10px 6px; border: 1.5px solid rgba(91,43,130,0.15); border-radius: 10px; background: var(--off-white); cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 600; color: var(--text-muted); text-align: center; transition: all 0.15s; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+  .avatar-style-btn:hover { border-color: var(--purple); color: var(--purple); background: rgba(91,43,130,0.05); }
+  .avatar-style-btn.selected { border-color: var(--purple); background: rgba(91,43,130,0.08); color: var(--purple); box-shadow: 0 0 0 3px rgba(91,43,130,0.1); }
+  .avatar-style-emoji { font-size: 22px; }
+  .avatar-progress { display: none; margin-bottom: 16px; }
+  .avatar-progress-bar-wrap { height: 4px; background: rgba(91,43,130,0.1); border-radius: 2px; overflow: hidden; margin-top: 8px; }
+  .avatar-progress-bar { height: 100%; background: linear-gradient(90deg, var(--purple), var(--gold)); border-radius: 2px; animation: progressAnim 2s ease infinite; }
+  @keyframes progressAnim { 0% { width: 0%; } 50% { width: 70%; } 100% { width: 95%; } }
+  .avatar-progress-text { font-size: 12px; color: var(--purple); font-weight: 500; }
+  .avatar-modal-footer { padding: 16px 24px; border-top: 1px solid rgba(91,43,130,0.07); display: flex; gap: 10px; justify-content: flex-end; }
+  .btn-generate-avatar { padding: 11px 22px; background: linear-gradient(135deg, var(--purple), var(--purple-dark)); color: var(--white); border: none; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: transform 0.15s, box-shadow 0.2s; box-shadow: 0 4px 16px rgba(91,43,130,0.28); }
+  .btn-generate-avatar:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(91,43,130,0.38); }
+  .btn-generate-avatar:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+  .btn-save-avatar { padding: 11px 22px; background: #15803d; color: var(--white); border: none; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; display: none; align-items: center; gap: 8px; transition: background 0.2s; box-shadow: 0 4px 16px rgba(21,128,61,0.25); }
+  .btn-save-avatar:hover { background: #166534; }
+  .btn-convert-avatar { margin-top: 14px; width: 100%; padding: 10px; background: transparent; border: 1.5px solid rgba(91,43,130,0.2); border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 600; color: var(--purple); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; }
+  .btn-convert-avatar:hover { background: rgba(91,43,130,0.06); border-color: var(--purple); box-shadow: 0 4px 14px rgba(91,43,130,0.1); }
+
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes spinSlow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+  @media (max-width: 1024px) {
+    .profile-shell { grid-template-columns: 1fr; }
+    .profile-sidebar { display: none; }
+    .profile-main { padding: 28px 20px; }
+    .profile-grid { grid-template-columns: 1fr; }
+    .two-col { grid-template-columns: 1fr; }
+  }
+</style>
+
+<div class="profile-shell">
+
+  <!-- SIDEBAR -->
+  <aside class="profile-sidebar">
+    <div class="sidebar-avatar-wrap">
+      {% if user.avatarPath %}
+        <img src="{{ asset(user.avatarPath) }}" class="sidebar-avatar" id="sidebarAvatar" alt="Avatar">
+      {% else %}
+        <div class="sidebar-avatar-initials">{{ user.prenom|first|upper }}{{ user.nom|first|upper }}</div>
+      {% endif %}
+      <div class="sidebar-name">{{ user.fullName }}</div>
+      <div class="sidebar-badge">Candidat</div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-nav-section">Mon espace</div>
+      <a class="sidebar-nav-link active" href="{{ path('app_candidat_profile') }}">
+        <span class="nav-link-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+        Mon Profil
+      </a>
+      <a class="sidebar-nav-link" href="#">
+        <span class="nav-link-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span>
+        Mes Candidatures
+      </a>
+      <a class="sidebar-nav-link" href="#">
+        <span class="nav-link-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
+        Offres disponibles
+      </a>
+      <div class="sidebar-nav-section">Paramètres</div>
+      <a class="sidebar-nav-link" href="#">
+        <span class="nav-link-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+        Sécurité
+      </a>
+      <div class="sidebar-sep"></div>
+      <button class="sidebar-nav-link danger" onclick="openDeleteModal()">
+        <span class="nav-link-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></span>
+        Supprimer compte
+      </button>
+    </nav>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="profile-main">
+
+    {% for message in app.flashes('success') %}
+      <div class="flash-success">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        {{ message }}
+      </div>
+    {% endfor %}
+
+    <div class="page-header">
+      <div class="page-header-left">
+        <div class="page-label">Espace Candidat</div>
+        <h1 class="page-title">Mon <em>Profil</em></h1>
+        <p class="page-subtitle">Gérez vos informations personnelles et professionnelles</p>
+      </div>
+    </div>
+
+    <div class="profile-grid">
+
+      <!-- LEFT – Formulaire -->
+      <div>
+        <div class="rh-card">
+          <div class="rh-card-header">
+            <div class="rh-card-header-icon">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </div>
+            <h5>Modifier mes informations</h5>
+          </div>
+          <div class="rh-card-body">
+            {% form_theme form 'bootstrap_5_layout.html.twig' %}
+            {{ form_errors(form) }}
+            {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+              <div class="form-section-title">Identité</div>
+              <div class="field-group">
+                {{ form_label(form.prenom) }}
+                {{ form_widget(form.prenom, {'attr': {'class': 'form-control', 'placeholder': 'Prénom'}}) }}
+                {% if form.prenom.vars.errors|length > 0 %}<div style="color:red;font-size:13px;margin-top:5px;">{% for e in form.prenom.vars.errors %}{{ e.message }}<br>{% endfor %}</div>{% endif %}
+              </div>
+              <div class="field-group">
+                {{ form_label(form.nom) }}
+                {{ form_widget(form.nom, {'attr': {'class': 'form-control', 'placeholder': 'Nom de famille'}}) }}
+                {% if form.nom.vars.errors|length > 0 %}<div style="color:red;font-size:13px;margin-top:5px;">{% for e in form.nom.vars.errors %}{{ e.message }}<br>{% endfor %}</div>{% endif %}
+              </div>
+              <div class="form-section-title">Coordonnées</div>
+              <div class="field-group">
+                {{ form_label(form.email) }}
+                {{ form_widget(form.email, {'attr': {'class': 'form-control', 'placeholder': 'prénom.nom@email.com'}}) }}
+                {% if form.email.vars.errors|length > 0 %}<div style="color:red;font-size:13px;margin-top:5px;">{% for e in form.email.vars.errors %}{{ e.message }}<br>{% endfor %}</div>{% endif %}
+              </div>
+              <div class="two-col">
+                <div class="field-group">
+                  {{ form_label(form.telephone) }}
+                  {{ form_widget(form.telephone, {'attr': {'class': 'form-control', 'placeholder': '+216 XX XXX XXX'}}) }}
+                  {% if form.telephone.vars.errors|length > 0 %}<div style="color:red;font-size:13px;margin-top:5px;">{% for e in form.telephone.vars.errors %}{{ e.message }}<br>{% endfor %}</div>{% endif %}
+                </div>
+                <div class="field-group">
+                  {{ form_label(form.adresse) }}
+                  {{ form_widget(form.adresse, {'attr': {'class': 'form-control', 'placeholder': 'Ville, Pays'}}) }}
+                  {% if form.adresse.vars.errors|length > 0 %}<div style="color:red;font-size:13px;margin-top:5px;">{% for e in form.adresse.vars.errors %}{{ e.message }}<br>{% endfor %}</div>{% endif %}
+                </div>
+              </div>
+              <div class="form-section-title">Parcours</div>
+              <div class="two-col">
+                <div class="field-group">
+                  {{ form_label(form.niveauEtude) }}
+                  {{ form_widget(form.niveauEtude, {'attr': {'class': 'form-control'}}) }}
+                  {% if form.niveauEtude.vars.errors|length > 0 %}<div style="color:red;font-size:13px;margin-top:5px;">{% for e in form.niveauEtude.vars.errors %}{{ e.message }}<br>{% endfor %}</div>{% endif %}
+                </div>
+                <div class="field-group">
+                  {{ form_label(form.experience) }}
+                  {{ form_widget(form.experience, {'attr': {'class': 'form-control'}}) }}
+                  {% if form.experience.vars.errors|length > 0 %}<div style="color:red;font-size:13px;margin-top:5px;">{% for e in form.experience.vars.errors %}{{ e.message }}<br>{% endfor %}</div>{% endif %}
+                </div>
+              </div>
+              <div class="form-section-title">Photo de profil</div>
+              <div class="field-group m-0">
+                {{ form_label(form.avatar) }}
+                {{ form_widget(form.avatar, {'attr': {'class': 'form-control'}}) }}
+                {% if form.avatar.vars.errors|length > 0 %}<div style="color:red;font-size:13px;margin-top:5px;">{% for e in form.avatar.vars.errors %}{{ e.message }}<br>{% endfor %}</div>{% endif %}
+                <small style="font-size:11px;color:var(--text-muted);margin-top:5px;display:block;">Format : JPG, PNG, GIF · Max 2 MB</small>
+              </div>
+              <button type="submit" class="btn-save">
+                <span>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                  Enregistrer les modifications
+                </span>
+              </button>
+            {{ form_end(form) }}
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT column -->
+      <div style="display:flex;flex-direction:column;gap:20px;">
+
+        <!-- Profile photo card -->
+        <div class="rh-card profile-photo-card">
+          <div class="rh-card-body">
+            <div class="profile-photo-wrap">
+              {% if user.avatarPath %}
+                <img src="{{ asset(user.avatarPath) }}" class="profile-photo" id="mainProfilePhoto" alt="Avatar">
+              {% else %}
+                <div class="profile-photo-initials">{{ user.prenom|first|upper }}{{ user.nom|first|upper }}</div>
+              {% endif %}
+              <div class="profile-photo-ring"></div>
+            </div>
+            <div class="profile-fullname">{{ user.fullName }}</div>
+            <div class="profile-role-badge">Candidat</div>
+
+            {# ✅ Bouton visible seulement si l'user a une photo #}
+            {% if user.avatarPath %}
+            <button type="button" class="btn-convert-avatar" onclick="openAvatarModal()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
+                <line x1="9" y1="9" x2="9.01" y2="9"/>
+                <line x1="15" y1="9" x2="15.01" y2="9"/>
+              </svg>
+              Convertir en avatar cartoon
+            </button>
+            {% endif %}
+
+            <div class="profile-info-list">
+              <div class="profile-info-item">
+                <div class="profile-info-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,12 2,6"/></svg></div>
+                <div><div class="profile-info-label">Email</div><div class="profile-info-value">{{ user.email }}</div></div>
+              </div>
+              {% if user.telephone %}
+              <div class="profile-info-item">
+                <div class="profile-info-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.63 3.45 2 2 0 0 1 3.6 1.27h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.91a16 16 0 0 0 6 6l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.73 16.92z"/></svg></div>
+                <div><div class="profile-info-label">Téléphone</div><div class="profile-info-value">{{ user.telephone }}</div></div>
+              </div>
+              {% endif %}
+              {% if user.adresse %}
+              <div class="profile-info-item">
+                <div class="profile-info-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+                <div><div class="profile-info-label">Adresse</div><div class="profile-info-value">{{ user.adresse }}</div></div>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Danger card -->
+        <div class="rh-card danger-card">
+          <div class="rh-card-header">
+            <div class="rh-card-header-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+            <h5 style="color:var(--danger)">Zone dangereuse</h5>
+          </div>
+          <div class="rh-card-body">
+            <p class="danger-desc">La suppression de votre compte est <strong>irréversible</strong>. Toutes vos données seront définitivement effacées.</p>
+            <button class="btn-danger-rh" onclick="openDeleteModal()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+              Supprimer mon compte
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- DELETE MODAL -->
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal-box">
+    <div class="modal-header-rh">
+      <h5><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Confirmer la suppression</h5>
+      <button class="modal-close" onclick="closeDeleteModal()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="modal-body-rh">
+      <p>Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est <strong>irréversible</strong>.</p>
+      <p>Toutes vos données seront définitivement supprimées et irrécupérables.</p>
+    </div>
+    <div class="modal-footer-rh">
+      <button class="btn-cancel" onclick="closeDeleteModal()">Annuler</button>
+      <form method="post" action="{{ path('app_delete_account') }}" style="display:inline;">
+        <input type="hidden" name="_token" value="{{ csrf_token('delete_account') }}">
+        <button type="submit" class="btn-confirm-delete"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg> Supprimer définitivement</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- AVATAR MODAL -->
+<div class="avatar-modal-overlay" id="avatarModal">
+  <div class="avatar-modal-box">
+    <div class="avatar-modal-header">
+      <h5>
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+        Générateur d'avatar IA
+      </h5>
+      <button class="modal-close" onclick="closeAvatarModal()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+
+    <div class="avatar-modal-body">
+      <!-- Before / After -->
+      <div class="avatar-preview-row">
+        <div class="avatar-preview-box">
+          <span class="avatar-preview-label">Photo actuelle</span>
+          <img src="{{ user.avatarPath ? asset(user.avatarPath) : '' }}" class="avatar-preview-img" id="originalPreview" alt="Original">
+        </div>
+        <div class="avatar-arrow">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </div>
+        <div class="avatar-preview-box">
+          <span class="avatar-preview-label">Avatar généré</span>
+          <div class="avatar-preview-placeholder" id="avatarPlaceholder">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+          </div>
+          <img src="" class="avatar-preview-img" id="generatedPreview" style="display:none;" alt="Avatar">
+        </div>
+      </div>
+
+      <!-- Style selector -->
+      <p style="font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;">Choisissez un style</p>
+      <div class="avatar-style-grid">
+        <button class="avatar-style-btn selected" data-style="cartoon" onclick="selectStyle(this)"><span class="avatar-style-emoji">🎨</span>Cartoon</button>
+        <button class="avatar-style-btn" data-style="pixel" onclick="selectStyle(this)"><span class="avatar-style-emoji">👾</span>Pixel Art</button>
+        <button class="avatar-style-btn" data-style="anime" onclick="selectStyle(this)"><span class="avatar-style-emoji">✨</span>Anime</button>
+        <button class="avatar-style-btn" data-style="watercolor" onclick="selectStyle(this)"><span class="avatar-style-emoji">🖌️</span>Aquarelle</button>
+        <button class="avatar-style-btn" data-style="3d" onclick="selectStyle(this)"><span class="avatar-style-emoji">🧊</span>3D</button>
+        <button class="avatar-style-btn" data-style="sketch" onclick="selectStyle(this)"><span class="avatar-style-emoji">✏️</span>Esquisse</button>
+      </div>
+
+      <!-- Progress -->
+      <div class="avatar-progress" id="avatarProgress">
+        <div class="avatar-progress-text" id="avatarProgressText">🎨 Génération en cours...</div>
+        <div class="avatar-progress-bar-wrap"><div class="avatar-progress-bar"></div></div>
+      </div>
+    </div>
+
+    <div class="avatar-modal-footer">
+      <button class="btn-cancel" onclick="closeAvatarModal()">Annuler</button>
+      <button class="btn-save-avatar" id="btnSaveAvatar" onclick="saveAvatar()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+        Utiliser comme photo de profil
+      </button>
+      <button class="btn-generate-avatar" id="btnGenerate" onclick="generateAvatar()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        Générer l'avatar
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  function openDeleteModal()  { document.getElementById('deleteModal').classList.add('open'); }
+  function closeDeleteModal() { document.getElementById('deleteModal').classList.remove('open'); }
+  document.getElementById('deleteModal').addEventListener('click', function(e) { if (e.target === this) closeDeleteModal(); });
+</script>
+
+<script>
+(function () {
+
+  let selectedStyle = 'cartoon';
+  let generatedAvatarPath = null; // ✅ chemin retourné par Python
+
+  // ── Open / Close ──
+  window.openAvatarModal = function () {
+    document.getElementById('avatarModal').classList.add('open');
+    resetModal();
+  };
+
+  window.closeAvatarModal = function () {
+    document.getElementById('avatarModal').classList.remove('open');
+  };
+
+  document.getElementById('avatarModal').addEventListener('click', function (e) {
+    if (e.target === this) closeAvatarModal();
+  });
+
+  // ── Style selector ──
+  window.selectStyle = function (btn) {
+    document.querySelectorAll('.avatar-style-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    selectedStyle = btn.dataset.style;
+    resetGeneratedPreview();
+  };
+
+  // ── Generate : appelle Python via PHP ──
+  window.generateAvatar = async function () {
+    const btn      = document.getElementById('btnGenerate');
+    const progress = document.getElementById('avatarProgress');
+    const progText = document.getElementById('avatarProgressText');
+
+    btn.disabled = true;
+    progress.style.display = 'block';
+    resetGeneratedPreview();
+
+    const styleLabels = {
+      cartoon: 'cartoon coloré', pixel: 'pixel art', anime: 'anime',
+      watercolor: 'aquarelle', '3d': '3D', sketch: 'esquisse'
+    };
+
+    const steps = [
+      '🎨 Analyse de votre photo...',
+      '✨ Application du style ' + (styleLabels[selectedStyle] || selectedStyle) + '...',
+      '🖼️ Finalisation de l\'avatar...',
+    ];
+
+    let stepIdx = 0;
+    const stepInterval = setInterval(() => {
+      if (stepIdx < steps.length) progText.textContent = steps[stepIdx++];
+    }, 900);
+
+    try {
+      // ✅ Envoie style au controller PHP qui appelle Python
+      const response = await fetch('{{ path("app_save_avatar") }}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          style: selectedStyle,
+          _token: '{{ csrf_token("save_avatar") }}'
+        })
+      });
+
+      const result = await response.json();
+      clearInterval(stepInterval);
+
+      if (result.success) {
+        progText.textContent = '✅ Avatar généré !';
+        generatedAvatarPath = result.avatarUrl;
+
+        setTimeout(() => {
+          // ✅ Afficher l'image générée par Python
+          showGeneratedAvatar(result.avatarUrl + '?t=' + Date.now());
+          progress.style.display = 'none';
+          btn.disabled = false;
+        }, 400);
+
+      } else {
+        progress.style.display = 'none';
+        progText.textContent = '❌ Erreur : ' + (result.message || 'Réessayez.');
+        btn.disabled = false;
+      }
+
+    } catch (err) {
+      clearInterval(stepInterval);
+      progress.style.display = 'none';
+      progText.textContent = '❌ Erreur de connexion.';
+      btn.disabled = false;
+    }
+  };
+
+  function showGeneratedAvatar(url) {
+    document.getElementById('avatarPlaceholder').style.display = 'none';
+    const preview = document.getElementById('generatedPreview');
+    preview.src = url;
+    preview.style.display = 'block';
+    document.getElementById('btnSaveAvatar').style.display = 'flex';
+  }
+
+  // ✅ Sauvegarder = mettre à jour les photos sur la page (déjà sauvegardé en DB par Python)
+  window.saveAvatar = function () {
+    if (!generatedAvatarPath) return;
+
+    const url = generatedAvatarPath + '?t=' + Date.now();
+
+    // Mettre à jour toutes les photos sur la page
+    const mainPhoto = document.getElementById('mainProfilePhoto');
+    if (mainPhoto && mainPhoto.tagName === 'IMG') mainPhoto.src = url;
+
+    const sidebarPhoto = document.getElementById('sidebarAvatar');
+    if (sidebarPhoto) sidebarPhoto.src = url;
+
+    closeAvatarModal();
+    showFlash('✅ Avatar mis à jour avec succès !');
+  };
+
+  function resetModal() {
+    resetGeneratedPreview();
+    document.getElementById('avatarProgress').style.display = 'none';
+    document.getElementById('btnGenerate').disabled = false;
+  }
+
+  function resetGeneratedPreview() {
+    generatedAvatarPath = null;
+    document.getElementById('avatarPlaceholder').style.display = 'flex';
+    const prev = document.getElementById('generatedPreview');
+    prev.style.display = 'none';
+    prev.src = '';
+    document.getElementById('btnSaveAvatar').style.display = 'none';
+  }
+
+  function showFlash(msg) {
+    const flash = document.createElement('div');
+    flash.className = 'flash-success';
+    flash.style.cssText = 'position:fixed;top:20px;right:24px;z-index:9999;animation:fadeUp 0.4s ease;max-width:320px;';
+    flash.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> ${msg}`;
+    document.body.appendChild(flash);
+    setTimeout(() => flash.remove(), 3500);
+  }
+
+})();
+</script>
+
+{% endblock %}

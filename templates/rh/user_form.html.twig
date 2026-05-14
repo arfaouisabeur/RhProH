@@ -1,0 +1,124 @@
+{% extends 'rh/admin_base.html.twig' %}
+
+{% block title %}{{ title }} - RH{% endblock %}
+
+{% block page_title %}{{ title }}{% endblock %}
+{% block page_subtitle %}Mettez à jour les informations du profil utilisateur{% endblock %}
+
+{% block admin_content %}
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <div class="admin-card">
+            <div class="admin-card-title">
+                <div class="admin-card-title-icon"><i class="bi bi-person-gear"></i></div>
+                Configuration du profil
+            </div>
+            
+            {{ form_start(form, {'attr': {'novalidate': 'novalidate', 'class': 'mt-4'}}) }}
+                
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            {{ form_label(form.prenom, null, {'label_attr': {'class': 'form-label fw-bold text-muted small text-uppercase'}}) }}
+                            {{ form_widget(form.prenom, {'attr': {'class': 'form-control border-0', 'style': 'background: #f8fafc; border-radius: 12px; padding: 0.75rem 1rem;'}}) }}
+                            {{ form_errors(form.prenom) }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            {{ form_label(form.nom, null, {'label_attr': {'class': 'form-label fw-bold text-muted small text-uppercase'}}) }}
+                            {{ form_widget(form.nom, {'attr': {'class': 'form-control border-0', 'style': 'background: #f8fafc; border-radius: 12px; padding: 0.75rem 1rem;'}}) }}
+                            {{ form_errors(form.nom) }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group mb-4">
+                    {{ form_label(form.email, null, {'label_attr': {'class': 'form-label fw-bold text-muted small text-uppercase'}}) }}
+                    {{ form_widget(form.email, {'attr': {'class': 'form-control border-0', 'style': 'background: #f8fafc; border-radius: 12px; padding: 0.75rem 1rem;'}}) }}
+                    {{ form_errors(form.email) }}
+                </div>
+
+                <div class="row g-4 mb-4">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            {{ form_label(form.telephone, null, {'label_attr': {'class': 'form-label fw-bold text-muted small text-uppercase'}}) }}
+                            {{ form_widget(form.telephone, {'attr': {'class': 'form-control border-0', 'style': 'background: #f8fafc; border-radius: 12px; padding: 0.75rem 1rem;'}}) }}
+                            {{ form_errors(form.telephone) }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            {{ form_label(form.role, null, {'label_attr': {'class': 'form-label fw-bold text-muted small text-uppercase'}}) }}
+                            {{ form_widget(form.role, {'attr': {'class': 'form-select border-0', 'style': 'background: #f8fafc; border-radius: 12px; padding: 0.75rem 1rem;'}}) }}
+                            {{ form_errors(form.role) }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group mb-4">
+                    {{ form_label(form.adresse, null, {'label_attr': {'class': 'form-label fw-bold text-muted small text-uppercase'}}) }}
+                    {{ form_widget(form.adresse, {'attr': {'class': 'form-control border-0', 'style': 'background: #f8fafc; border-radius: 12px; padding: 0.75rem 1rem;'}}) }}
+                    {{ form_errors(form.adresse) }}
+                </div>
+
+                {% if form.niveauEtude is defined %}
+                    <div class="admin-card-title mt-5 mb-4">
+                        <div class="admin-card-title-icon" style="background: var(--purple-mid);"><i class="bi bi-mortarboard"></i></div>
+                        Spécificités Candidat
+                    </div>
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form_label(form.niveauEtude, null, {'label_attr': {'class': 'form-label fw-bold text-muted small text-uppercase'}}) }}
+                                {{ form_widget(form.niveauEtude, {'attr': {'class': 'form-control border-0', 'style': 'background: #f8fafc; border-radius: 12px; padding: 0.75rem 1rem;'}}) }}
+                                {{ form_errors(form.niveauEtude) }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form_label(form.experience, null, {'label_attr': {'class': 'form-label fw-bold text-muted small text-uppercase'}}) }}
+                                {{ form_widget(form.experience, {'attr': {'class': 'form-control border-0', 'style': 'background: #f8fafc; border-radius: 12px; padding: 0.75rem 1rem;'}}) }}
+                                {{ form_errors(form.experience) }}
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+
+                {% if form.matricule is defined %}
+                    <div class="admin-card-title mt-5 mb-4">
+                        <div class="admin-card-title-icon" style="background: #198754;"><i class="bi bi-briefcase"></i></div>
+                        Spécificités Employé
+                    </div>
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form_label(form.matricule, null, {'label_attr': {'class': 'form-label fw-bold text-muted small text-uppercase'}}) }}
+                                {{ form_widget(form.matricule, {'attr': {'class': 'form-control border-0', 'style': 'background: #f8fafc; border-radius: 12px; padding: 0.75rem 1rem;'}}) }}
+                                {{ form_errors(form.matricule) }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form_label(form.position, null, {'label_attr': {'class': 'form-label fw-bold text-muted small text-uppercase'}}) }}
+                                {{ form_widget(form.position, {'attr': {'class': 'form-control border-0', 'style': 'background: #f8fafc; border-radius: 12px; padding: 0.75rem 1rem;'}}) }}
+                                {{ form_errors(form.position) }}
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <div class="d-flex gap-3 mt-5">
+                    <a href="{{ path('app_rh_dashboard') }}" class="btn-light-purple" style="padding: 0.8rem 2rem;">
+                        <i class="bi bi-x-lg me-2"></i>Annuler
+                    </a>
+                    <button class="btn-purple" type="submit" style="padding: 0.8rem 3rem;">
+                        <i class="bi bi-check-lg me-2"></i>Enregistrer les modifications
+                    </button>
+                </div>
+
+            {{ form_end(form) }}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,202 @@
+API Platform
+ASP.NET
+AWS
+AWS Certified
+Agile
+Airflow
+Android
+Angular
+Ansible
+Apache
+Apache Spark
+ArgoCD
+Assembly
+Azure
+Azure Certified
+BDD
+BERT
+Bash
+Bitbucket
+Bootstrap
+Burp Suite
+C
+C#
+C++
+CCNA
+CCNP
+CI/CD
+CISSP
+CSS3
+Cassandra
+Celery
+CentOS
+Certified Kubernetes Administrator
+Certified ScrumMaster
+Chef
+Cisco
+Confluence
+CouchDB
+Cypress
+D3.js
+DAX
+DHCP
+DNS
+DVC
+Dart
+Debian
+Design Patterns
+DevOps
+Django
+Django REST Framework
+Docker
+DynamoDB
+ELK Stack
+Elasticsearch
+Ethical hacking
+Excel
+Expo
+Express.js
+FastAPI
+Fiber
+Figma
+Firebase
+Firewall
+Flask
+Flutter
+GCP
+GPT
+Gin
+Git
+GitHub
+GitHub Actions
+GitLab
+GitLab CI
+Go
+Google Cloud
+Google Cloud Certified
+Gradle
+Grafana
+GraphQL
+Groovy
+HTML5
+HTTP
+Hadoop
+Helm
+Hibernate
+Hive
+Hugging Face
+ISO 27001
+ITIL
+InfluxDB
+IntelliJ
+Ionic
+JWT
+Java
+JavaScript
+Jenkins
+Jest
+Jira
+Jupyter
+Kafka
+Kanban
+Keras
+Keycloak
+Kotlin
+Kubernetes
+Laravel
+LightGBM
+Linux
+Lua
+MATLAB
+MLflow
+MariaDB
+Matplotlib
+Maven
+Microservices
+MongoDB
+MySQL
+NLTK
+Neo4j
+NestJS
+Next.js
+Nginx
+Node.js
+NumPy
+Nuxt.js
+OAuth
+OWASP
+OpenCV
+Oracle
+Oracle Certified
+PHP
+PMP
+Pentesting
+Perl
+Phoenix
+Pinia
+Playwright
+PostgreSQL
+Postman
+Power BI
+Prometheus
+Puppet
+PyTorch
+Python
+QlikView
+R
+RabbitMQ
+Rails
+React
+React Native
+React.js
+Redis
+Redux
+Ruby
+Rust
+SAP
+SIEM
+SOLID
+SQL
+SQL Server
+SQLite
+SSL/TLS
+Scala
+Scrum
+Seaborn
+Shell
+SonarQube
+Splunk
+Spring Boot
+Svelte
+Swagger
+Swift
+Symfony
+TCP/IP
+TDD
+Tableau
+Tailwind CSS
+TensorFlow
+Terraform
+Three.js
+Trello
+TypeScript
+Ubuntu
+VPN
+VS Code
+Vagrant
+Vite
+Vue.js
+Vuex
+Webpack
+Wireshark
+XGBoost
+Xamarin
+YOLO
+dbt
+gRPC
+iOS
+jQuery
+npm
+pandas
+scikit-learn
+spaCy

@@ -1,0 +1,169 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouvelle demande de service{% endblock %}
+
+{% block stylesheets %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+:root {
+  --mv-950:#2e0d52; --mv-800:#5b2b82; --mv-700:#7c3dac;
+  --mv-600:#8f4cc9; --mv-500:#b39ddb; --mv-400:#c4b0e4;
+  --mv-200:#e9d5ff; --mv-100:#f3e8ff; --mv-50:#faf5ff;
+  --mv-glow: rgba(143,76,201,0.4);
+}
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+
+.app {
+  font-family:'Inter',sans-serif;
+  background: radial-gradient(ellipse at 20% 0%, #f3e8ff 0%, #ffffff 52%, #faf5ff 100%);
+  min-height:90vh; padding:44px 20px; color:#0f172a;
+  position:relative; overflow:hidden;
+}
+.app::before {
+  content:''; position:fixed; top:-160px; right:-160px;
+  width:500px; height:500px; border-radius:50%;
+  background: radial-gradient(circle, rgba(143,76,201,.17), transparent 68%);
+  pointer-events:none; z-index:0; animation:orbFloat 9s ease-in-out infinite;
+}
+.app::after {
+  content:''; position:fixed; bottom:-90px; left:-90px;
+  width:340px; height:340px; border-radius:50%;
+  background: radial-gradient(circle, rgba(179,157,219,.14), transparent 68%);
+  pointer-events:none; z-index:0; animation:orbFloat2 11s ease-in-out infinite;
+}
+
+.wrap { max-width:860px; margin:0 auto; position:relative; z-index:1; }
+
+/* ── Head ── */
+.head {
+  display:flex; align-items:center; gap:18px; margin-bottom:26px;
+  animation: slideDown .7s cubic-bezier(.16,1,.3,1) both;
+}
+.ic {
+  width:60px; height:60px; border-radius:22px;
+  display:flex; align-items:center; justify-content:center; color:#fff;
+  background: linear-gradient(135deg, var(--mv-700), var(--mv-600));
+  box-shadow:0 14px 32px var(--mv-glow); flex-shrink:0;
+  animation: iconPop .6s cubic-bezier(.175,.885,.32,1.275) .2s both;
+}
+h1 {
+  font-family:'Outfit'; font-weight:900; font-size:2.15rem;
+  background: linear-gradient(135deg, var(--mv-950) 0%, var(--mv-600) 100%);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+}
+.sub { margin:7px 0 0; color:#64748b; font-weight:600; font-size:.97rem; }
+
+/* ── Steps progress ── */
+.progress-bar {
+  display:flex; align-items:center; gap:0; margin-bottom:28px;
+  animation: slideDown .6s ease-out .25s both;
+}
+.step {
+  display:flex; align-items:center; gap:10px;
+  padding:10px 18px; border-radius:999px; font-weight:800; font-size:.88rem;
+}
+.step-active { background:linear-gradient(135deg,var(--mv-700),var(--mv-600)); color:#fff; box-shadow:0 6px 18px var(--mv-glow); }
+.step-done   { background:rgba(143,76,201,.1); color:var(--mv-700); }
+.step-icon   { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,.2); font-size:.8rem; }
+.step-divider{ flex:1; height:2px; background:linear-gradient(90deg,var(--mv-700),rgba(179,157,219,.3)); margin:0 4px; }
+
+/* ── Card ── */
+.card {
+  background:rgba(255,255,255,.87);
+  backdrop-filter:blur(22px); -webkit-backdrop-filter:blur(22px);
+  border:1.5px solid rgba(179,157,219,.28);
+  border-radius:28px;
+  box-shadow:0 16px 50px rgba(143,76,201,.11);
+  padding:36px;
+  position:relative; overflow:hidden;
+  animation: slideUp .7s cubic-bezier(.16,1,.3,1) .1s both;
+}
+.card::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:4px;
+  background: linear-gradient(90deg, var(--mv-700), var(--mv-600), var(--mv-400));
+}
+.card::after {
+  content:''; position:absolute; top:-60px; right:-60px;
+  width:200px; height:200px; border-radius:50%;
+  background: radial-gradient(circle, rgba(143,76,201,.06), transparent);
+  pointer-events:none;
+}
+
+/* Form fields override */
+.card input, .card select, .card textarea {
+  width:100%; border-radius:16px;
+  border:1.5px solid rgba(179,157,219,.3);
+  background:var(--mv-50); padding:12px 16px;
+  outline:none; font-family:inherit; color:#0f172a; font-size:.97rem;
+  transition:border-color .2s, box-shadow .2s, background .2s;
+}
+.card input:focus, .card select:focus, .card textarea:focus {
+  border-color:var(--mv-600); background:#fff;
+  box-shadow:0 0 0 4px rgba(143,76,201,.14);
+}
+textarea { min-height:120px; resize:vertical; }
+
+/* ── Actions ── */
+.actions {
+  display:flex; justify-content:space-between; gap:14px;
+  flex-wrap:wrap; padding-top:22px;
+  border-top:1px solid rgba(179,157,219,.2); margin-top:14px;
+}
+.btn-back {
+  display:inline-flex; align-items:center; gap:9px; text-decoration:none;
+  padding:13px 22px; border-radius:999px; font-weight:900; color:#64748b;
+  border:1.5px solid rgba(148,163,184,.35); background:transparent;
+  transition:all .2s; font-family:inherit;
+}
+.btn-back:hover { background:rgba(255,255,255,.8); color:var(--mv-700); border-color:var(--mv-500); transform:translateX(-2px); }
+
+/* Submit button override (inside the included _form) */
+.card button[type="submit"],
+.card .btn-submit {
+  display:inline-flex; align-items:center; gap:9px; border:0; cursor:pointer;
+  padding:13px 28px; border-radius:999px; font-weight:900; color:#fff; font-family:'Outfit';
+  background: linear-gradient(135deg, var(--mv-700), var(--mv-600));
+  box-shadow:0 12px 28px var(--mv-glow);
+  transition:transform .2s, box-shadow .2s;
+  position:relative; overflow:hidden; font-size:1rem;
+}
+.card button[type="submit"]:hover,
+.card .btn-submit:hover { transform:translateY(-3px); box-shadow:0 18px 38px var(--mv-glow); }
+
+@keyframes slideDown { from{opacity:0;transform:translateY(-18px);}to{opacity:1;transform:translateY(0);} }
+@keyframes slideUp   { from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);} }
+@keyframes iconPop   { from{opacity:0;transform:scale(.5);}to{opacity:1;transform:scale(1);} }
+@keyframes orbFloat  { 0%,100%{transform:translate(0,0);}50%{transform:translate(-25px,18px);} }
+@keyframes orbFloat2 { 0%,100%{transform:translate(0,0);}50%{transform:translate(18px,-22px);} }
+
+@media(max-width:720px){ .actions>*{width:100%;justify-content:center;} }
+</style>
+{% endblock %}
+
+{% block body %}
+<script>window.__TYPE_SERVICES__ = {{ type_services_payload|default([])|json_encode|raw }};</script>
+
+<div class="app">
+  <div class="wrap">
+    <div class="head">
+      <div class="ic"><i class="fas fa-toolbox"></i></div>
+      <div>
+        <h1>Nouvelle demande de service</h1>
+        <div class="sub">Sélectionnez une catégorie, puis le type de service dont vous avez besoin.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      {{ include('demande_service/_form.html.twig', { button_label: 'Soumettre la demande' }) }}
+      <div class="actions">
+        <a class="btn-back" href="{{ path('app_demande_service_index') }}">
+          <i class="fas fa-arrow-left"></i> Retour
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,46 @@
+parameters:
+    level: 8
+    paths:
+        # Entities
+        - src/Entity/Salaire.php
+        - src/Entity/Prime.php
+        - src/Entity/Contract.php
+        
+        # Repositories
+        - src/Repository/SalaireRepository.php
+        - src/Repository/PrimeRepository.php
+        - src/Repository/ContractRepository.php
+        
+        # Controllers
+        - src/Controller/SalaireController.php
+        - src/Controller/PrimeController.php
+        - src/Controller/ContractController.php
+        - src/Controller/RhSalaireController.php
+        - src/Controller/RhPrimeController.php
+        - src/Controller/EmployeeSalaireController.php
+        - src/Controller/EmployeePrimeController.php
+        - src/Controller/EmployeeContractController.php
+        
+        # Forms
+        - src/Form/SalaireType.php
+        - src/Form/PrimeType.php
+        - src/Form/ContractType.php
+    
+    # Bootstrap file
+    bootstrapFiles:
+        - tests/bootstrap.php
+    
+    # Common Symfony/Doctrine ignores
+    ignoreErrors:
+        - '#Call to an undefined method Symfony\\Component\\Config\\Definition\\Builder\\NodeDefinition::#'
+        - '#Cannot call method [a-zA-Z0-9_]+\(\) on Doctrine\\ORM\\EntityManagerInterface\|null#'
+        - '#Method .* should return .* but returns Doctrine\\ORM\\EntityManagerInterface\|null#'
+        - '#Parameter \#1 \$[a-zA-Z0-9_]+ of method Doctrine\\ORM\\EntityManagerInterface::persist\(\) expects object, .* given#'
+        - '#Call to method [a-zA-Z0-9_]+\(\) on an unknown class Symfony\\Component\\Form\\FormInterface#'
+        - '#Access to an undefined property Symfony\\Component\\Form\\FormInterface::\$[a-zA-Z0-9_]+#'
+    
+    # Exclude patterns
+    excludePaths:
+        - */tests/*
+        - */var/*
+        - */vendor/*

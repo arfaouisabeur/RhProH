@@ -1,0 +1,355 @@
+{% extends 'base.html.twig' %}
+{% block title %}Gestion des Participations — RHPro{% endblock %}
+
+{% block styles %}
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+:root { --green:#7c3aed; --green-dark:#6d28d9; --green-light:#ede9fe; --amber:#f59e0b; --amber-light:#fef3c7; --red:#ef4444; --red-light:#fee2e2; --surface:#f5f0ff; --border:#e5e7eb; --text-dark:#111827; --text-muted:#6b7280; }
+body { background: #f5f0ff !important; }
+.part-page { min-height:100vh; font-family:'Inter',sans-serif; padding-bottom:60px; background:#f5f0ff; }
+
+/* Header */
+.part-hdr { padding:36px 0 0; }
+.part-hdr-inner { max-width:1100px; margin:0 auto; padding:0 32px; display:flex; justify-content:space-between; align-items:flex-start; gap:20px; flex-wrap:wrap; }
+.part-title { font-size:28px; font-weight:700; color:var(--green-dark); margin:0 0 6px; }
+.part-sub { font-size:14px; color:var(--text-muted); margin:0; }
+.btn-back { display:inline-flex; align-items:center; gap:7px; padding:10px 18px; border-radius:10px; font-size:13px; font-weight:600; text-decoration:none; background:#fff; color:var(--text-muted); border:1px solid var(--border); transition:background .2s; }
+.btn-back:hover { background:#ede9fe; color:var(--green-dark); text-decoration:none; }
+
+/* Stats */
+.part-stats { max-width:1100px; margin:28px auto 0; padding:0 32px; display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+@media(max-width:768px){ .part-stats{grid-template-columns:repeat(2,1fr);} }
+.st-card { background:#fff; border-radius:14px; border:1px solid var(--border); padding:18px 20px; box-shadow:0 2px 6px rgba(0,0,0,.04); display:flex; align-items:center; gap:14px; transition:transform .15s,box-shadow .15s; }
+.st-card:hover { transform:translateY(-2px); box-shadow:0 4px 12px rgba(0,0,0,.08); }
+.st-ico { width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+.st-ico.blue{background:#dbeafe;} .st-ico.orange{background:#fff7ed;} .st-ico.green{background:#ede9fe;} .st-ico.red{background:#fee2e2;}
+.st-num { font-size:28px; font-weight:700; color:var(--text-dark); line-height:1; }
+.st-lbl { font-size:11px; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:.06em; margin-top:3px; }
+
+/* ── Toolbar ─────────────────────── */
+.part-tb-section { max-width:1100px; margin:20px auto 0; padding:0 32px; }
+.part-tb { background:#fff; border:1.5px solid var(--border); border-radius:14px; padding:16px 20px; box-shadow:0 2px 8px rgba(0,0,0,.04); animation:fadeIn .25s ease; }
+.tb-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+.tb-row+.tb-row { margin-top:12px; padding-top:12px; border-top:1px solid #f3f4f6; }
+
+/* Search combo */
+.s-combo { display:flex; align-items:stretch; flex:1; min-width:220px; max-width:480px; }
+.s-field { appearance:none; -webkit-appearance:none; background:linear-gradient(135deg,#f9fafb,#f3f4f6); border:1.5px solid var(--border); border-right:none; border-radius:10px 0 0 10px; padding:9px 28px 9px 12px; font-size:11px; font-weight:700; font-family:'Inter',sans-serif; color:var(--green-dark); cursor:pointer; outline:none; min-width:140px; text-transform:uppercase; letter-spacing:.04em; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236d28d9'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 10px center; }
+.s-field:focus { border-color:var(--green); }
+.s-box { display:flex; align-items:center; gap:8px; border:1.5px solid var(--border); border-left:none; border-radius:0 10px 10px 0; padding:9px 14px; flex:1; background:#fff; transition:border-color .2s; }
+.s-box:focus-within { border-color:var(--green); box-shadow:0 0 0 3px rgba(124,58,237,.08); }
+.s-box svg { flex-shrink:0; color:var(--text-muted); }
+.s-box input { border:none; background:transparent; font-size:13px; font-family:'Inter',sans-serif; color:var(--text-dark); outline:none; width:100%; }
+.s-box input::placeholder { color:#b0b7c3; }
+
+/* Sort */
+.sort-grp { display:flex; align-items:center; gap:8px; margin-left:auto; }
+.sort-lbl { font-size:11px; font-weight:700; color:var(--text-muted); white-space:nowrap; text-transform:uppercase; letter-spacing:.04em; }
+.sort-wrap { position:relative; }
+.sort-dd { appearance:none; -webkit-appearance:none; background:#fff; border:1.5px solid var(--border); border-radius:10px; padding:9px 36px 9px 14px; font-size:12px; font-weight:600; font-family:'Inter',sans-serif; color:var(--text-dark); cursor:pointer; outline:none; min-width:210px; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236b7280'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 12px center; transition:border-color .2s; }
+.sort-dd:focus { border-color:var(--green); box-shadow:0 0 0 3px rgba(124,58,237,.1); }
+.sort-dd optgroup { font-weight:700; color:var(--green-dark); font-size:11px; }
+
+/* Chips */
+.f-bar { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.f-chip { display:inline-flex; align-items:center; gap:5px; padding:5px 14px; border-radius:100px; font-size:11px; font-weight:600; cursor:pointer; border:1.5px solid var(--border); background:#fff; color:var(--text-muted); transition:all .2s; user-select:none; }
+.f-chip.active { background:var(--green); color:#fff; border-color:var(--green); box-shadow:0 2px 8px rgba(124,58,237,.25); }
+.f-chip:hover:not(.active) { border-color:var(--green); color:var(--green-dark); background:#f5f3ff; }
+.f-cnt { background:rgba(255,255,255,.3); padding:1px 7px; border-radius:100px; font-size:10px; font-weight:700; }
+.f-cnt-m { background:rgba(0,0,0,.06); padding:1px 7px; border-radius:100px; font-size:10px; font-weight:700; }
+
+/* Sort tag + Reset */
+.sort-tag { display:none; align-items:center; gap:5px; background:var(--green-light); color:var(--green-dark); padding:4px 12px; border-radius:100px; font-size:11px; font-weight:700; white-space:nowrap; }
+.sort-tag.show { display:inline-flex; }
+.sort-tag button { background:none; border:none; color:var(--green-dark); cursor:pointer; padding:0; margin-left:2px; font-size:14px; line-height:1; opacity:.6; }
+.sort-tag button:hover { opacity:1; }
+.btn-rst { display:inline-flex; align-items:center; gap:5px; background:transparent; border:1.5px solid var(--border); border-radius:10px; padding:8px 14px; font-size:11px; font-weight:600; font-family:'Inter',sans-serif; color:var(--text-muted); cursor:pointer; transition:all .2s; opacity:0; pointer-events:none; white-space:nowrap; }
+.btn-rst.show { opacity:1; pointer-events:auto; }
+.btn-rst:hover { border-color:var(--red); color:var(--red); background:#fff5f5; }
+
+/* Table */
+.part-content { max-width:1100px; margin:18px auto 0; padding:0 32px; }
+.part-card { background:#fff; border-radius:16px; border:1px solid var(--border); box-shadow:0 2px 8px rgba(0,0,0,.05); overflow:hidden; animation:fadeIn .3s ease; }
+.part-card-hdr { display:flex; align-items:center; justify-content:space-between; padding:14px 24px; border-bottom:1px solid var(--border); background:#f9fafb; }
+.part-card-hdr h3 { font-size:15px; font-weight:600; color:var(--text-dark); margin:0; display:flex; align-items:center; gap:8px; }
+.part-res { font-size:12px; color:var(--text-muted); }
+.part-res b { color:var(--text-dark); }
+
+table.pt-tbl { width:100%; border-collapse:collapse; }
+.pt-tbl th { font-size:11px; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:.05em; padding:12px 20px; text-align:left; background:#f9fafb; border-bottom:1px solid var(--border); }
+.pt-tbl td { padding:14px 20px; font-size:13px; color:var(--text-dark); border-bottom:1px solid #f3f4f6; vertical-align:middle; }
+.pt-tbl tr:last-child td { border-bottom:none; }
+.pt-tbl tbody tr:hover td { background:#f0fdf9; }
+
+.emp-info { display:flex; align-items:center; gap:10px; }
+.emp-avatar { width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg,#7c3aed,#6d28d9); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; color:#fff; flex-shrink:0; }
+.emp-name { font-weight:600; color:var(--text-dark); font-size:13px; margin:0; }
+.emp-email { font-size:11px; color:var(--text-muted); margin:0; }
+.status-badge { display:inline-flex; align-items:center; gap:5px; padding:4px 12px; border-radius:100px; font-size:12px; font-weight:600; }
+.status-pending { background:#fef3c7; color:#92400e; }
+.status-accepted { background:#ede9fe; color:#5b21b6; }
+.status-refused { background:#fee2e2; color:#991b1b; }
+.ev-link { font-size:12px; color:var(--green-dark); text-decoration:none; font-weight:500; }
+.ev-link:hover { text-decoration:underline; }
+.row-actions { display:flex; gap:6px; align-items:center; }
+.act-btn { display:inline-flex; align-items:center; gap:5px; padding:6px 12px; border-radius:8px; font-size:11px; font-weight:600; border:none; cursor:pointer; font-family:'Inter',sans-serif; transition:transform .15s; }
+.act-btn:hover { transform:translateY(-1px); }
+.btn-accept { background:#ede9fe; color:#5b21b6; } .btn-accept:hover { background:#c4b5fd; }
+.btn-refuse { background:#fee2e2; color:#991b1b; } .btn-refuse:hover { background:#fecaca; }
+.btn-del-sm { background:#f3f4f6; color:#6b7280; } .btn-del-sm:hover { background:#fee2e2; color:#991b1b; }
+.part-empty { text-align:center; padding:60px 32px; color:var(--text-muted); }
+
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+@media(max-width:768px){.part-stats,.part-content,.part-tb-section,.part-hdr-inner{padding:0 16px;}}
+@media(max-width:700px){.s-combo{max-width:100%;min-width:100%;}.sort-grp{margin-left:0;width:100%;}.sort-dd{width:100%;}}
+{% endblock %}
+
+{% block body %}
+{{ include('partials/_confirm_modal.html.twig') }}
+{% set total    = event_participations|length %}
+{% set pending  = event_participations|filter(p => p.statut == 'en_attente')|length %}
+{% set accepted = event_participations|filter(p => p.statut == 'accepte')|length %}
+{% set refused  = event_participations|filter(p => p.statut == 'refuse')|length %}
+
+<div class="part-page">
+
+  <div class="part-hdr">
+    <div class="part-hdr-inner">
+      <div>
+        <h1 class="part-title">👥 Gestion des Participations</h1>
+        <p class="part-sub">
+          {% if evenement is defined %}Participations pour : <strong>{{ evenement.titre }}</strong>
+          {% else %}Acceptez ou refusez les demandes des employés{% endif %}
+        </p>
+      </div>
+      <a href="{{ path('app_evenement_index') }}" class="btn-back">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        Retour aux événements
+      </a>
+    </div>
+  </div>
+
+  <div class="part-stats">
+    <div class="st-card"><div class="st-ico blue">📋</div><div><div class="st-num">{{ total }}</div><div class="st-lbl">Total</div></div></div>
+    <div class="st-card"><div class="st-ico orange">⏳</div><div><div class="st-num">{{ pending }}</div><div class="st-lbl">En attente</div></div></div>
+    <div class="st-card"><div class="st-ico green">✅</div><div><div class="st-num">{{ accepted }}</div><div class="st-lbl">Acceptées</div></div></div>
+    <div class="st-card"><div class="st-ico red">❌</div><div><div class="st-num">{{ refused }}</div><div class="st-lbl">Refusées</div></div></div>
+  </div>
+
+  {# ═══════ TOOLBAR ═══════ #}
+  <div class="part-tb-section">
+    <div class="part-tb">
+      <div class="tb-row">
+        <div class="s-combo">
+          <select id="ptSearchField" class="s-field">
+            <option value="all">🔍 Tous les champs</option>
+            <option value="employe">👤 Employé</option>
+            <option value="evenement">📅 Événement</option>
+            <option value="statut">✅ Statut</option>
+            <option value="email">📧 Email</option>
+            <option value="date">📆 Date inscription</option>
+          </select>
+          <div class="s-box">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="ptSearchInput" placeholder="Rechercher une participation…" autocomplete="off">
+          </div>
+        </div>
+        <div class="sort-grp">
+          <span class="sort-lbl">Trier :</span>
+          <div class="sort-wrap">
+            <select id="ptSortSelect" class="sort-dd">
+              <option value="">— Critère de tri —</option>
+              <optgroup label="👤 Employé">
+                <option value="employe-asc">Nom employé (A → Z)</option>
+                <option value="employe-desc">Nom employé (Z → A)</option>
+              </optgroup>
+              <optgroup label="📅 Événement">
+                <option value="evenement-asc">Événement (A → Z)</option>
+                <option value="evenement-desc">Événement (Z → A)</option>
+              </optgroup>
+              <optgroup label="📆 Date">
+                <option value="date-asc">Date inscription (ancien → récent)</option>
+                <option value="date-desc">Date inscription (récent → ancien)</option>
+              </optgroup>
+              <optgroup label="✅ Statut">
+                <option value="statut-pending-first">En attente d'abord</option>
+                <option value="statut-accepted-first">Acceptées d'abord</option>
+                <option value="statut-refused-first">Refusées d'abord</option>
+              </optgroup>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="tb-row">
+        <div class="f-bar">
+          <button class="f-chip active" data-f="all" onclick="ptSetFilter('all',this)">Toutes <span class="f-cnt">{{ total }}</span></button>
+          <button class="f-chip" data-f="en_attente" onclick="ptSetFilter('en_attente',this)">⏳ En attente <span class="f-cnt-m">{{ pending }}</span></button>
+          <button class="f-chip" data-f="accepte" onclick="ptSetFilter('accepte',this)">✅ Acceptées <span class="f-cnt-m">{{ accepted }}</span></button>
+          <button class="f-chip" data-f="refuse" onclick="ptSetFilter('refuse',this)">❌ Refusées <span class="f-cnt-m">{{ refused }}</span></button>
+        </div>
+        <span class="sort-tag" id="ptSortTag"><span id="ptSortTagTxt"></span><button onclick="ptClearSort()">×</button></span>
+        <button class="btn-rst" id="ptBtnReset" onclick="ptResetAll()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+          Réinitialiser
+        </button>
+      </div>
+    </div>
+  </div>
+
+  {# ═══════ TABLE ═══════ #}
+  <div class="part-content">
+    <div class="part-card">
+      <div class="part-card-hdr">
+        <h3>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          {% if evenement is defined %}Participations — {{ evenement.titre }}{% else %}Toutes les participations{% endif %}
+        </h3>
+        <span class="part-res">Résultats : <b id="ptResultCount">{{ total }}</b></span>
+      </div>
+
+      {% if event_participations|length > 0 %}
+      <table class="pt-tbl">
+        <thead><tr><th>Employé</th><th>Événement</th><th>Date inscription</th><th>Statut</th><th>Actions</th></tr></thead>
+        <tbody id="ptTbody">
+          {% for p in event_participations %}
+          <tr data-statut="{{ p.statut }}" data-employe="{{ p.employe and p.employe.user ? (p.employe.user.prenom ~ ' ' ~ p.employe.user.nom)|lower : '' }}" data-email="{{ p.employe and p.employe.user ? p.employe.user.email|lower : '' }}" data-evenement="{{ p.evenement ? p.evenement.titre|lower : '' }}" data-date="{{ p.dateInscription|default('') }}">
+            <td>
+              <div class="emp-info">
+                <div class="emp-avatar">{% if p.employe and p.employe.user %}{{ p.employe.user.prenom|first|upper }}{% else %}?{% endif %}</div>
+                <div>
+                  {% if p.employe and p.employe.user %}
+                    <p class="emp-name">{{ p.employe.user.prenom }} {{ p.employe.user.nom }}</p>
+                    <p class="emp-email">{{ p.employe.user.email }}</p>
+                  {% else %}<p class="emp-name">—</p>{% endif %}
+                </div>
+              </div>
+            </td>
+            <td>{% if p.evenement %}<a href="{{ path('app_evenement_show', {'id': p.evenement.id}) }}" class="ev-link">📅 {{ p.evenement.titre }}</a>{% else %}—{% endif %}</td>
+            <td>{{ p.dateInscription|default('—') }}</td>
+            <td>
+              {% if p.statut == 'en_attente' %}<span class="status-badge status-pending">● En attente</span>
+              {% elseif p.statut == 'accepte' %}<span class="status-badge status-accepted">● Acceptée</span>
+              {% else %}<span class="status-badge status-refused">● Refusée</span>{% endif %}
+            </td>
+            <td>
+              <div class="row-actions">
+                {% if p.statut != 'accepte' %}
+                <form method="post" action="{{ path('app_event_participation_accept', {'id': p.id}) }}" style="display:inline;">
+                  <input type="hidden" name="_token" value="{{ csrf_token('accept' ~ p.id) }}">
+                  <button class="act-btn btn-accept"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Accepter</button>
+                </form>
+                {% endif %}
+                {% if p.statut != 'refuse' %}
+                <form method="post" action="{{ path('app_event_participation_refuse', {'id': p.id}) }}" style="display:inline;">
+                  <input type="hidden" name="_token" value="{{ csrf_token('refuse' ~ p.id) }}">
+                  <button class="act-btn btn-refuse"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Refuser</button>
+                </form>
+                {% endif %}
+                <form id="del-part-{{ p.id }}" method="post" action="{{ path('app_event_participation_delete', {'id': p.id}) }}" style="display:inline;">
+                  <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ p.id) }}">
+                  <button type="button" class="act-btn btn-del-sm" title="Supprimer" onclick="rhConfirmDelete(document.getElementById('del-part-{{ p.id }}'), 'Supprimer la participation de {{ p.employe.user.prenom|default('') ~ ' ' ~ p.employe.user.nom|default('')|e('js') }} ?')">🗑️</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+          <tr id="ptNoResults" style="display:none;"><td colspan="5" style="text-align:center;padding:40px;color:var(--text-muted);font-size:13px;">🔍 Aucun résultat.</td></tr>
+        </tbody>
+      </table>
+      {% else %}
+      <div class="part-empty">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="1.5" style="margin-bottom:12px;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+        <p>Aucune participation enregistrée.</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var filter = 'all', sort = '', search = '', field = 'all';
+  var tbody = document.getElementById('ptTbody');
+  if (!tbody) return; // No participations → no table
+
+  var searchInput = document.getElementById('ptSearchInput');
+  var searchField = document.getElementById('ptSearchField');
+  var sortSelect  = document.getElementById('ptSortSelect');
+  var sortTag     = document.getElementById('ptSortTag');
+  var sortTagTxt  = document.getElementById('ptSortTagTxt');
+  var btnReset    = document.getElementById('ptBtnReset');
+
+  var PH = {all:'Rechercher une participation…',employe:'Rechercher un employé…',evenement:'Rechercher un événement…',statut:'Rechercher un statut…',email:'Rechercher un email…',date:'Rechercher par date…'};
+  var SL = {'employe-asc':'Employé A→Z','employe-desc':'Employé Z→A','evenement-asc':'Événement A→Z','evenement-desc':'Événement Z→A','date-asc':'Date ↑','date-desc':'Date ↓','statut-pending-first':'En attente ↑','statut-accepted-first':'Acceptées ↑','statut-refused-first':'Refusées ↑'};
+
+  function getRows(){ return Array.from(tbody.querySelectorAll('tr[data-statut]')); }
+
+  searchField.addEventListener('change', function(){ field=this.value; searchInput.placeholder=PH[field]||PH.all; searchInput.focus(); run(); });
+  searchInput.addEventListener('input', function(){ search=this.value.toLowerCase().trim(); run(); });
+  sortSelect.addEventListener('change', function(){ sort=this.value; updTag(); run(); });
+
+  window.ptSetFilter = function(v,btn){ filter=v; document.querySelectorAll('.f-chip').forEach(function(c){c.classList.remove('active');}); btn.classList.add('active'); run(); };
+  window.ptClearSort = function(){ sort=''; sortSelect.value=''; updTag(); run(); };
+  window.ptResetAll = function(){ search='';sort='';field='all';filter='all'; searchInput.value=''; searchField.value='all'; sortSelect.value=''; searchInput.placeholder=PH.all; document.querySelectorAll('.f-chip').forEach(function(c){c.classList.remove('active');}); document.querySelector('.f-chip[data-f="all"]').classList.add('active'); updTag(); run(); };
+
+  function updTag(){
+    if(sort){ sortTag.classList.add('show'); sortTagTxt.textContent=SL[sort]||sort; }
+    else { sortTag.classList.remove('show'); }
+    btnReset.classList.toggle('show', !!(search||sort||filter!=='all'||field!=='all'));
+  }
+
+  function run(){
+    var rows = getRows();
+
+    // 1) Filter
+    rows.forEach(function(r){
+      var st = r.getAttribute('data-statut') || '';
+      r._vis = (filter==='all') || (st===filter);
+    });
+
+    // 2) Search
+    if(search){
+      rows.forEach(function(r){
+        if(!r._vis) return;
+        var hay = '';
+        if(field==='all') hay = (r.getAttribute('data-employe')||'')+' '+(r.getAttribute('data-evenement')||'')+' '+(r.getAttribute('data-statut')||'')+' '+(r.getAttribute('data-email')||'')+' '+(r.getAttribute('data-date')||'');
+        else if(field==='employe') hay = r.getAttribute('data-employe')||'';
+        else if(field==='evenement') hay = r.getAttribute('data-evenement')||'';
+        else if(field==='statut') hay = r.getAttribute('data-statut')||'';
+        else if(field==='email') hay = r.getAttribute('data-email')||'';
+        else if(field==='date') hay = r.getAttribute('data-date')||'';
+        r._vis = hay.indexOf(search) !== -1;
+      });
+    }
+
+    // 3) Sort
+    if(sort){
+      var vis = rows.filter(function(r){ return r._vis; });
+      var dir, col;
+      if(sort.indexOf('-first')!==-1){ col=sort.replace('-first',''); dir='asc'; }
+      else { var parts=sort.split('-'); dir=parts.pop(); col=parts.join('-'); }
+
+      vis.sort(function(a,b){
+        var va='', vb='';
+        if(col==='employe'){ va=a.getAttribute('data-employe')||''; vb=b.getAttribute('data-employe')||''; }
+        else if(col==='evenement'){ va=a.getAttribute('data-evenement')||''; vb=b.getAttribute('data-evenement')||''; }
+        else if(col==='date'){ va=a.getAttribute('data-date')||''; vb=b.getAttribute('data-date')||''; }
+        else if(col==='statut-pending'){ va=a.getAttribute('data-statut')==='en_attente'?'0':'1'; vb=b.getAttribute('data-statut')==='en_attente'?'0':'1'; }
+        else if(col==='statut-accepted'){ va=a.getAttribute('data-statut')==='accepte'?'0':'1'; vb=b.getAttribute('data-statut')==='accepte'?'0':'1'; }
+        else if(col==='statut-refused'){ va=a.getAttribute('data-statut')==='refuse'?'0':'1'; vb=b.getAttribute('data-statut')==='refuse'?'0':'1'; }
+        var c = va.localeCompare(vb,'fr',{numeric:true});
+        return dir==='desc'?-c:c;
+      });
+      vis.forEach(function(r){ tbody.appendChild(r); });
+    }
+
+    // 4) Show/hide
+    var cnt = 0;
+    rows.forEach(function(r){ r.style.display=r._vis?'':'none'; if(r._vis) cnt++; });
+    document.getElementById('ptResultCount').textContent = cnt;
+    var nr = document.getElementById('ptNoResults');
+    if(nr) nr.style.display = cnt===0?'':'none';
+    updTag();
+  }
+})();
+</script>
+{% endblock %}

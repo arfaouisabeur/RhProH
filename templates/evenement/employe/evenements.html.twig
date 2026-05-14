@@ -1,0 +1,439 @@
+{% extends 'base.html.twig' %}
+{% block title %}Événements de l'entreprise — RHPro{% endblock %}
+
+{% block styles %}
+:root { --green: #7c3aed; --green-dark: #6d28d9; --surface: #f5f0ff; --border: #e5e7eb; --text-dark: #111827; --text-muted: #6b7280; }
+body { background: var(--surface); }
+.emp-page { min-height: 100vh; background: var(--surface); font-family: 'Inter', sans-serif; padding-bottom: 60px; }
+
+/* Hero */
+.emp-hero {
+  background: linear-gradient(135deg, #4c1d95 0%, #7c3aed 100%);
+  padding: 52px 0 72px;
+  position: relative; overflow: hidden;
+}
+.emp-hero::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 70% 50%, rgba(255,255,255,0.1) 0%, transparent 60%);
+}
+.emp-hero-inner { max-width: 1200px; margin: 0 auto; padding: 0 32px; position: relative; z-index: 1; }
+.emp-hero-inner h1 { font-size: clamp(24px,4vw,36px); font-weight: 700; color: #fff; margin: 0 0 8px; }
+.emp-hero-inner p { color: rgba(255,255,255,0.75); font-size: 15px; margin: 0 0 28px; }
+
+/* Search bar */
+.search-bar-wrap { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.search-input-wrap { position: relative; flex: 1; min-width: 240px; max-width: 440px; }
+.search-input-wrap input {
+  width: 100%; padding: 11px 14px 11px 40px; border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.25); background: rgba(255,255,255,0.15);
+  color: #fff; font-size: 14px; font-family: 'Inter', sans-serif; outline: none;
+  transition: border-color 0.2s, background 0.2s; box-sizing: border-box;
+}
+.search-input-wrap input::placeholder { color: rgba(255,255,255,0.55); }
+.search-input-wrap input:focus { border-color: rgba(255,255,255,0.5); background: rgba(255,255,255,0.22); }
+.search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,0.6); pointer-events: none; }
+.search-spinner { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); display: none; }
+.search-spinner.active { display: block; }
+
+.filter-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+.filter-btn {
+  padding: 8px 16px; border-radius: 100px; font-size: 12px; font-weight: 600;
+  border: 1.5px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.8); cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.2s;
+}
+.filter-btn:hover { background: rgba(255,255,255,0.22); color: #fff; }
+.filter-btn.active { background: #fff; color: var(--green-dark); border-color: #fff; }
+
+.emp-content { max-width: 1200px; margin: 36px auto 0; padding: 0 32px; }
+.search-info { font-size: 13px; color: var(--text-muted); margin-bottom: 16px; min-height: 20px; }
+.search-info strong { color: var(--green-dark); }
+
+/* Cards grid */
+.emp-ev-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px,1fr)); gap: 24px; }
+.emp-ev-card {
+  background: #fff; border-radius: 20px; border: 1px solid var(--border);
+  overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+  transition: transform 0.25s, box-shadow 0.25s; display: flex; flex-direction: column;
+}
+.emp-ev-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(124,58,237,0.14); }
+
+.emp-ev-card-img {
+  position: relative; height: 175px; overflow: hidden;
+  background: linear-gradient(135deg, #4c1d95, #7c3aed); display: flex; align-items: center; justify-content: center;
+}
+.emp-ev-card-img img { width: 100%; height: 100%; object-fit: cover; }
+
+.emp-ev-card-badge {
+  position: absolute; top: 14px; right: 14px;
+  background: rgba(0,0,0,0.6); backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.2); border-radius: 100px;
+  padding: 4px 12px; font-size: 11px; font-weight: 600;
+}
+.badge-active   { color: #4ade80; }
+.badge-upcoming { color: #fbbf24; }
+.badge-past     { color: #94a3b8; }
+
+.emp-ev-card-body { padding: 20px 22px 14px; flex: 1; }
+.emp-ev-card-title { font-size: 17px; font-weight: 700; color: var(--text-dark); margin: 0 0 10px; }
+.emp-ev-meta { display: flex; flex-direction: column; gap: 7px; margin-bottom: 12px; }
+.emp-ev-meta-row { display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--text-muted); }
+.emp-ev-meta-row svg { flex-shrink: 0; color: var(--green-dark); }
+.emp-ev-desc { font-size: 13px; color: var(--text-muted); line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+.emp-ev-card-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 13px 22px; border-top: 1px solid var(--border); background: #f9fafb; gap: 8px;
+}
+.status-badge { display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; border-radius: 100px; font-size: 11px; font-weight: 600; }
+.status-pending  { background: #fef3c7; color: #92400e; }
+.status-accepted { background: #ede9fe; color: #5b21b6; }
+.status-refused  { background: #fee2e2; color: #991b1b; }
+
+.btn-participer {
+  display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px;
+  border-radius: 9px; font-size: 12px; font-weight: 600; cursor: pointer;
+  border: none; font-family: 'Inter', sans-serif; transition: transform 0.15s;
+  background: var(--green); color: #fff;
+}
+.btn-participer:hover { transform: translateY(-1px); background: var(--green-dark); }
+.btn-annuler { background: #fee2e2; color: #991b1b; }
+.btn-annuler:hover { background: #fecaca; transform: translateY(-1px); }
+.btn-detail {
+  display: inline-flex; align-items: center; gap: 5px; padding: 8px 14px;
+  border-radius: 9px; font-size: 12px; font-weight: 600; text-decoration: none;
+  background: #fff; color: var(--text-muted); border: 1.5px solid var(--border); transition: background 0.2s;
+}
+.btn-detail:hover { background: #ede9fe; color: var(--green-dark); text-decoration: none; }
+
+.emp-ev-empty { text-align: center; padding: 80px 32px; grid-column: 1/-1; }
+.emp-ev-empty p { font-size: 15px; color: var(--text-muted); }
+
+.skeleton-card { background: #fff; border-radius: 20px; border: 1px solid var(--border); overflow: hidden; height: 320px; animation: skeleton-pulse 1.4s ease-in-out infinite; }
+@keyframes skeleton-pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+.skeleton-img { height: 175px; background: linear-gradient(135deg, #ede9fe, #a78bfa); }
+.skeleton-body { padding: 20px; }
+.skeleton-line { height: 14px; border-radius: 7px; background: #ede9fe; margin-bottom: 10px; }
+.skeleton-line.w-60 { width: 60%; }
+.skeleton-line.w-80 { width: 80%; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Recommandations IA ────────────────────────────────────────────────── */
+.reco-section { max-width: 1200px; margin: 32px auto 0; padding: 0 32px; }
+.reco-header  { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
+.reco-header h2 { font-size: 18px; font-weight: 700; color: var(--text-dark); margin: 0; }
+.reco-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: #ede9fe; color: #5b21b6;
+  padding: 3px 11px; border-radius: 100px; font-size: 11px; font-weight: 700; letter-spacing: 0.04em;
+}
+.reco-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px;
+}
+.reco-card {
+  background: #fff; border-radius: 18px;
+  border: 1.5px solid #a78bfa;
+  overflow: hidden; display: flex; flex-direction: column;
+  box-shadow: 0 4px 18px rgba(124,58,237,0.10);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.reco-card:hover { transform: translateY(-3px); box-shadow: 0 12px 36px rgba(124,58,237,0.18); }
+.reco-card-img {
+  height: 130px; overflow: hidden; position: relative;
+  background: linear-gradient(135deg, #4c1d95, #7c3aed);
+  display: flex; align-items: center; justify-content: center;
+}
+.reco-card-img img { width: 100%; height: 100%; object-fit: cover; }
+.reco-match-badge {
+  position: absolute; top: 10px; left: 10px;
+  background: rgba(255,255,255,0.93); color: #5b21b6;
+  padding: 3px 11px; border-radius: 100px; font-size: 11px; font-weight: 700;
+  display: flex; align-items: center; gap: 4px;
+}
+.reco-card-body { padding: 14px 16px; flex: 1; }
+.reco-card-title { font-size: 15px; font-weight: 700; color: var(--text-dark); margin: 0 0 6px; }
+.reco-card-meta  { font-size: 12px; color: var(--text-muted); margin-bottom: 10px; line-height: 1.6; }
+.reco-card-raison {
+  font-size: 11px; font-weight: 600; color: #5b21b6;
+  background: #ede9fe; padding: 4px 10px; border-radius: 8px; display: inline-block;
+}
+.reco-card-footer {
+  padding: 10px 16px; border-top: 1px solid #f3f4f6;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.reco-score { font-size: 11px; color: var(--text-muted); }
+.reco-score strong { color: #7c3aed; }
+/* Skeletons reco */
+.reco-skeleton { background: #fff; border-radius: 18px; border: 1.5px solid #c4b5fd; overflow: hidden; animation: skeleton-pulse 1.4s ease-in-out infinite; }
+.reco-sk-img  { height: 130px; background: linear-gradient(135deg, #ede9fe, #a78bfa); }
+.reco-sk-body { padding: 14px 16px; }
+.reco-sk-line { height: 12px; border-radius: 6px; background: #ede9fe; margin-bottom: 8px; }
+.reco-sk-line.w-70 { width: 70%; }
+.reco-sk-line.w-50 { width: 50%; }
+.reco-sk-line.w-60 { width: 60%; }
+{% endblock %}
+
+{% block body %}
+<div class="emp-page">
+  <div class="emp-hero">
+    <div class="emp-hero-inner">
+      <h1>📅 Événements de l'entreprise</h1>
+      <p>Découvrez les événements et participez à ceux qui vous intéressent</p>
+
+      <div class="search-bar-wrap">
+        <div class="search-input-wrap">
+          <span class="search-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </span>
+          <input type="text" id="searchInput" placeholder="Rechercher un événement…" autocomplete="off">
+          <span class="search-spinner" id="searchSpinner">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" style="animation:spin 0.8s linear infinite"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+          </span>
+        </div>
+        <div class="filter-btns">
+          <button class="filter-btn active" data-filtre="tous">Tous</button>
+          <button class="filter-btn" data-filtre="a_venir">À venir</button>
+          <button class="filter-btn" data-filtre="en_cours">En cours</button>
+          <button class="filter-btn" data-filtre="termine">Terminés</button>
+          <a href="{{ path('app_calendar_index') }}" class="filter-btn" style="background:#fff;color:var(--green-dark);border-color:#fff;text-decoration:none;display:inline-flex;align-items:center;gap:6px;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            Vue Calendrier
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {# ── Section recommandations IA (masquée jusqu'au chargement AJAX) ── #}
+  <section class="reco-section" id="recoSection" style="display:none">
+    <div class="reco-header">
+      <h2>✨ Suggérés pour vous</h2>
+      <span class="reco-badge">IA</span>
+    </div>
+    <div class="reco-grid" id="recoGrid">
+      {# Skeletons affichés pendant le fetch AJAX #}
+      <div class="reco-skeleton"><div class="reco-sk-img"></div><div class="reco-sk-body"><div class="reco-sk-line w-70"></div><div class="reco-sk-line w-50"></div><div class="reco-sk-line w-60"></div></div></div>
+      <div class="reco-skeleton"><div class="reco-sk-img"></div><div class="reco-sk-body"><div class="reco-sk-line w-70"></div><div class="reco-sk-line w-50"></div><div class="reco-sk-line w-60"></div></div></div>
+      <div class="reco-skeleton"><div class="reco-sk-img"></div><div class="reco-sk-body"><div class="reco-sk-line w-70"></div><div class="reco-sk-line w-50"></div><div class="reco-sk-line w-60"></div></div></div>
+    </div>
+  </section>
+
+  <div class="emp-content">
+    <div class="search-info" id="searchInfo"></div>
+    <div class="emp-ev-grid" id="eventsGrid">
+        {% for evenement in evenements %}
+        {% set isCancelled = evenement.titre starts with '[ANNULÉ]' %}
+        <div class="emp-ev-card {% if isCancelled %}card-cancelled{% endif %}" data-id="{{ evenement.id }}" style="{% if isCancelled %}opacity: 0.9; border-color: #fecaca;{% endif %}">
+          <div class="emp-ev-card-img">
+            {% if evenement.imageUrl %}
+              <img src="{{ evenement.imageUrl }}" alt="{{ evenement.titre }}" style="{% if isCancelled %}filter: grayscale(1);{% endif %}">
+            {% else %}
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1" opacity="0.4"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            {% endif %}
+            <span class="emp-ev-card-badge">
+              {% if isCancelled %}
+                <span style="color: #ef4444; font-weight: 800;">🚫 ANNULÉ</span>
+              {% else %}
+                {% set today = "now"|date("Y-m-d") %}
+                {% if evenement.dateDebut <= today and evenement.dateFin >= today %}
+                  <span class="badge-active">● En cours</span>
+                {% elseif evenement.dateDebut > today %}
+                  <span class="badge-upcoming">● À venir</span>
+                {% else %}
+                  <span class="badge-past">● Terminé</span>
+                {% endif %}
+              {% endif %}
+            </span>
+          </div>
+          <div class="emp-ev-card-body">
+            <h3 class="emp-ev-card-title" style="{% if isCancelled %}text-decoration: line-through; color: #991b1b;{% endif %}">{{ evenement.titre }}</h3>
+            <div class="emp-ev-meta">
+              <div class="emp-ev-meta-row">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                <span style="{% if isCancelled %}color: #ef4444; font-weight: 600;{% endif %}">
+                  {% if isCancelled %}Événement annulé par l'administration{% else %}{{ evenement.dateDebut }} — {{ evenement.dateFin }}{% endif %}
+                </span>
+              </div>
+              <div class="emp-ev-meta-row">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                <span>{{ evenement.lieu }}</span>
+              </div>
+            </div>
+            {% if evenement.description %}
+              <p class="emp-ev-desc">{{ evenement.description }}</p>
+            {% endif %}
+          </div>
+          <div class="emp-ev-card-footer">
+            <a href="{{ path('app_employe_evenement_show', {'id': evenement.id}) }}" class="btn-detail">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              Détails
+            </a>
+            {% if isCancelled %}
+              <span class="status-badge status-refused">🚫 Annulé</span>
+            {% elseif mesParticipations[evenement.id] is defined %}
+              {% set p = mesParticipations[evenement.id] %}
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span class="status-badge {% if p.statut == 'en_attente' %}status-pending{% elseif p.statut == 'accepte' %}status-accepted{% else %}status-refused{% endif %}">
+                  {% if p.statut == 'en_attente' %}⏳ En attente{% elseif p.statut == 'accepte' %}✓ Accepté{% else %}✗ Refusé{% endif %}
+                </span>
+              </div>
+            {% else %}
+              <form method="post" action="{{ path('app_employe_participer', {'id': evenement.id}) }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('participer' ~ evenement.id) }}">
+                <button type="submit" class="btn-participer">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  Participer
+                </button>
+              </form>
+            {% endif %}
+          </div>
+        </div>
+        {% else %}
+        <div class="emp-ev-empty">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="1.5" style="margin-bottom:16px;"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <p>Aucun événement disponible pour le moment.</p>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <script>
+  (function () {
+
+    // ── Recherche & filtres ────────────────────────────────────────────────
+    var searchInput  = document.getElementById('searchInput');
+    var spinner      = document.getElementById('searchSpinner');
+    var grid         = document.getElementById('eventsGrid');
+    var searchInfo   = document.getElementById('searchInfo');
+    var filterBtns   = document.querySelectorAll('.filter-btn');
+    var activeFiltre = 'tous';
+    var debounceTimer;
+    var originalHTML = grid.innerHTML;
+
+    function badgeLabel(badge, isCancelled) {
+      if (isCancelled) return '<span style="color: #ef4444; font-weight: 800;">🚫 ANNULÉ</span>';
+      if (badge === 'en_cours') return '<span class="badge-active">● En cours</span>';
+      if (badge === 'a_venir')  return '<span class="badge-upcoming">● À venir</span>';
+      return '<span class="badge-past">● Terminé</span>';
+    }
+
+    function buildCard(ev) {
+      var isCancelled = ev.titre.indexOf('[ANNULÉ]') === 0;
+      var imgStyle = isCancelled ? 'filter: grayscale(1);' : '';
+      var cardStyle = isCancelled ? 'opacity: 0.9; border-color: #fecaca;' : '';
+      var titleStyle = isCancelled ? 'text-decoration: line-through; color: #991b1b;' : '';
+      var dateText = isCancelled ? 'Événement annulé par l\'administration' : ev.date_debut + ' — ' + ev.date_fin;
+      var dateStyle = isCancelled ? 'color: #ef4444; font-weight: 600;' : '';
+
+      var imgHtml = ev.image_url
+        ? '<img src="' + ev.image_url + '" alt="' + ev.titre + '" style="' + imgStyle + '">'
+        : '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1" opacity="0.4"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>';
+      
+      var footerRight = isCancelled 
+        ? '<span class="status-badge status-refused">🚫 Annulé</span>'
+        : (ev.participation
+            ? (function(p){ var sc = p.statut === 'en_attente' ? 'status-pending' : (p.statut === 'accepte' ? 'status-accepted' : 'status-refused'); var sl = p.statut === 'en_attente' ? '⏳ En attente' : (p.statut === 'accepte' ? '✓ Accepté' : '✗ Refusé'); return '<span class="status-badge ' + sc + '">' + sl + '</span>'; })(ev.participation)
+        : '<form method="post" action="' + ev.url_participer + '">' 
+            + '<input type="hidden" name="_token" value="' + ev.csrf_token + '">'
+            + '<button type="submit" class="btn-participer"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Participer</button>'
+            + '</form>');
+
+      return '<div class="emp-ev-card" data-id="' + ev.id + '" style="' + cardStyle + '">'
+        + '<div class="emp-ev-card-img">' + imgHtml + '<span class="emp-ev-card-badge">' + badgeLabel(ev.badge, isCancelled) + '</span></div>'
+        + '<div class="emp-ev-card-body"><h3 class="emp-ev-card-title" style="' + titleStyle + '">' + ev.titre + '</h3>'
+        + '<div class="emp-ev-meta"><div class="emp-ev-meta-row"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span style="' + dateStyle + '">' + dateText + '</span></div>'
+        + '<div class="emp-ev-meta-row"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg><span>' + ev.lieu + '</span></div>'
+        + '</div>' + (ev.description ? '<p class="emp-ev-desc">' + ev.description + '</p>' : '') + '</div>'
+        + '<div class="emp-ev-card-footer"><a href="' + ev.url_detail + '" class="btn-detail"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> Détails</a>'
+        + footerRight + '</div></div>';
+    }
+
+  function showSkeletons() {
+    var html = '';
+    for (var i = 0; i < 3; i++) html += '<div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-body"><div class="skeleton-line w-80"></div><div class="skeleton-line w-60"></div><div class="skeleton-line w-60"></div></div></div>';
+    grid.innerHTML = html;
+  }
+
+  function doSearch() {
+    var q = searchInput.value.trim(), filtre = activeFiltre;
+    if (q === '' && filtre === 'tous') { grid.innerHTML = originalHTML; searchInfo.innerHTML = ''; return; }
+    spinner.classList.add('active'); showSkeletons();
+    var url = '{{ path("app_employe_evenements_search") }}?q=' + encodeURIComponent(q) + '&statut=' + filtre;
+    fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        spinner.classList.remove('active');
+        var evs = data.evenements || [];
+        if (evs.length === 0) {
+          grid.innerHTML = '<div class="emp-ev-empty"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="1.5" style="margin-bottom:16px;"><rect x="3" y="4" width="18" height="18" rx="2"/></svg><p>Aucun événement trouvé.</p></div>';
+          searchInfo.innerHTML = 'Aucun résultat pour <strong>"' + q + '"</strong>';
+          return;
+        }
+        var html = ''; for (var i = 0; i < evs.length; i++) html += buildCard(evs[i]);
+        grid.innerHTML = html;
+        searchInfo.innerHTML = q !== '' ? '<strong>' + evs.length + '</strong> résultat(s) pour <strong>"' + q + '"</strong>' : '<strong>' + evs.length + '</strong> événement(s)';
+      })
+      .catch(function() { spinner.classList.remove('active'); grid.innerHTML = originalHTML; searchInfo.innerHTML = ''; });
+  }
+
+  searchInput.addEventListener('input', function() { clearTimeout(debounceTimer); debounceTimer = setTimeout(doSearch, 350); });
+  filterBtns.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      filterBtns.forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active'); activeFiltre = btn.dataset.filtre; doSearch();
+    });
+  });
+
+  // ── Recommandations IA ─────────────────────────────────────────────────
+  var recoSection = document.getElementById('recoSection');
+  var recoGrid    = document.getElementById('recoGrid');
+
+  function buildRecoCard(rec) {
+    var pct = Math.round(rec.score * 100);
+    var imgHtml = rec.image_url
+      ? '<img src="' + rec.image_url + '" alt="' + rec.titre + '">'
+      : '<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1" opacity="0.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>';
+    return '<div class="reco-card">'
+      + '<div class="reco-card-img">'
+      + imgHtml
+      + '<span class="reco-match-badge">✦ ' + pct + '% match</span>'
+      + '</div>'
+      + '<div class="reco-card-body">'
+      + '<h3 class="reco-card-title">' + rec.titre + '</h3>'
+      + '<p class="reco-card-meta">📅 ' + rec.date_debut + ' — ' + rec.date_fin + '<br>📍 ' + rec.lieu + '</p>'
+      + '<span class="reco-card-raison">✦ ' + rec.raison + '</span>'
+      + '</div>'
+      + '<div class="reco-card-footer">'
+      + '<span class="reco-score">Score IA : <strong>' + pct + '%</strong></span>'
+      + '<a href="' + rec.url_detail + '" class="btn-detail" style="font-size:12px;padding:6px 12px;">'
+      + '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>'
+      + ' Voir</a>'
+      + '</div>'
+      + '</div>';
+  }
+
+  // Afficher la section avec les skeletons immédiatement, puis charger les données
+  recoSection.style.display = 'block';
+
+  fetch('{{ path("app_employe_recommandations") }}', {
+    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+  })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      var recs = data.recommandations || [];
+      if (recs.length === 0) {
+        recoSection.style.display = 'none';
+        return;
+      }
+      var html = '';
+      for (var i = 0; i < recs.length; i++) html += buildRecoCard(recs[i]);
+      recoGrid.innerHTML = html;
+    })
+    .catch(function() {
+      recoSection.style.display = 'none';
+    });
+
+})();
+</script>
+{% endblock %}

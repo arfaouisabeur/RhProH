@@ -1,0 +1,180 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mon Profil - Employé{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3 col-lg-2 sidebar">
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link active" href="{{ path('app_employe_profile') }}">
+                        <i class="bi bi-person me-2"></i>Mon Profil
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-danger" href="#" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                        <i class="bi bi-trash me-2"></i>Supprimer compte
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-9 col-lg-10 py-4">
+            <div class="container">
+                <h2 class="fw-bold mb-4">
+                    <i class="bi bi-briefcase me-2 text-primary"></i>Mon Profil Employé
+                </h2>
+
+                <div class="row">
+                    <div class="col-lg-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="bi bi-pencil-square me-2"></i>Modifier mes informations</h5>
+                            </div>
+                            <div class="card-body">
+                                {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            {{ form_label(form.prenom) }}
+                                            {{ form_widget(form.prenom) }}
+                                            {{ form_errors(form.prenom) }}
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            {{ form_label(form.nom) }}
+                                            {{ form_widget(form.nom) }}
+                                            {{ form_errors(form.nom) }}
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        {{ form_label(form.email) }}
+                                        {{ form_widget(form.email) }}
+                                        {{ form_errors(form.email) }}
+                                    </div>
+
+                                    <div class="mb-3">
+                                        {{ form_label(form.telephone) }}
+                                        {{ form_widget(form.telephone) }}
+                                        {{ form_errors(form.telephone) }}
+                                    </div>
+
+                                    <div class="mb-3">
+                                        {{ form_label(form.adresse) }}
+                                        {{ form_widget(form.adresse) }}
+                                        {{ form_errors(form.adresse) }}
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            {{ form_label(form.position) }}
+                                            {{ form_widget(form.position) }}
+                                            {{ form_errors(form.position) }}
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            {{ form_label(form.dateEmbauche) }}
+                                            {{ form_widget(form.dateEmbauche) }}
+                                            {{ form_errors(form.dateEmbauche) }}
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        {{ form_label(form.avatar) }}
+                                        {{ form_widget(form.avatar) }}
+                                        {{ form_errors(form.avatar) }}
+                                    </div>
+
+                                    <div class="d-grid gap-2">
+                                        <button class="btn btn-primary" type="submit">
+                                            <i class="bi bi-save me-2"></i>Enregistrer les modifications
+                                        </button>
+                                    </div>
+
+                                {{ form_end(form) }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="bi bi-card-image me-2"></i>Photo de profil</h5>
+                            </div>
+                            <div class="card-body text-center">
+                                {% if user.avatarPath %}
+                                    <img src="{{ asset(user.avatarPath) }}" class="avatar-large mb-3" alt="Avatar">
+                                {% else %}
+                                    <div class="avatar-large bg-success text-white d-flex align-items-center justify-content-center mx-auto mb-3" style="font-size: 3rem;">
+                                        {{ user.prenom|first|upper }}{{ user.nom|first|upper }}
+                                    </div>
+                                {% endif %}
+                                <h5 class="fw-bold">{{ user.fullName }}</h5>
+                                <span class="badge badge-role badge-employe">Employé</span>
+                                {% if user.employe %}
+                                    <p class="text-muted mt-2 mb-0">
+                                        <i class="bi bi-hash me-1"></i>{{ user.employe.matricule }}
+                                    </p>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <button onclick="showQr()" class="btn btn-primary">
+    Générer QR Code
+</button>
+
+<div id="qrZone" style="margin-top:20px; display:none;">
+    <img src="{{ path('app_employe_qrcode') }}" alt="QR Code">
+</div>
+
+<script>
+function showQr() {
+    document.getElementById("qrZone").style.display = "block";
+}
+</script>
+
+
+                        <div class="card mt-3">
+                            <div class="card-header bg-danger text-white">
+                                <h5 class="mb-0"><i class="bi bi-exclamation-triangle me-2"></i>Zone dangereuse</h5>
+                            </div>
+                            <div class="card-body">
+                                <p class="text-muted small">La suppression de votre compte est irréversible.</p>
+                                <button class="btn btn-outline-danger w-100" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                                    <i class="bi bi-trash me-2"></i>Supprimer mon compte
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="bi bi-exclamation-triangle me-2"></i>Confirmer la suppression</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est <strong>irréversible</strong>.</p>
+                <p class="text-muted">Toutes vos données seront définitivement supprimées.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <form method="post" action="{{ path('app_delete_account') }}" class="d-inline">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete_account') }}">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash me-2"></i>Supprimer définitivement
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

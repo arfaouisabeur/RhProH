@@ -1,0 +1,82 @@
+{% extends 'rh/admin_base.html.twig' %}
+{% block page_title %}Dashboard RH{% endblock %}
+{% block page_subtitle %}Vue d'ensemble de l'activité RH et des indicateurs de performance{% endblock %}
+{% block admin_content %}
+<div class="row g-4 mb-5" style="margin-top:-1rem">
+    <div class="col-md-4">
+        <div class="admin-card text-center" style="display:flex;flex-direction:column;align-items:center;border-left:5px solid var(--purple-dark)">
+            <div class="admin-card-title-icon" style="width:55px;height:55px;font-size:1.5rem;margin:0 auto 1rem;background:#f3e5f5;color:var(--purple-dark)"><i class="bi bi-people-fill"></i></div>
+            <div style="font-size:2.5rem;font-weight:800;color:#1e293b;line-height:1;margin-bottom:.5rem">{{ candidats|length }}</div>
+            <div style="color:#64748b;font-weight:600;text-transform:uppercase;font-size:.75rem;letter-spacing:.05em">Candidats Inscrits</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="admin-card text-center" style="display:flex;flex-direction:column;align-items:center;border-left:5px solid var(--purple-mid)">
+            <div class="admin-card-title-icon" style="width:55px;height:55px;font-size:1.5rem;margin:0 auto 1rem;background:#f3e5f5;color:var(--purple-mid)"><i class="bi bi-briefcase-fill"></i></div>
+            <div style="font-size:2.5rem;font-weight:800;color:#1e293b;line-height:1;margin-bottom:.5rem">{{ employes|length }}</div>
+            <div style="color:#64748b;font-weight:600;text-transform:uppercase;font-size:.75rem;letter-spacing:.05em">Employés Actifs</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="admin-card text-center" style="display:flex;flex-direction:column;align-items:center;border-left:5px solid #ab47bc">
+            <div class="admin-card-title-icon" style="width:55px;height:55px;font-size:1.5rem;margin:0 auto 1rem;background:#f3e5f5;color:#ab47bc"><i class="bi bi-person-badge-fill"></i></div>
+            <div style="font-size:2.5rem;font-weight:800;color:#1e293b;line-height:1;margin-bottom:.5rem">{{ candidats|length + employes|length }}</div>
+            <div style="color:#64748b;font-weight:600;text-transform:uppercase;font-size:.75rem;letter-spacing:.05em">Effectif Total</div>
+        </div>
+    </div>
+</div>
+<div class="row g-4">
+    <div class="col-xl-6">
+        <div class="admin-card h-100" style="padding:0">
+            <div class="d-flex justify-content-between align-items-center p-4 border-bottom">
+                <div class="admin-card-title mb-0"><div class="admin-card-title-icon"><i class="bi bi-people-fill"></i></div>Candidats récents</div>
+                <a href="{{ path('app_rh_candidats') }}" class="btn-light-purple btn-sm">Gérer tout</a>
+            </div>
+            <div class="admin-table-container mx-4 mt-4 mb-4">
+                <table class="admin-table table-hover mb-0">
+                    <thead><tr><th>Profil</th><th>Formation</th><th class="text-end">Action</th></tr></thead>
+                    <tbody>
+                        {% for candidat in candidats|slice(0,5) %}
+                        <tr>
+                            <td><div class="table-avatar-group">
+                                {% if candidat.avatarPath %}<img src="{{ asset(candidat.avatarPath) }}" class="table-avatar" alt="">
+                                {% else %}<div class="table-avatar-initials" style="background:var(--purple-dark)">{{ candidat.prenom|first|upper }}</div>{% endif %}
+                                <div class="d-flex flex-column"><span class="fw-bold text-dark" style="font-size:.9rem">{{ candidat.fullName }}</span><span class="text-muted" style="font-size:.75rem">{{ candidat.email }}</span></div>
+                            </div></td>
+                            <td><span class="badge-soft badge-soft-purple" style="font-size:.7rem">{{ candidat.candidat.niveauEtude|default('-') }}</span></td>
+                            <td class="text-end"><a href="{{ path('app_rh_user_view',{'id':candidat.id}) }}" class="btn-action-circle outline" title="Voir"><i class="bi bi-eye"></i></a></td>
+                        </tr>
+                        {% else %}<tr><td colspan="3" class="text-center py-5 text-muted">Aucun candidat récemment inscrit</td></tr>{% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="admin-card h-100" style="padding:0">
+            <div class="d-flex justify-content-between align-items-center p-4 border-bottom">
+                <div class="admin-card-title mb-0"><div class="admin-card-title-icon" style="background:#198754"><i class="bi bi-briefcase-fill"></i></div>Employés récents</div>
+                <a href="{{ path('app_rh_employes') }}" class="btn-light-purple btn-sm">Gérer tout</a>
+            </div>
+            <div class="admin-table-container mx-4 mt-4 mb-4">
+                <table class="admin-table table-hover mb-0">
+                    <thead><tr><th>Profil</th><th>Poste</th><th class="text-end">Action</th></tr></thead>
+                    <tbody>
+                        {% for employe in employes|slice(0,5) %}
+                        <tr>
+                            <td><div class="table-avatar-group">
+                                {% if employe.avatarPath %}<img src="{{ asset(employe.avatarPath) }}" class="table-avatar" alt="">
+                                {% else %}<div class="table-avatar-initials" style="background:linear-gradient(135deg,#198754,#20c997)">{{ employe.prenom|first|upper }}</div>{% endif %}
+                                <div class="d-flex flex-column"><span class="fw-bold text-dark" style="font-size:.9rem">{{ employe.fullName }}</span><span class="text-muted" style="font-size:.75rem">{{ employe.employe.matricule|default('-') }}</span></div>
+                            </div></td>
+                            <td><span class="badge-soft badge-soft-success" style="font-size:.7rem">{{ employe.employe.position|default('-') }}</span></td>
+                            <td class="text-end"><a href="{{ path('app_rh_user_view',{'id':employe.id}) }}" class="btn-action-circle outline" title="Voir"><i class="bi bi-eye"></i></a></td>
+                        </tr>
+                        {% else %}<tr><td colspan="3" class="text-center py-5 text-muted">Aucun employé récemment ajouté</td></tr>{% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

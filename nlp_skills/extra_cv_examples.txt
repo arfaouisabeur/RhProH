@@ -1,0 +1,69 @@
+Développeur Python avec Django, PostgreSQL et Docker.
+Développeur Python avec Flask, Redis et Celery.
+Développeur backend avec FastAPI, PostgreSQL et JWT.
+Ingénieur DevOps avec Docker, Kubernetes, Helm et Terraform.
+Développeur frontend avec React, TypeScript et Tailwind CSS.
+Développeur frontend avec Vue.js, Vite et Pinia.
+Développeur full stack avec Symfony, React et MySQL.
+Développeur PHP avec Laravel, MySQL et PHPUnit.
+Développeur Java avec Spring Boot, Maven et PostgreSQL.
+Développeur Node.js avec Express.js, MongoDB et JWT.
+Data Scientist avec Python, pandas, scikit-learn et Matplotlib.
+Ingénieur IA avec PyTorch, TensorFlow, spaCy et Hugging Face.
+Ingénieur cloud avec AWS, Docker et Kubernetes.
+Ingénieur cloud avec Azure, Terraform et GitHub Actions.
+Développeur mobile avec Flutter, Dart et Firebase.
+Développeur mobile avec React Native, Expo et Firebase.
+Administrateur système avec Linux, Bash, Nginx et Docker.
+Administrateur réseau avec Cisco, VPN, DNS et DHCP.
+Spécialiste BI avec Power BI, SQL, DAX et Excel.
+Data engineer avec Apache Spark, Airflow, dbt et PostgreSQL.
+Développeur Go avec Gin, gRPC et PostgreSQL.
+Développeur C# avec ASP.NET, SQL Server et Azure.
+Développeur C++ avec Linux, Git et CMake.
+Développeur Kotlin avec Android, Firebase et REST API.
+Développeur Swift avec iOS, Xcode et REST API.
+Développeur React avec Redux, Jest et GraphQL.
+Développeur Angular avec TypeScript, RxJS et Cypress.
+Développeur Vue.js avec Vuex, Axios et Tailwind CSS.
+Développeur backend avec Django REST Framework, PostgreSQL et Redis.
+Développeur backend avec Symfony, API Platform et MySQL.
+Développeur backend avec Laravel, Redis et MySQL.
+Ingénieur QA avec Cypress, Selenium et Postman.
+Ingénieur QA avec Playwright, Jest et CI/CD.
+Ingénieur sécurité avec OWASP, Burp Suite et Wireshark.
+Ingénieur sécurité avec JWT, OAuth et Keycloak.
+Spécialiste MLOps avec MLflow, DVC, Docker et Kubernetes.
+Data analyst avec Python, pandas, Power BI et SQL.
+Analyste BI avec Tableau, Excel, SQL et DAX.
+Ingénieur data avec Kafka, Apache Spark et Hadoop.
+Développeur JavaScript avec Node.js, Express.js et MongoDB.
+Développeur TypeScript avec React, Vite et GraphQL.
+Développeur PHP avec Symfony, Twig et Doctrine.
+Développeur Python avec FastAPI, Celery et RabbitMQ.
+Développeur Python avec OpenCV, YOLO et TensorFlow.
+Spécialiste NLP avec spaCy, NLTK, BERT et GPT.
+Développeur Full Stack avec Next.js, Node.js et PostgreSQL.
+Développeur Full Stack avec Nuxt.js, Laravel et MySQL.
+Ingénieur DevOps avec Jenkins, GitLab CI et Ansible.
+Ingénieur DevOps avec GitHub Actions, Terraform et Helm.
+Développeur backend avec Spring Boot, Kafka et PostgreSQL.
+Développeur backend avec Express.js, Redis et RabbitMQ.
+Développement d'une application RH avec Symfony, Twig et MySQL.
+Création d'une API avec FastAPI, Docker et PostgreSQL.
+Déploiement avec Kubernetes, Helm et GitLab CI.
+Développement d'un dashboard avec React, D3.js et REST API.
+Monitoring d'une plateforme avec Prometheus, Grafana et ELK Stack.
+Implémentation d'une authentification avec OAuth, JWT et Keycloak.
+Création d'un pipeline de données avec Airflow, dbt et PostgreSQL.
+Mise en place d'une architecture microservices avec Docker et Kafka.
+Développement d'une application mobile avec Flutter et Firebase.
+Développement d'une API sécurisée avec Symfony, JWT et API Platform.
+Automatisation CI/CD avec Jenkins, Docker et GitHub Actions.
+Analyse de données avec Python, pandas, NumPy et Tableau.
+Déploiement cloud sur AWS avec Terraform et Kubernetes.
+Développement d'un chatbot avec Python, spaCy et FastAPI.
+Développement full stack avec React, Django et PostgreSQL.
+Développement web avec Vue.js, Laravel et MySQL.
+Développement backend avec Go, Gin et PostgreSQL.
+Développement frontend avec Svelte, TypeScript et Vite.

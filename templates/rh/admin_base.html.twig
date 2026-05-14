@@ -1,0 +1,954 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Admin - RH Pro{% endblock %}
+
+{% block navbar %}
+    {% include 'partials/header.html.twig' %}
+{% endblock %}
+
+{% block footer %}
+    <!-- No public footer in admin area -->
+{% endblock %}
+
+{% block styles %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap');
+
+    :root {
+        --purple-dark: #662283;
+        --purple-mid: #7e2b9c;
+        --purple-light: #f3e5f5;
+        --bg-light: #f8fafc;
+        --card-radius: 24px;
+    }
+    
+    body {
+        background-color: var(--bg-light);
+        font-family: 'Inter', sans-serif;
+    }
+    
+    /* Admin Dashboard Specific Styles */
+    .admin-wrapper {
+        background-color: var(--bg-light);
+        min-height: 100vh;
+        display: flex;
+        overflow-x: hidden;
+    }
+    .admin-sidebar {
+        background: #ffffff;
+        padding: 2rem 1.25rem;
+        border-right: 1px solid rgba(0,0,0,0.06);
+        height: calc(100vh - 60px);
+        position: fixed;
+        left: 0;
+        top: 60px;
+        width: 260px;
+        z-index: 1000;
+        box-shadow: 4px 0 15px rgba(0,0,0,0.03);
+        overflow-y: auto;
+    }
+    .admin-sidebar .nav-link {
+        font-weight: 500;
+        color: #64748b !important;
+        padding: 0.85rem 1.1rem !important;
+        border-radius: 10px;
+        margin-bottom: 0.35rem;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        font-size: 0.95rem;
+        border: none;
+        background: transparent;
+        width: 100%;
+        text-align: left;
+        text-decoration: none;
+    }
+    .admin-sidebar .nav-link i {
+        font-size: 1.25rem;
+        margin-right: 14px;
+        color: #94a3b8;
+        transition: color 0.2s ease;
+    }
+    .admin-sidebar .nav-link:hover {
+        background: var(--purple-light); 
+        color: var(--purple-mid) !important;
+    }
+    .admin-sidebar .nav-link:hover i {
+        color: var(--purple-mid);
+    }
+    .admin-sidebar .nav-link.active {
+        background: var(--purple-dark);
+        color: white !important;
+        box-shadow: 0 4px 12px rgba(102, 34, 131, 0.3);
+    }
+    .admin-sidebar .nav-link.active i {
+        color: white;
+    }
+    
+    /* Dropdown Sidebar Styles */
+    .nav-dropdown-sidebar {
+        position: relative;
+    }
+    .dropdown-toggle-sidebar {
+        cursor: pointer;
+    }
+    .dropdown-toggle-sidebar .chevron-icon {
+        font-size: 0.75rem;
+        transition: transform 0.2s ease;
+    }
+    .dropdown-toggle-sidebar.open .chevron-icon {
+        transform: rotate(180deg);
+    }
+    .dropdown-menu-sidebar {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+    }
+    .dropdown-menu-sidebar.show {
+        max-height: 500px;
+    }
+    .dropdown-item-sidebar {
+        display: block;
+        padding: 0.65rem 1.1rem 0.65rem 3.5rem;
+        font-size: 0.88rem;
+        color: #64748b;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        border-radius: 8px;
+        margin-bottom: 0.25rem;
+    }
+    .dropdown-item-sidebar:hover {
+        background: var(--purple-light);
+        color: var(--purple-mid);
+    }
+    .dropdown-divider-sidebar {
+        height: 1px;
+        background: #e5e7eb;
+        margin: 0.5rem 1.1rem 0.5rem 3.5rem;
+        border: none;
+    }
+    .admin-sidebar-title {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.15em;
+        color: #94a3b8;
+        font-weight: 700;
+        margin: 1.5rem 0 0.75rem 1rem;
+    }
+    
+    .admin-content {
+        flex: 1;
+        margin-left: 260px;
+        margin-top: 60px;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+    }
+    
+    /* Top Banner */
+    .admin-top-banner {
+        background: var(--purple-dark) !important;
+        color: white;
+        padding: 2.5rem 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 0;
+    }
+    .admin-top-banner h2 {
+        font-weight: 700;
+        margin-bottom: 0.2rem;
+        font-size: 1.6rem;
+    }
+    .admin-top-banner p {
+        color: rgba(255,255,255,0.7);
+        font-size: 0.95rem;
+        margin-bottom: 0;
+    }
+    .admin-top-banner .header-icon {
+        width: 48px;
+        height: 48px;
+        background: rgba(255,255,255,0.15);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-right: 1rem;
+    }
+    
+    /* Main Content Container */
+    .admin-main-px {
+        padding: 1.5rem 1rem;
+    }
+    
+    /* Cards */
+    .admin-card {
+        background: #ffffff;
+        border-radius: var(--card-radius);
+        padding: 2rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        margin-bottom: 2rem;
+    }
+    .admin-card-title {
+        display: flex;
+        align-items: center;
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin-bottom: 1.5rem;
+    }
+    .admin-card-title-icon {
+        width: 36px;
+        height: 36px;
+        background: var(--purple-dark);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 12px;
+        font-size: 1.1rem;
+    }
+
+    /* Buttons */
+    .btn-purple {
+        background-color: var(--purple-dark);
+        color: white;
+        border-radius: 50px;
+        font-weight: 600;
+        padding: 0.5rem 1.25rem;
+        transition: all 0.2s ease;
+        border: none;
+    }
+    .btn-purple:hover {
+        background-color: var(--purple-mid);
+        color: white;
+    }
+    .btn-light-purple {
+        background-color: #f3e5f5;
+        color: var(--purple-dark);
+        border-radius: 50px;
+        font-weight: 600;
+        padding: 0.5rem 1.25rem;
+        border: none;
+        transition: all 0.2s ease;
+    }
+    .btn-light-purple:hover {
+        background-color: #e1bee7;
+        color: var(--purple-dark);
+    }
+    
+    /* Tables */
+    .admin-table-container {
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid #eee;
+    }
+    .admin-table {
+        margin: 0;
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .admin-table thead {
+        background-color: var(--purple-dark) !important;
+        color: white !important;
+    }
+    .admin-table thead th {
+        color: white !important;
+        background-color: var(--purple-dark) !important;
+        border: none;
+    }
+    .admin-table th {
+        font-weight: 600;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        padding: 1rem 1.25rem;
+        border: none;
+        letter-spacing: 0.05em;
+    }
+    .admin-table td {
+        padding: 1rem 1.25rem;
+        vertical-align: middle;
+        font-size: 0.95rem;
+        color: #334;
+        border-bottom: 1px solid #f0f0f0;
+        background-color: #ffffff;
+    }
+    .admin-table tbody tr:hover td {
+        background-color: #fafafa;
+    }
+    
+    /* Badges in table */
+    .badge-soft {
+        padding: 6px 12px;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 0.75rem;
+    }
+    .badge-soft-purple {
+        background-color: #f3e5f5;
+        color: var(--purple-dark);
+    }
+    .badge-soft-warning {
+        background-color: #fff8e1;
+        color: #f57c00;
+    }
+    .badge-soft-success {
+        background-color: #e8f5e9;
+        color: #2e7d32;
+    }
+    
+    /* Mini Action Buttons */
+    .btn-action-circle {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.9rem;
+        margin-right: 4px;
+        transition: all 0.2s;
+    }
+    .btn-action-circle.outline {
+        border: 2px solid var(--purple-dark);
+        color: var(--purple-dark);
+        background: transparent;
+    }
+    .btn-action-circle.outline:hover {
+        background: var(--purple-dark);
+        color: white;
+    }
+    .btn-action-circle.solid {
+        background: var(--purple-dark);
+        color: white;
+        border: none;
+    }
+    .btn-action-circle.solid:hover {
+        background: var(--purple-mid);
+    }
+    
+    /* Avatar Groups */
+    .table-avatar-group {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .table-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 10px;
+        object-fit: cover;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .table-avatar-initials {
+        width: 32px;
+        height: 32px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 700;
+        font-size: 0.8rem;
+    }
+    
+    /* Remove original minimal header */
+    .minimal-top-header {
+        position: absolute;
+        top: 20px;
+        right: 30px;
+        z-index: 10;
+    }
+    
+    @media (max-width: 991px) {
+        .admin-sidebar {
+            display: none;
+        }
+    }
+    {% block admin_custom_styles %}{% endblock %}
+</style>
+{% endblock %}
+
+{% block body %}
+<!-- Admin layout wrapper -->
+<div class="admin-wrapper">
+    <!-- Sidebar -->
+    <div class="admin-sidebar d-none d-md-block" style="width: 260px;">
+        <div class="d-flex align-items-center mb-4 px-2">
+            <div style="width:10px; height:10px; border-radius:50%; background:var(--purple-dark); margin-right:10px; box-shadow:0 0 10px rgba(102, 34, 131, 0.5);"></div>
+            <span style="font-family:'Playfair Display', serif; font-size:19px; font-weight:800; color:#1e293b; letter-spacing:-0.5px;">RH Pro</span>
+        </div>
+
+        <ul class="nav flex-column">
+            <!-- Accueil -->
+            <li class="nav-item">
+                <a class="nav-link {% if app.request.attributes.get('_route') == 'app_landing' %}active{% endif %}" href="{{ path('app_landing') }}">
+                    <i class="bi bi-house-door-fill"></i> Accueil
+                </a>
+            </li>
+
+            <!-- Dashboard -->
+            <li class="nav-item">
+                <a class="nav-link {% if app.request.attributes.get('_route') == 'app_home' or app.request.attributes.get('_route') == 'app_rh_dashboard' %}active{% endif %}" href="{{ path('app_home') }}">
+                    <i class="bi bi-grid-1x2-fill"></i> Dashboard
+                </a>
+            </li>
+
+            <!-- Congé -->
+            <li class="nav-item">
+                <a class="nav-link {% if 'conge' in app.request.attributes.get('_route')|default('') %}active{% endif %}" href="{{ path('app_conge_tt_index') }}">
+                    <i class="bi bi-calendar2-check-fill"></i> Congé
+                </a>
+            </li>
+
+            <!-- Services Dropdown -->
+            <li class="nav-item nav-dropdown-sidebar">
+                <button class="nav-link dropdown-toggle-sidebar" onclick="toggleSidebarDropdown(this)">
+                    <i class="bi bi-gear-fill"></i> Services
+                    <i class="bi bi-chevron-down ms-auto chevron-icon"></i>
+                </button>
+                <ul class="dropdown-menu-sidebar">
+                    <li><a href="{{ path('app_demande_service_index') }}" class="dropdown-item-sidebar">Toutes les demandes</a></li>
+                    <li><hr class="dropdown-divider-sidebar"></li>
+                    <li><a href="{{ path('app_type_service_index') }}" class="dropdown-item-sidebar">Gérer les types</a></li>
+                    <li><a href="{{ path('app_type_service_new') }}" class="dropdown-item-sidebar">Nouveau service</a></li>
+                </ul>
+            </li>
+
+            <!-- Projets Dropdown -->
+            <li class="nav-item nav-dropdown-sidebar">
+                <button class="nav-link dropdown-toggle-sidebar" onclick="toggleSidebarDropdown(this)">
+                    <i class="bi bi-diagram-3-fill"></i> Projets
+                    <i class="bi bi-chevron-down ms-auto chevron-icon"></i>
+                </button>
+                <ul class="dropdown-menu-sidebar">
+                    <li><a href="{{ path('app_projet_index') }}" class="dropdown-item-sidebar">Tous les projets</a></li>
+                    <li><a href="{{ path('app_projet_new') }}" class="dropdown-item-sidebar">Créer un projet</a></li>
+                </ul>
+            </li>
+
+            <!-- Événements Dropdown -->
+            <li class="nav-item nav-dropdown-sidebar">
+                <button class="nav-link dropdown-toggle-sidebar" onclick="toggleSidebarDropdown(this)">
+                    <i class="bi bi-calendar-event-fill"></i> Événements
+                    <i class="bi bi-chevron-down ms-auto chevron-icon"></i>
+                </button>
+                <ul class="dropdown-menu-sidebar">
+                    <li><a href="{{ path('app_evenement_index') }}" class="dropdown-item-sidebar">Gérer les événements</a></li>
+                    <li><a href="{{ path('app_evenement_new') }}" class="dropdown-item-sidebar">Créer un événement</a></li>
+                    <li><hr class="dropdown-divider-sidebar"></li>
+                    <li><a href="{{ path('app_event_participation_index') }}" class="dropdown-item-sidebar">Gestion participations</a></li>
+                </ul>
+            </li>
+
+            <!-- Paiements -->
+            <li class="nav-item">
+                <a class="nav-link {% if 'paiement' in app.request.attributes.get('_route')|default('') or 'salaire' in app.request.attributes.get('_route')|default('') or 'prime' in app.request.attributes.get('_route')|default('') %}active{% endif %}" href="{{ path('app_rh_paiement_index') }}">
+                    <i class="bi bi-credit-card-fill"></i> Paiements
+                </a>
+            </li>
+
+            <!-- Contrat -->
+            <li class="nav-item">
+                <a class="nav-link {% if 'contract' in app.request.attributes.get('_route')|default('') %}active{% endif %}" href="{{ path('app_rh_contract_index') }}">
+                    <i class="bi bi-file-earmark-text-fill"></i> Contrat
+                </a>
+            </li>
+
+            <!-- Candidatures -->
+            <li class="nav-item">
+                <a class="nav-link {% if 'candidature' in app.request.attributes.get('_route')|default('') %}active{% endif %}" href="{{ path('app_candidature_index') }}">
+                    <i class="bi bi-person-lines-fill"></i> Candidatures
+                </a>
+            </li>
+
+            <!-- Offres -->
+            <li class="nav-item">
+                <a class="nav-link {% if 'offre' in app.request.attributes.get('_route')|default('') %}active{% endif %}" href="{{ path('app_offre_emploi_index') }}">
+                    <i class="bi bi-briefcase-fill"></i> Offres
+                </a>
+            </li>
+        </ul>
+
+        <div class="admin-sidebar-title mt-4">Administration</div>
+        <ul class="nav flex-column">
+            <!-- Admin Dropdown -->
+            <li class="nav-item nav-dropdown-sidebar">
+                <button class="nav-link dropdown-toggle-sidebar" onclick="toggleSidebarDropdown(this)">
+                    <i class="bi bi-shield-fill-check"></i> Admin
+                    <i class="bi bi-chevron-down ms-auto chevron-icon"></i>
+                </button>
+                <ul class="dropdown-menu-sidebar">
+                    <li><a href="{{ path('app_rh_candidats') }}" class="dropdown-item-sidebar">Candidats</a></li>
+                    <li><a href="{{ path('app_rh_employes') }}" class="dropdown-item-sidebar">Employés</a></li>
+                </ul>
+            </li>
+
+            <!-- Déconnexion -->
+            <li class="nav-item">
+                <a class="nav-link text-danger" href="{{ path('app_logout') }}">
+                    <i class="bi bi-box-arrow-right text-danger"></i> Déconnexion
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="admin-content">
+        <!-- Top Banner -->
+        <div class="admin-top-banner">
+            <div class="d-flex align-items-center">
+                <div class="header-icon"><i class="bi bi-briefcase-fill"></i></div>
+                <div>
+                    <h2>{% block page_title %}Dashboard RH{% endblock %}</h2>
+                    <p>{% block page_subtitle %}Gestion et administration{% endblock %}</p>
+                </div>
+            </div>
+            
+            <div class="dropdown">
+                <button class="btn btn-light rounded-pill border-0 d-flex align-items-center shadow-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="padding: 0.35rem 0.5rem; background: #ffffff;">
+                    {% if app.user and app.user.avatarPath %}
+                        <img src="{{ asset(app.user.avatarPath) }}" style="width:32px; height:32px; border-radius:50%; object-fit:cover;" class="me-2" alt="Avatar">
+                    {% elseif app.user %}
+                        <div style="width:32px; height:32px; border-radius:50%; background:var(--purple-dark); display:flex; align-items:center; justify-content:center; color:#fff; font-weight:600; font-size:0.85rem;" class="me-2">
+                            {{ app.user.prenom|first|upper }}
+                        </div>
+                    {% endif %}
+                    <span class="fw-medium px-2" style="font-size: 0.9rem; color: #1e293b;">{% if app.user %}{{ app.user.prenom }}{% endif %}</span>
+                    <i class="bi bi-chevron-down ms-1 me-2 text-muted" style="font-size: 0.75rem;"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow border-0" style="border-radius: 12px; margin-top: 5px;">
+                    <li><h6 class="dropdown-header text-uppercase pb-1" style="font-size:0.7rem; letter-spacing:0.05em;">Connecté en tant que RH</h6></li>
+                    <li><span class="dropdown-item-text fw-medium text-dark pb-2 border-bottom mb-2">{% if app.user %}{{ app.user.fullName }}{% endif %}</span></li>
+                    <li><a class="dropdown-item pb-2 pt-2 text-danger" href="{{ path('app_logout') }}"><i class="bi bi-box-arrow-right me-2"></i> Déconnexion</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="admin-main-px">
+            {% block admin_content %}{% endblock %}
+        </div>
+    </div> <!-- End Main Content -->
+</div> <!-- End Admin Wrapper -->
+
+{# ===== CHATBOT GLOBAL ===== #}
+<style>
+:root{--cb:#6b2d8b;--cb-light:#f5f0ff}
+@keyframes cb-float {0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@keyframes cb-pulse {0%,100%{box-shadow:0 0 0 0 rgba(107,45,139,.45)}60%{box-shadow:0 0 0 13px rgba(107,45,139,0)}}
+@keyframes cb-ring  {0%{transform:scale(1);opacity:.55}100%{transform:scale(2.1);opacity:0}}
+@keyframes cb-ring2 {0%{transform:scale(1);opacity:.35}100%{transform:scale(2.6);opacity:0}}
+@keyframes cb-open  {from{opacity:0;transform:translateY(16px) scale(.96)}to{opacity:1;transform:none}}
+@keyframes cb-dot   {0%,60%,100%{transform:translateY(0);opacity:.3}30%{transform:translateY(-5px);opacity:1}}
+@keyframes cb-live  {0%,100%{opacity:1}50%{opacity:.25}}
+@keyframes cb-wave  {0%,50%,100%{transform:rotate(0)}8%{transform:rotate(-28deg)}18%{transform:rotate(22deg)}28%{transform:rotate(-18deg)}38%{transform:rotate(12deg)}46%{transform:rotate(-6deg)}}
+@keyframes cb-blink {0%,86%,100%{transform:scaleY(1)}93%{transform:scaleY(.05)}}
+@keyframes cb-bob   {0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes cb-msg   {from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+#cb-wrap{position:fixed;bottom:28px;right:28px;z-index:9999;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+#cb-btn{width:68px;height:68px;border-radius:50%;border:none;cursor:pointer;padding:0;background:var(--cb);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 28px rgba(107,45,139,.55);animation:cb-pulse 2.6s ease-in-out infinite,cb-float 4s ease-in-out infinite;transition:transform .2s,box-shadow .2s;position:relative;overflow:visible}
+#cb-btn:hover{transform:scale(1.1) translateY(-4px);box-shadow:0 16px 44px rgba(107,45,139,.7)}
+#cb-btn::before{content:'';position:absolute;inset:0;border-radius:50%;border:1.5px solid rgba(107,45,139,.6);animation:cb-ring 2.6s ease-out infinite}
+#cb-btn::after{content:'';position:absolute;inset:0;border-radius:50%;border:1.5px solid rgba(107,45,139,.35);animation:cb-ring2 2.6s ease-out infinite .85s}
+.cb-icon{width:46px;height:46px}
+#cb-box{display:none;position:absolute;bottom:84px;right:0;width:385px;border-radius:20px;overflow:hidden;box-shadow:0 24px 80px rgba(15,5,30,.22),0 0 0 1px rgba(107,45,139,.12);animation:cb-open .28s cubic-bezier(.34,1.4,.64,1);background:#fff}
+.cb-hdr{background:var(--cb);padding:18px 20px;display:flex;align-items:center;gap:14px;position:relative;overflow:hidden}
+.cb-hdr::before{content:'';position:absolute;right:-30px;top:-30px;width:110px;height:110px;border-radius:50%;background:rgba(255,255,255,.06);pointer-events:none}
+.cb-av{width:52px;height:52px;border-radius:16px;flex-shrink:0;background:rgba(255,255,255,.14);border:1.5px solid rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;animation:cb-bob 3.5s ease-in-out infinite}
+.cb-av svg{width:34px;height:34px}
+.cb-meta{flex:1;min-width:0}
+.cb-meta b{color:#fff;font-size:15px;font-weight:700;display:block;letter-spacing:-.2px}
+.cb-meta small{color:rgba(255,255,255,.65);font-size:11.5px}
+.cb-live{display:flex;align-items:center;gap:5px;margin-top:4px}
+.cb-live-dot{width:7px;height:7px;border-radius:50%;background:#4ade80;box-shadow:0 0 0 2.5px rgba(74,222,128,.25);animation:cb-live 2s infinite}
+.cb-live span{color:rgba(255,255,255,.7);font-size:11px}
+.cb-x{background:rgba(255,255,255,.12);border:none;color:rgba(255,255,255,.8);width:32px;height:32px;border-radius:10px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:background .18s}
+.cb-x:hover{background:rgba(255,255,255,.25);color:#fff}
+#cb-msgs{height:305px;overflow-y:auto;padding:18px 16px;display:flex;flex-direction:column;gap:12px;background:var(--cb-light)}
+#cb-msgs::-webkit-scrollbar{width:3px}
+#cb-msgs::-webkit-scrollbar-thumb{background:#c4b5fd;border-radius:2px}
+.cb-row-bot{display:flex;gap:9px;align-items:flex-end;animation:cb-msg .2s ease}
+.cb-mini-av{width:30px;height:30px;border-radius:9px;flex-shrink:0;background:var(--cb);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(107,45,139,.3)}
+.cb-mini-av svg{width:18px;height:18px}
+.cb-bubble-bot{background:#fff;border:1px solid #ede9fe;color:#1e1b4b;border-radius:16px 16px 16px 4px;padding:12px 15px;font-size:13.5px;max-width:82%;line-height:1.65;box-shadow:0 2px 10px rgba(107,45,139,.07)}
+.cb-bubble-usr{background:var(--cb);color:#fff;border-radius:16px 16px 4px 16px;padding:12px 15px;font-size:13.5px;max-width:78%;align-self:flex-end;margin-left:auto;box-shadow:0 4px 16px rgba(107,45,139,.4);animation:cb-msg .2s ease}
+.cb-ts{font-size:10.5px;color:#a78bfa;margin-top:5px;font-weight:500}
+.cb-typing{display:flex;gap:5px;align-items:center;padding:2px 0}
+.cb-typing span{width:7px;height:7px;border-radius:50%;background:#a78bfa;animation:cb-dot 1.3s ease-in-out infinite}
+.cb-typing span:nth-child(2){animation-delay:.18s}
+.cb-typing span:nth-child(3){animation-delay:.36s}
+.cb-chips{padding:12px 16px;display:flex;flex-wrap:wrap;gap:7px;background:#fff;border-top:1px solid #ede9fe}
+.cb-chip{font-size:12px;padding:6px 13px;border-radius:22px;cursor:pointer;border:1.5px solid #ddd6fe;background:#faf5ff;color:var(--cb);font-weight:500;transition:all .18s;white-space:nowrap}
+.cb-chip:hover{background:var(--cb);color:#fff;border-color:var(--cb);transform:translateY(-2px);box-shadow:0 4px 14px rgba(107,45,139,.3)}
+.cb-bar{padding:14px 16px;display:flex;gap:10px;background:#fff;border-top:1px solid #ede9fe}
+#cb-inp{flex:1;border:1.5px solid #e5e7eb;border-radius:14px;padding:11px 16px;font-size:13.5px;outline:none;background:#f9fafb;color:#111827;transition:all .2s}
+#cb-inp::placeholder{color:#9ca3af}
+#cb-inp:focus{border-color:var(--cb);box-shadow:0 0 0 3px rgba(107,45,139,.12);background:#fff}
+#cb-snd{width:44px;height:44px;border-radius:14px;border:none;cursor:pointer;flex-shrink:0;background:var(--cb);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(107,45,139,.45);transition:transform .18s,box-shadow .18s}
+#cb-snd:hover{transform:scale(1.08) translateY(-1px);box-shadow:0 8px 24px rgba(107,45,139,.6)}
+#cb-snd:active{transform:scale(.94)}
+#cb-mic{
+    width:40px;height:40px;border-radius:12px;border:none;cursor:pointer;flex-shrink:0;
+    background:rgba(107,45,139,.15);border:1.5px solid rgba(107,45,139,.3);
+    display:flex;align-items:center;justify-content:center;
+    transition:all .2s;
+}
+#cb-mic svg rect,#cb-mic svg path,#cb-mic svg line{fill:var(--cb);stroke:var(--cb)}
+#cb-mic:hover{background:rgba(107,45,139,.25);border-color:var(--cb)}
+#cb-mic.listening{
+    background:var(--cb);
+    animation:cb-pulse 1s ease-in-out infinite;
+}
+#cb-mic.listening svg rect,#cb-mic.listening svg path,#cb-mic.listening svg line{fill:white;stroke:white}
+</style>
+
+<div id="cb-wrap">
+    <button id="cb-btn" onclick="cbToggle()" title="Assistant RHPro">
+        <svg class="cb-icon" viewBox="0 0 56 56" fill="none">
+            <rect x="11" y="7" width="26" height="21" rx="9" fill="rgba(255,255,255,.93)"/>
+            <line x1="24" y1="7" x2="24" y2="2" stroke="rgba(255,255,255,.6)" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="24" cy="1.5" r="2.2" fill="#e9d5ff"/>
+            <g style="transform-origin:18px 17px;animation:cb-blink 4s ease-in-out infinite"><circle cx="18" cy="17" r="4" fill="#6b2d8b"/><circle cx="19.3" cy="15.7" r="1.3" fill="white" opacity=".85"/></g>
+            <g style="transform-origin:30px 17px;animation:cb-blink 4s ease-in-out infinite .4s"><circle cx="30" cy="17" r="4" fill="#6b2d8b"/><circle cx="31.3" cy="15.7" r="1.3" fill="white" opacity=".85"/></g>
+            <path d="M18 23 Q24 27 30 23" stroke="rgba(107,45,139,.45)" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+            <rect x="13" y="30" width="22" height="17" rx="7" fill="rgba(255,255,255,.88)"/>
+            <rect x="17" y="33" width="14" height="8" rx="3.5" fill="rgba(107,45,139,.3)"/>
+            <circle cx="21" cy="37" r="2" fill="#c4b5fd"/><circle cx="24" cy="37" r="2" fill="#a78bfa"/><circle cx="27" cy="37" r="2" fill="#8b5cf6"/>
+            <rect x="4" y="31" width="9" height="12" rx="4.5" fill="rgba(255,255,255,.75)"/>
+            <g style="transform-origin:40px 32px;animation:cb-wave 3s ease-in-out infinite 1.8s">
+                <rect x="35" y="28" width="9" height="13" rx="4.5" fill="rgba(255,255,255,.75)"/>
+                <circle cx="39.5" cy="26" r="4" fill="rgba(255,255,255,.9)"/>
+                <line x1="37.5" y1="23" x2="36.5" y2="20" stroke="rgba(255,255,255,.65)" stroke-width="1.8" stroke-linecap="round"/>
+                <line x1="39.5" y1="22" x2="39.5" y2="19" stroke="rgba(255,255,255,.65)" stroke-width="1.8" stroke-linecap="round"/>
+                <line x1="41.5" y1="23" x2="42.5" y2="20" stroke="rgba(255,255,255,.65)" stroke-width="1.8" stroke-linecap="round"/>
+            </g>
+            <rect x="16" y="45" width="8" height="8" rx="4" fill="rgba(255,255,255,.65)"/>
+            <rect x="26" y="45" width="8" height="8" rx="4" fill="rgba(255,255,255,.65)"/>
+        </svg>
+    </button>
+
+    <div id="cb-box">
+        <div class="cb-hdr">
+            <div class="cb-av">
+                <svg viewBox="0 0 34 34" fill="none">
+                    <rect x="5" y="3" width="24" height="18" rx="7" fill="rgba(255,255,255,.9)"/>
+                    <circle cx="11.5" cy="12" r="3.2" fill="#6b2d8b"/><circle cx="12.5" cy="11" r="1" fill="white" opacity=".8"/>
+                    <circle cx="22.5" cy="12" r="3.2" fill="#6b2d8b"/><circle cx="23.5" cy="11" r="1" fill="white" opacity=".8"/>
+                    <path d="M11 17 Q17 20.5 23 17" stroke="rgba(255,255,255,.5)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                    <rect x="7" y="23" width="20" height="9" rx="4.5" fill="rgba(255,255,255,.85)"/>
+                    <circle cx="12" cy="27.5" r="1.6" fill="#c4b5fd"/><circle cx="17" cy="27.5" r="1.6" fill="#a78bfa"/><circle cx="22" cy="27.5" r="1.6" fill="#8b5cf6"/>
+                </svg>
+            </div>
+            <div class="cb-meta">
+                <b>Assistant RHPro</b>
+                <small>Intelligence Artificielle · ML</small>
+                <div class="cb-live"><div class="cb-live-dot"></div><span>En ligne</span></div>
+            </div>
+            <button class="cb-x" onclick="cbToggle()">
+                <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M1 1l10 10M11 1L1 11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            </button>
+        </div>
+        <div id="cb-msgs">
+            <div class="cb-row-bot">
+                <div class="cb-mini-av"><svg viewBox="0 0 18 18" fill="none"><circle cx="6" cy="9" r="2.5" fill="white" opacity=".9"/><circle cx="12" cy="9" r="2.5" fill="white" opacity=".9"/></svg></div>
+                <div class="cb-bubble-bot">Bonjour 👋 Je suis votre assistant RHPro.<br>Posez-moi une question sur vos projets ou tâches.</div>
+            </div>
+        </div>
+        <div class="cb-chips">
+            <button class="cb-chip" onclick="envoyer('tâches bloquées')">🔴 Tâches bloquées</button>
+            <button class="cb-chip" onclick="envoyer('projets en retard')">⏰ Projets en retard</button>
+            <button class="cb-chip" onclick="envoyer('employé surchargé')">👤 Employé surchargé</button>
+            <button class="cb-chip" onclick="envoyer('statistiques générales')">📊 Statistiques</button>
+            <button class="cb-chip" onclick="envoyer('avancement des projets')">📈 Avancement</button>
+            <button class="cb-chip" onclick="envoyer('tâches non assignées')">⚠️ Non assignées</button>
+            <button class="cb-chip" onclick="envoyer('charge de l équipe')">⚖️ Charge équipe</button>
+            <button class="cb-chip" onclick="envoyer('meilleur projet')">🏆 Meilleur projet</button>
+        </div>
+        <div class="cb-bar">
+            <button id="cb-mic" onclick="cbVoice()" title="Parler">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <rect x="9" y="2" width="6" height="12" rx="3" fill="white"/>
+                    <path d="M5 10a7 7 0 0014 0" stroke="white" stroke-width="2" stroke-linecap="round" fill="none"/>
+                    <line x1="12" y1="17" x2="12" y2="21" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    <line x1="8" y1="21" x2="16" y2="21" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </button>
+            <input id="cb-inp" type="text" placeholder="FR · EN · عربي — Posez une question..." onkeydown="if(event.key==='Enter')envoyer()">
+            <button id="cb-snd" onclick="envoyer()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M22 2L11 13M22 2L15 22L11 13M22 2L2 9L11 13" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+// ── Toggle chatbot ──
+function cbToggle(){
+    const box=document.getElementById('cb-box');
+    const open=box.style.display==='block';
+    box.style.display=open?'none':'block';
+    if(!open)setTimeout(()=>document.getElementById('cb-inp').focus(),150);
+}
+
+// ── Synthèse vocale ──
+function parler(texte) {
+    if (!window.speechSynthesis) return;
+    
+    // Arrêter toute synthèse en cours
+    window.speechSynthesis.cancel();
+    
+    // Attendre un peu pour que le cancel soit effectif
+    setTimeout(function() {
+        // Nettoyer les emojis et caractères spéciaux pour la voix
+        const propre = texte.replace(/[\u{1F000}-\u{1FFFF}]/gu, '')
+                            .replace(/[█░•]/g, '')
+                            .replace(/[^\wÀ-ÿ\s\.,!?;:'-]/gu, ' ')
+                            .replace(/\s+/g, ' ')
+                            .replace(/\n/g, '. ')
+                            .trim();
+        
+        // Limiter la longueur
+        const texteLimit = propre.length > 500 ? propre.substring(0, 497) + '...' : propre;
+        
+        if (!texteLimit) return;
+        
+        console.log('[Vocal Admin] Synthèse:', texteLimit);
+        
+        const utterance = new SpeechSynthesisUtterance(texteLimit);
+        utterance.lang = 'fr-FR';
+        utterance.rate = 0.9;
+        utterance.pitch = 1.0;
+        utterance.volume = 1.0;
+        
+        // Gestionnaires d'événements
+        utterance.onstart = function() {
+            console.log('[Vocal Admin] ✅ Démarré');
+        };
+        
+        utterance.onend = function() {
+            console.log('[Vocal Admin] ✅ Terminé');
+        };
+        
+        utterance.onerror = function(e) {
+            console.error('[Vocal Admin] ❌ Erreur:', e.error);
+            // Retry avec un texte plus simple
+            if (e.error === 'synthesis-failed') {
+                setTimeout(function() {
+                    const utterSimple = new SpeechSynthesisUtterance('Message vocal indisponible');
+                    utterSimple.lang = 'fr-FR';
+                    window.speechSynthesis.speak(utterSimple);
+                }, 1000);
+            }
+        };
+        
+        // Choisir une voix française si disponible
+        function lancerSynthese() {
+            const voix = window.speechSynthesis.getVoices().find(v => 
+                v.lang === 'fr-FR' && !v.name.includes('Google')
+            ) || window.speechSynthesis.getVoices().find(v => 
+                v.lang.startsWith('fr')
+            );
+            
+            if (voix) {
+                utterance.voice = voix;
+                console.log('[Vocal Admin] Voix:', voix.name);
+            }
+            
+            try {
+                window.speechSynthesis.speak(utterance);
+            } catch (error) {
+                console.error('[Vocal Admin] Erreur speak:', error);
+            }
+        }
+        
+        // Vérifier si les voix sont chargées
+        const voices = window.speechSynthesis.getVoices();
+        if (voices.length > 0) {
+            lancerSynthese();
+        } else {
+            window.speechSynthesis.onvoiceschanged = function() {
+                lancerSynthese();
+            };
+        }
+    }, 100);
+}
+
+// ── Reconnaissance vocale ──
+let recognition = null;
+let isListening = false;
+
+function cbVoice() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+        alert('Votre navigateur ne supporte pas la reconnaissance vocale. Utilisez Chrome.');
+        return;
+    }
+
+    const mic = document.getElementById('cb-mic');
+    const inp = document.getElementById('cb-inp');
+
+    if (isListening) {
+        recognition.stop();
+        return;
+    }
+
+    recognition = new SpeechRecognition();
+    recognition.lang = 'fr-FR';
+    recognition.continuous = false;
+    recognition.interimResults = true;
+
+    recognition.onstart = () => {
+        isListening = true;
+        mic.classList.add('listening');
+        inp.placeholder = '🎤 Écoute en cours...';
+    };
+
+    recognition.onresult = (e) => {
+        const transcript = Array.from(e.results)
+            .map(r => r[0].transcript)
+            .join('');
+        inp.value = transcript;
+        // Si résultat final, envoyer automatiquement
+        if (e.results[e.results.length - 1].isFinal) {
+            setTimeout(() => envoyer(), 300);
+        }
+    };
+
+    recognition.onerror = (e) => {
+        console.error('Erreur micro:', e.error);
+        inp.placeholder = '❌ Erreur micro. Réessayez.';
+        setTimeout(() => inp.placeholder = 'Posez une question ou cliquez 🎤...', 2000);
+    };
+
+    recognition.onend = () => {
+        isListening = false;
+        mic.classList.remove('listening');
+        inp.placeholder = 'Posez une question ou cliquez 🎤...';
+    };
+
+    recognition.start();
+}
+
+// ── Envoi message ──
+async function envoyer(texte){
+    const input=document.getElementById('cb-inp');
+    const msg=texte||input.value.trim();
+    if(!msg)return;
+
+    // Ouvrir le chat si fermé
+    const box=document.getElementById('cb-box');
+    if(box.style.display!=='block') box.style.display='block';
+
+    const msgs=document.getElementById('cb-msgs');
+    const du=document.createElement('div');
+    du.className='cb-bubble-usr';
+    du.textContent=msg;
+    msgs.appendChild(du);
+    input.value='';
+    msgs.scrollTop=msgs.scrollHeight;
+
+    const dt=document.createElement('div');
+    dt.className='cb-row-bot';
+    dt.innerHTML='<div class="cb-mini-av"><svg viewBox="0 0 18 18" fill="none"><circle cx="6" cy="9" r="2.5" fill="white" opacity=".9"/><circle cx="12" cy="9" r="2.5" fill="white" opacity=".9"/></svg></div><div class="cb-bubble-bot"><div class="cb-typing"><span></span><span></span><span></span></div></div>';
+    msgs.appendChild(dt);
+    msgs.scrollTop=msgs.scrollHeight;
+
+    try{
+        const url="/chatbot/ask";
+        const res=await fetch(url,{
+            method:'POST',
+            credentials:'same-origin',
+            headers:{
+                'Content-Type':'application/json',
+                'X-Requested-With':'XMLHttpRequest',
+                'Accept':'application/json'
+            },
+            body:JSON.stringify({message:msg})
+        });
+        const text=await res.text();
+        const clean=text.replace(/^\uFEFF/,'').trim();
+        const bubble=dt.querySelector('.cb-bubble-bot');
+        if(!clean.startsWith('{')){bubble.textContent='Erreur serveur';return;}
+        const data=JSON.parse(clean);
+        const reponse = data.reponse||'Pas de réponse';
+        bubble.innerHTML=reponse.replace(/\n/g,'<br>');
+        if(data.timestamp){
+            const t=document.createElement('div');
+            t.className='cb-ts';
+            t.textContent=data.timestamp;
+            bubble.appendChild(t);
+        }
+        // 🔊 Lire la réponse à voix haute
+        parler(reponse);
+    }catch(e){
+        dt.querySelector('.cb-bubble-bot').textContent='Erreur : '+e.message;
+    }
+    msgs.scrollTop=msgs.scrollHeight;
+}
+
+// Charger les voix dès que disponibles
+if (window.speechSynthesis) {
+    // Forcer le chargement initial des voix
+    window.speechSynthesis.getVoices();
+    
+    // Gestionnaire pour le chargement des voix (une seule fois)
+    let voicesLoaded = false;
+    window.speechSynthesis.onvoiceschanged = function() {
+        if (!voicesLoaded) {
+            voicesLoaded = true;
+            const voices = window.speechSynthesis.getVoices();
+            console.log('[Vocal Admin] Voix disponibles:', voices.length);
+        }
+    };
+}
+</script>
+
+<script>
+// Fonction pour gérer les dropdowns du sidebar
+function toggleSidebarDropdown(button) {
+    const dropdownMenu = button.nextElementSibling;
+    const isOpen = button.classList.contains('open');
+    
+    // Fermer tous les autres dropdowns
+    document.querySelectorAll('.dropdown-toggle-sidebar').forEach(btn => {
+        if (btn !== button) {
+            btn.classList.remove('open');
+            btn.nextElementSibling.classList.remove('show');
+        }
+    });
+    
+    // Toggle le dropdown actuel
+    if (isOpen) {
+        button.classList.remove('open');
+        dropdownMenu.classList.remove('show');
+    } else {
+        button.classList.add('open');
+        dropdownMenu.classList.add('show');
+    }
+}
+
+// Ouvrir automatiquement le dropdown si un de ses liens est actif
+document.addEventListener('DOMContentLoaded', function() {
+    const currentPath = window.location.pathname;
+    
+    document.querySelectorAll('.dropdown-menu-sidebar').forEach(menu => {
+        const links = menu.querySelectorAll('.dropdown-item-sidebar');
+        links.forEach(link => {
+            if (currentPath.includes(link.getAttribute('href'))) {
+                const toggleButton = menu.previousElementSibling;
+                toggleButton.classList.add('open');
+                menu.classList.add('show');
+            }
+        });
+    });
+});
+</script>
+
+{% endblock %}
+
+

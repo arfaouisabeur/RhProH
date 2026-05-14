@@ -1,0 +1,82 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier la demande de service{% endblock %}
+
+{% block stylesheets %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+{% endblock %}
+
+{% block body %}
+<style>
+  * { box-sizing: border-box; }
+  .app {
+    font-family: 'Inter', sans-serif;
+    background: radial-gradient(circle at top left, #ecfdf5 0%, #ffffff 55%, #f0fdf4 100%);
+    min-height: 90vh; padding: 40px 20px; color: #0f172a;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; animation: fadeUp .6s ease-out; }
+  .head { display: flex; align-items: center; gap: 14px; margin-bottom: 22px; }
+  .ic { width: 52px; height: 52px; border-radius: 18px; display: flex; align-items: center; justify-content: center; color: #fff;
+        background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 12px 26px rgba(16,185,129,.22); }
+  h1 { font-family: 'Outfit'; font-weight: 900; font-size: 2.1rem; margin: 0; color: #064e3b; }
+  .sub { margin: 6px 0 0 0; color: #64748b; font-weight: 600; }
+  .card {
+    background: rgba(255,255,255,.82); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,.9); border-radius: 24px;
+    box-shadow: 0 10px 40px rgba(4,120,87,.08); padding: 28px;
+  }
+  .field { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+  .lbl { font-size: .78rem; font-weight: 900; text-transform: uppercase; letter-spacing: .1em; color: #475569; }
+  .ctl, .card input, .card select, .card textarea {
+    width: 100%; border-radius: 14px; border: 1.5px solid #e2e8f0; background: #f8fafc;
+    padding: 12px 14px; outline: none; font-family: inherit;
+    transition: border-color .18s, box-shadow .18s, background .18s;
+  }
+  .card input:focus, .card select:focus, .card textarea:focus {
+    border-color: #10b981; background: #fff; box-shadow: 0 0 0 4px rgba(16,185,129,.12);
+  }
+  textarea { min-height: 110px; resize: vertical; }
+  .actions { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding-top: 16px; border-top: 1px solid rgba(0,0,0,.05); margin-top: 8px; align-items: center; }
+  .btn-back {
+    display: inline-flex; align-items: center; gap: 8px; text-decoration: none;
+    padding: 12px 18px; border-radius: 999px; font-weight: 900; color: #64748b;
+    border: 1.5px solid rgba(148,163,184,.35); background: transparent; transition: all .18s;
+  }
+  .btn-back:hover { background: #fff; color: #0f172a; transform: translateY(-1px); }
+  .btn-submit {
+    display: inline-flex; align-items: center; gap: 8px; border: 0; cursor: pointer;
+    padding: 12px 22px; border-radius: 999px; font-weight: 900; color: #fff; font-family: 'Outfit';
+    background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 12px 26px rgba(16,185,129,.22);
+    transition: transform .18s, box-shadow .18s;
+  }
+  .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 16px 32px rgba(16,185,129,.26); }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+
+<script>window.__TYPE_SERVICES__ = {{ type_services_payload|default([])|json_encode|raw }};</script>
+
+<div class="app">
+  <div class="wrap">
+    <div class="head">
+      <div class="ic"><i class="fas fa-pen-to-square"></i></div>
+      <div>
+        <h1>Modifier la demande</h1>
+        <div class="sub">Mettez à jour votre demande de service.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      {{ include('demande_service/_form.html.twig', {'button_label': 'Mettre à jour'}) }}
+      <div class="actions">
+        <a class="btn-back" href="{{ path('app_demande_service_index') }}">
+          <i class="fas fa-arrow-left"></i> Retour à la liste
+        </a>
+        {{ include('demande_service/_delete_form.html.twig') }}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

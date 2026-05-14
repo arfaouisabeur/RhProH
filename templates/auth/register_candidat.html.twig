@@ -1,0 +1,1139 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Inscription Candidat - RH Pro<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const addressInput = document.querySelector('textarea[name="registration_candidat[adresse]"]') || document.querySelector('textarea[name="registration_employe[adresse]"]');
+    
+    if (!addressInput) return;
+
+    // Create list container
+    const listWrapper = document.createElement('ul');
+    listWrapper.className = 'autocomplete-list';
+    addressInput.parentNode.classList.add('autocomplete-wrapper');
+    addressInput.parentNode.appendChild(listWrapper);
+    addressInput.setAttribute('autocomplete', 'off');
+
+    let debounceTimer;
+
+    addressInput.addEventListener('input', function() {
+        clearTimeout(debounceTimer);
+        const query = this.value.trim();
+        
+        if (query.length < 3) {
+            listWrapper.style.display = 'none';
+            return;
+        }
+
+        debounceTimer = setTimeout(() => {
+            fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=5`)
+                .then(r => r.json())
+                .then(data => {
+                    listWrapper.innerHTML = '';
+                    if (data.features && data.features.length > 0) {
+                        data.features.forEach(feature => {
+                            const props = feature.properties;
+                            // Build a clean address string
+                            let addressParts = [];
+                            if (props.name) addressParts.push(props.name);
+                            if (props.city && props.city !== props.name) addressParts.push(props.city);
+                            if (props.state) addressParts.push(props.state);
+                            if (props.country) addressParts.push(props.country);
+                            
+                            const fullAddress = addressParts.join(', ');
+
+                            const li = document.createElement('li');
+                            li.textContent = fullAddress;
+                            li.addEventListener('click', () => {
+                                addressInput.value = fullAddress;
+                                listWrapper.style.display = 'none';
+                            });
+                            listWrapper.appendChild(li);
+                        });
+                        listWrapper.style.display = 'block';
+                    } else {
+                        listWrapper.style.display = 'none';
+                    }
+                })
+                .catch(() => listWrapper.style.display = 'none');
+        }, 300);
+    });
+
+    // Close when clicking outside
+    document.addEventListener('click', function(e) {
+        if (e.target !== addressInput && e.target !== listWrapper) {
+            listWrapper.style.display = 'none';
+        }
+    });
+});
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/intlTelInput.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const phoneInput = document.querySelector('input[type="tel"]') || document.querySelector('input[name="registration_candidat[telephone]"]') || document.querySelector('input[name="registration_employe[telephone]"]');
+    
+    if (phoneInput) {
+        window.intlTelInput(phoneInput, {
+            initialCountry: "auto",
+            geoIpLookup: function(success, failure) {
+                // VPN/IP Detection via ipinfo API
+                fetch("https://ipapi.co/json")
+                    .then(function(res) { return res.json(); })
+                    .then(function(data) { success(data.country_code); })
+                    .catch(function() { success("tn"); }); // Par défaut TN
+            },
+            utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
+            separateDialCode: true,
+            preferredCountries: ["tn", "fr", "dz", "ma", "ca"]
+        });
+    }
+});
+</script>
+{% endblock %}
+
+{% block body %}
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.css">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --purple:       #5b2b82;
+    --purple-dark:  #3d1a5c;
+    --purple-light: #7c3dac;
+    --gold:         #b39ddb;
+    --gold-light:   #d1c4e9;
+    --white:        #ffffff;
+    --off-white:    #f7f4f0;
+    --text-dark:    #1a1020;
+    --text-muted:   #8a7a9a;
+    --glass:        rgba(255,255,255,0.07);
+    --glass-border: rgba(255,255,255,0.15);
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    background: var(--purple-dark);
+  }
+
+  /* ── LAYOUT ── */
+  .page-shell {
+    display: grid;
+    grid-template-columns: 1fr 540px;
+    min-height: 100vh;
+  }
+
+  /* ── LEFT HERO ── */
+  .hero-panel {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 60px;
+  }
+
+  .hero-panel::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(160deg, #1a0a2e 0%, #3d1a5c 40%, #5b2b82 70%, #2a0d45 100%);
+    z-index: 0;
+  }
+
+  .hero-panel::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(ellipse 80% 60% at 20% 80%, rgba(201,168,76,0.12) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 20%, rgba(124,61,172,0.4) 0%, transparent 50%),
+      repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(255,255,255,0.015) 40px, rgba(255,255,255,0.015) 41px);
+    z-index: 1;
+  }
+
+  .hero-svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+    opacity: 0.15;
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 3;
+    animation: fadeUp 1s ease both;
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(201,168,76,0.15);
+    border: 1px solid rgba(201,168,76,0.35);
+    border-radius: 100px;
+    padding: 6px 16px;
+    margin-bottom: 28px;
+    backdrop-filter: blur(8px);
+  }
+
+  .hero-badge span {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gold-light);
+  }
+
+  .hero-badge::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--gold);
+    box-shadow: 0 0 8px var(--gold);
+    animation: pulse 2s ease infinite;
+  }
+
+  .hero-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 3vw, 3rem);
+    font-weight: 700;
+    color: var(--white);
+    line-height: 1.15;
+    margin-bottom: 18px;
+  }
+
+  .hero-title em { font-style: normal; color: var(--gold-light); }
+
+  .hero-desc {
+    font-size: 14px;
+    color: rgba(255,255,255,0.55);
+    line-height: 1.75;
+    max-width: 380px;
+    margin-bottom: 40px;
+  }
+
+  .hero-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .step-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .step-num {
+    width: 30px; height: 30px;
+    border-radius: 8px;
+    background: rgba(201,168,76,0.15);
+    border: 1px solid rgba(201,168,76,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Playfair Display', serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--gold-light);
+    flex-shrink: 0;
+  }
+
+  .step-text {
+    font-size: 13px;
+    color: rgba(255,255,255,0.5);
+  }
+
+  .step-text strong {
+    color: rgba(255,255,255,0.8);
+    font-weight: 600;
+    display: block;
+    margin-bottom: 1px;
+  }
+
+  /* Floating cards */
+  .floating-cards {
+    position: absolute;
+    top: 0; right: 0;
+    width: 45%;
+    height: 100%;
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  .f-card {
+    position: absolute;
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    backdrop-filter: blur(12px);
+    padding: 16px 20px;
+    animation: floatCard 6s ease-in-out infinite;
+  }
+
+  .f-card:nth-child(1) { top: 15%; right: 8%;  width: 185px; animation-delay: 0s; }
+  .f-card:nth-child(2) { top: 40%; right: 20%; width: 165px; animation-delay: 2s; }
+  .f-card:nth-child(3) { top: 62%; right: 6%;  width: 175px; animation-delay: 4s; }
+
+  .f-card-label { font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.4); margin-bottom: 5px; }
+  .f-card-value { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; color: var(--white); }
+  .f-card-sub   { font-size: 11px; color: rgba(255,255,255,0.45); margin-top: 3px; }
+  .f-card-bar   { height: 3px; background: rgba(255,255,255,0.1); border-radius: 2px; margin-top: 10px; overflow: hidden; }
+  .f-card-fill  { height: 100%; background: linear-gradient(90deg, var(--gold), var(--purple-light)); border-radius: 2px; }
+
+  /* ── RIGHT FORM PANEL ── */
+  .form-panel {
+    background: var(--off-white);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 48px 48px;
+    position: relative;
+    overflow: hidden;
+    overflow-y: auto;
+  }
+
+  .form-panel::before {
+    content: '';
+    position: absolute;
+    top: -100px; right: -100px;
+    width: 300px; height: 300px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(91,43,130,0.07) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .form-panel::after {
+    content: '';
+    position: absolute;
+    bottom: -80px; left: -80px;
+    width: 250px; height: 250px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(201,168,76,0.05) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  /* Brand */
+  .brand-area {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 36px;
+    animation: fadeUp 0.8s ease both;
+  }
+
+  .brand-logo { max-height: 40px; max-width: 140px; object-fit: contain; }
+  .brand-sep  { width: 1px; height: 28px; background: rgba(91,43,130,0.2); }
+  .brand-tag  { font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--purple); opacity: 0.7; }
+
+  /* Heading */
+  .form-heading {
+    margin-bottom: 28px;
+    animation: fadeUp 0.9s ease both;
+  }
+
+  .form-heading h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 6px;
+    letter-spacing: -0.02em;
+  }
+
+  .form-heading p { font-size: 13px; color: var(--text-muted); }
+
+  /* Section divider */
+  .form-section-title {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--purple);
+    opacity: 0.7;
+    margin: 22px 0 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .form-section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(91,43,130,0.12);
+  }
+
+  /* Field wrapper */
+  .field-group { margin-bottom: 16px; }
+
+  /* Labels */
+  label {
+    display: block;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--text-dark) !important;
+    margin-bottom: 7px !important;
+    opacity: 0.72;
+    font-family: 'DM Sans', sans-serif !important;
+  }
+
+  /* Inputs */
+  .form-control,
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="tel"],
+  input[type="file"],
+  select,
+  textarea {
+    width: 100%;
+    padding: 12px 16px !important;
+    border: 1.5px solid rgba(91,43,130,0.15) !important;
+    border-radius: 11px !important;
+    background: var(--white) !important;
+    font-family: 'DM Sans', sans-serif !important;
+    font-size: 13px !important;
+    color: var(--text-dark) !important;
+    transition: border-color 0.2s, box-shadow 0.2s !important;
+    outline: none !important;
+    box-shadow: none !important;
+  }
+
+  .form-control::placeholder,
+  input::placeholder { color: rgba(26,16,32,0.3) !important; }
+
+  .form-control:focus,
+  input:focus,
+  select:focus,
+  textarea:focus {
+    border-color: var(--purple) !important;
+    box-shadow: 0 0 0 4px rgba(91,43,130,0.08) !important;
+  }
+
+  /* ✅ Champ en erreur */
+  .form-control.is-invalid,
+  input.is-invalid,
+  select.is-invalid,
+  textarea.is-invalid {
+    border-color: #e53935 !important;
+    box-shadow: 0 0 0 3px rgba(229,57,53,0.1) !important;
+  }
+
+  /* ✅ Message d'erreur */
+  .invalid-feedback,
+  .form-error-message {
+    display: block !important;
+    font-size: 11px !important;
+    color: #e53935 !important;
+    margin-top: 5px !important;
+    line-height: 1.4;
+  }
+
+  /* Wrapper et style pour form_errors() (Twig) */
+  .form-error-wrapper {
+    margin-top: 6px;
+  }
+
+  .form-error-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .form-error-list li,
+  .form-error-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 5px;
+    font-size: 11px !important;
+    color: #e53935 !important;
+    line-height: 1.4;
+    margin-top: 4px;
+  }
+
+  /* File input */
+  input[type="file"] {
+    padding: 10px 14px !important;
+    cursor: pointer;
+  }
+
+  /* Select arrow */
+  select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%235b2b82' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 14px center !important;
+    padding-right: 36px !important;
+  }
+
+  .form-text {
+    font-size: 11px !important;
+    color: var(--text-muted) !important;
+    margin-top: 5px;
+    line-height: 1.5;
+  }
+
+  /* Alert erreurs globales */
+  .alert-danger {
+    background: #fef2f2 !important;
+    border: 1.5px solid rgba(229,57,53,0.2) !important;
+    border-radius: 11px !important;
+    padding: 14px 16px !important;
+    font-size: 13px !important;
+    color: #c62828 !important;
+    margin-bottom: 20px;
+  }
+
+  /* Bouton submit */
+  .btn-submit {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, var(--purple) 0%, var(--purple-dark) 100%);
+    color: var(--white);
+    border: none;
+    border-radius: 11px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.15s, box-shadow 0.2s;
+    box-shadow: 0 8px 24px rgba(91,43,130,0.3);
+    margin-top: 8px;
+  }
+
+  .btn-submit::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, var(--purple-light), var(--purple));
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .btn-submit:hover { transform: translateY(-1px); box-shadow: 0 12px 32px rgba(91,43,130,0.4); }
+  .btn-submit:hover::before { opacity: 1; }
+  .btn-submit:active { transform: translateY(0); }
+  .btn-submit span { position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; gap: 8px; }
+
+  .accent-line {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    margin: 24px 0;
+    opacity: 0.35;
+  }
+
+  .bottom-links { text-align: center; }
+  .bottom-links p { font-size: 12px; color: var(--text-muted); margin-bottom: 10px; }
+
+  .login-link { color: var(--purple); font-weight: 600; text-decoration: none; }
+  .login-link:hover { text-decoration: underline; }
+
+  /* Grille 2 colonnes */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes floatCard {
+    0%, 100% { transform: translateY(0); }
+    50%       { transform: translateY(-12px); }
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.4; }
+  }
+
+  @media (max-width: 960px) {
+    .page-shell { grid-template-columns: 1fr; }
+    .hero-panel  { display: none; }
+    .form-panel  { padding: 40px 28px; }
+  }
+
+  @media (max-width: 480px) {
+    .two-col { grid-template-columns: 1fr; }
+    .form-panel { padding: 30px 18px; }
+  }
+  /* Autocomplete Styling */
+  .autocomplete-wrapper { position: relative; }
+  .autocomplete-list {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 9999;
+    background: #fff;
+    border: 1px solid rgba(91,43,130,0.15);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    max-height: 200px;
+    overflow-y: auto;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: none;
+  }
+  .autocomplete-list li {
+    padding: 10px 14px;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--text-dark);
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    transition: background 0.1s;
+  }
+  .autocomplete-list li:last-child { border-bottom: none; }
+  .autocomplete-list li:hover { background: #f7f4f0; }
+    /* Intl-Tel-Input Styling overrider */
+  .iti { 
+    display: flex !important; 
+    align-items: center;
+    gap: 8px; 
+    width: 100%; 
+  }
+  .iti__flag-container { 
+    position: static !important; 
+    display: flex !important;
+    align-items: center;
+    border: 1.5px solid rgba(91,43,130,0.15) !important;
+    border-radius: 11px !important;
+    background: var(--white) !important;
+    padding: 0 12px !important;
+    height: 45px; /* Match form control height */
+  }
+  .iti__selected-flag { 
+    padding: 0 !important; 
+    background: transparent !important;
+  }
+  .iti input[type=tel] { 
+    padding-left: 16px !important; 
+    flex: 1;
+  }
+  
+  .iti__flag {background-image: url("https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/img/flags.png");}
+  @media (min-resolution: 2x) {
+    .iti__flag {background-image: url("https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/img/flags@2x.png");}
+  }
+
+  /* ── CAPTCHA ── */
+  .captcha-wrapper {
+    margin-top: 20px;
+  }
+
+  .captcha-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--white);
+    border: 1.5px solid rgba(91,43,130,0.15);
+    border-radius: 12px;
+    padding: 10px 14px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .captcha-box:focus-within {
+    border-color: var(--purple);
+    box-shadow: 0 0 0 4px rgba(91,43,130,0.08);
+  }
+
+  .captcha-img {
+    height: 44px;
+    border-radius: 8px;
+    border: 1px solid rgba(91,43,130,0.1);
+    background: #1e1e3c;
+    flex-shrink: 0;
+    transition: opacity 0.3s;
+  }
+
+  .captcha-refresh {
+    background: rgba(91,43,130,0.08);
+    border: none;
+    border-radius: 8px;
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--purple);
+    flex-shrink: 0;
+    transition: background 0.2s, transform 0.4s;
+  }
+
+  .captcha-refresh:hover {
+    background: rgba(91,43,130,0.15);
+    transform: rotate(180deg);
+  }
+
+  .captcha-input {
+    flex: 1;
+    padding: 10px 14px !important;
+    border: none !important;
+    box-shadow: none !important;
+    letter-spacing: 4px;
+    font-weight: 700;
+    font-size: 15px;
+    background: transparent !important;
+  }
+
+  .captcha-input:focus {
+    border: none !important;
+    box-shadow: none !important;
+  }
+</style>
+
+
+<div class="page-shell">
+
+  {# ════════ LEFT HERO ════════ #}
+  {# ✅ CORRECTION : suppression du bloc d'erreurs ici — il était dans le hero-panel
+     (panneau gauche décoratif) et donc jamais visible correctement.
+     Les erreurs sont affichées uniquement dans le form-panel (panneau droit). #}
+  <div class="hero-panel">
+
+    <svg class="hero-svg" viewBox="0 0 800 700" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+      <rect x="60"  y="300" width="60"  height="400" rx="3" fill="white"/>
+      <rect x="70"  y="260" width="40"  height="60"  rx="2" fill="white"/>
+      <rect x="150" y="200" width="80"  height="500" rx="3" fill="white"/>
+      <rect x="160" y="160" width="60"  height="60"  rx="2" fill="white"/>
+      <rect x="250" y="350" width="50"  height="350" rx="3" fill="white"/>
+      <rect x="320" y="150" width="100" height="550" rx="3" fill="white"/>
+      <rect x="335" y="110" width="70"  height="60"  rx="2" fill="white"/>
+      <rect x="350" y="70"  width="40"  height="55"  rx="2" fill="white"/>
+      <rect x="440" y="280" width="70"  height="420" rx="3" fill="white"/>
+      <rect x="530" y="180" width="90"  height="520" rx="3" fill="white"/>
+      <rect x="545" y="140" width="60"  height="55"  rx="2" fill="white"/>
+      <rect x="640" y="320" width="55"  height="380" rx="3" fill="white"/>
+      <rect x="710" y="250" width="80"  height="450" rx="3" fill="white"/>
+      <g opacity="0.4">
+        <rect x="160" y="220" width="8" height="8" rx="1" fill="#c9a84c"/>
+        <rect x="175" y="220" width="8" height="8" rx="1" fill="#c9a84c"/>
+        <rect x="190" y="240" width="8" height="8" rx="1" fill="#c9a84c"/>
+        <rect x="330" y="200" width="8" height="8" rx="1" fill="#c9a84c"/>
+        <rect x="370" y="220" width="8" height="8" rx="1" fill="#c9a84c"/>
+        <rect x="390" y="200" width="8" height="8" rx="1" fill="#c9a84c"/>
+        <rect x="535" y="210" width="8" height="8" rx="1" fill="#c9a84c"/>
+        <rect x="575" y="230" width="8" height="8" rx="1" fill="#c9a84c"/>
+      </g>
+    </svg>
+
+    <div class="floating-cards">
+      <div class="f-card">
+        <div class="f-card-label">Profils créés</div>
+        <div class="f-card-value">12 480</div>
+        <div class="f-card-sub">Ce mois · +8%</div>
+        <div class="f-card-bar"><div class="f-card-fill" style="width:82%"></div></div>
+      </div>
+      <div class="f-card">
+        <div class="f-card-label">Offres disponibles</div>
+        <div class="f-card-value">3 240</div>
+        <div class="f-card-sub">Mise à jour aujourd'hui</div>
+        <div class="f-card-bar"><div class="f-card-fill" style="width:68%"></div></div>
+      </div>
+      <div class="f-card">
+        <div class="f-card-label">Taux de placement</div>
+        <div class="f-card-value">87%</div>
+        <div class="f-card-sub">↑ +5% ce trimestre</div>
+        <div class="f-card-bar"><div class="f-card-fill" style="width:87%"></div></div>
+      </div>
+    </div>
+
+    <div class="hero-content">
+      <div class="hero-badge"><span>Espace Candidat</span></div>
+      <h2 class="hero-title">Démarrez votre<br><em>carrière</em> ici</h2>
+      <p class="hero-desc">Créez votre profil en quelques minutes et accédez à des milliers d'opportunités professionnelles adaptées à votre parcours.</p>
+      <div class="hero-steps">
+        <div class="step-item">
+          <div class="step-num">1</div>
+          <div class="step-text">
+            <strong>Créez votre profil</strong>
+            Renseignez vos informations personnelles
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">2</div>
+          <div class="step-text">
+            <strong>Postulez aux offres</strong>
+            Parcourez les opportunités qui vous correspondent
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">3</div>
+          <div class="step-text">
+            <strong>Décrochez votre poste</strong>
+            Suivez vos candidatures en temps réel
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>{# /hero-panel #}
+
+
+  {# ════════ RIGHT FORM PANEL ════════ #}
+  <div class="form-panel">
+
+    <div class="brand-area">
+      <img src="{{ asset('images/logo.png') }}" class="brand-logo" alt="RH Pro">
+      <div class="brand-sep"></div>
+      <span class="brand-tag">Inscription Candidat</span>
+    </div>
+
+    <div class="form-heading">
+      <h1>Créez votre profil ✨</h1>
+      <p>Rejoignez des milliers de candidats sur RH Pro</p>
+    </div>
+
+    {# Calcul court pour appliquer la classe .has-errors si le formulaire a des erreurs #}
+    {% set hasErrors = form.vars.errors|length > 0
+      or form.prenom.vars.errors|length > 0
+      or form.nom.vars.errors|length > 0
+      or form.email.vars.errors|length > 0
+      or form.telephone.vars.errors|length > 0
+      or form.adresse.vars.errors|length > 0
+      or form.niveauEtude.vars.errors|length > 0
+      or form.experience.vars.errors|length > 0
+      or form.avatar.vars.errors|length > 0
+      or form.plainPassword.vars.errors|length > 0
+    %}
+
+    {{ form_start(form, {
+      'attr': {
+        'novalidate': 'novalidate',
+        'class': hasErrors ? 'has-errors' : ''
+      }
+    }) }}
+
+      {# ✅ CORRECTION : erreurs globales du formulaire — affichées UNE SEULE FOIS ici,
+         dans le form-panel (panneau droit), là où l'utilisateur les verra.
+         Ces erreurs concernent le formulaire entier (ex: contraintes inter-champs). #}
+      {% if form.vars.errors|length > 0 %}
+        <div class="alert alert-danger">
+          {% for error in form.vars.errors %}
+            <p style="margin:0 0 4px">{{ error.message }}</p>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      {# ── Identité ── #}
+      <div class="form-section-title">Identité</div>
+
+      <div class="two-col">
+
+        {# ✅ Prénom #}
+        <div class="field-group">
+          {{ form_label(form.prenom) }}
+          {{ form_widget(form.prenom, {
+            'attr': {
+              'class': 'form-control' ~ (form.prenom.vars.errors|length > 0 ? ' is-invalid' : ''),
+              'placeholder': 'Prénom'
+            }
+          }) }}
+          {% if form.prenom.vars.errors|length > 0 %}
+            <div style="color: red !important; font-size: 13px !important; margin-top: 5px; display: block !important; font-weight: bold;">
+              {% for error in form.prenom.vars.errors %}{{ error.message }}<br>{% endfor %}
+            </div>
+          {% endif %}
+        </div>
+
+        {# ✅ Nom #}
+        <div class="field-group">
+          {{ form_label(form.nom) }}
+          {{ form_widget(form.nom, {
+            'attr': {
+              'class': 'form-control' ~ (form.nom.vars.errors|length > 0 ? ' is-invalid' : ''),
+              'placeholder': 'Nom de famille'
+            }
+          }) }}
+          {% if form.nom.vars.errors|length > 0 %}
+            <div style="color: red !important; font-size: 13px !important; margin-top: 5px; display: block !important; font-weight: bold;">
+              {% for error in form.nom.vars.errors %}{{ error.message }}<br>{% endfor %}
+            </div>
+          {% endif %}
+        </div>
+
+      </div>
+
+      {# ── Coordonnées ── #}
+      <div class="form-section-title">Coordonnées</div>
+
+      {# ✅ Email #}
+      <div class="field-group">
+        {{ form_label(form.email) }}
+        {{ form_widget(form.email, {
+          'attr': {
+            'class': 'form-control' ~ (form.email.vars.errors|length > 0 ? ' is-invalid' : ''),
+            'placeholder': 'prenom.nom@email.com'
+          }
+        }) }}
+        {% if form.email.vars.errors|length > 0 %}
+          <div style="color: red !important; font-size: 13px !important; margin-top: 5px; display: block !important; font-weight: bold;">
+              {% for error in form.email.vars.errors %}{{ error.message }}<br>{% endfor %}
+            </div>
+        {% endif %}
+      </div>
+
+      <div class="two-col">
+
+        {# ✅ Téléphone #}
+        <div class="field-group">
+          {{ form_label(form.telephone) }}
+          {{ form_widget(form.telephone, {
+            'attr': {
+              'class': 'form-control' ~ (form.telephone.vars.errors|length > 0 ? ' is-invalid' : ''),
+              'placeholder': '+216 XX XXX XXX'
+            }
+          }) }}
+          {% if form.telephone.vars.errors|length > 0 %}
+            <div style="color: red !important; font-size: 13px !important; margin-top: 5px; display: block !important; font-weight: bold;">
+              {% for error in form.telephone.vars.errors %}{{ error.message }}<br>{% endfor %}
+            </div>
+          {% endif %}
+        </div>
+
+        {# ✅ Adresse #}
+        <div class="field-group">
+          {{ form_label(form.adresse) }}
+          {{ form_widget(form.adresse, {
+            'attr': {
+              'class': 'form-control' ~ (form.adresse.vars.errors|length > 0 ? ' is-invalid' : ''),
+              'placeholder': 'Ville, Pays'
+            }
+          }) }}
+          {% if form.adresse.vars.errors|length > 0 %}
+            <div style="color: red !important; font-size: 13px !important; margin-top: 5px; display: block !important; font-weight: bold;">
+              {% for error in form.adresse.vars.errors %}{{ error.message }}<br>{% endfor %}
+            </div>
+          {% endif %}
+        </div>
+
+      </div>
+
+      {# ── Parcours ── #}
+      <div class="form-section-title">Parcours</div>
+
+      <div class="two-col">
+
+        {# ✅ Niveau d'étude #}
+        <div class="field-group">
+          {{ form_label(form.niveauEtude) }}
+          {{ form_widget(form.niveauEtude, {
+            'attr': {
+              'class': 'form-control' ~ (form.niveauEtude.vars.errors|length > 0 ? ' is-invalid' : '')
+            }
+          }) }}
+          {% if form.niveauEtude.vars.errors|length > 0 %}
+            <div style="color: red !important; font-size: 13px !important; margin-top: 5px; display: block !important; font-weight: bold;">
+              {% for error in form.niveauEtude.vars.errors %}{{ error.message }}<br>{% endfor %}
+            </div>
+          {% endif %}
+        </div>
+
+        {# ✅ Expérience #}
+        <div class="field-group">
+          {{ form_label(form.experience) }}
+          {{ form_widget(form.experience, {
+            'attr': {
+              'class': 'form-control' ~ (form.experience.vars.errors|length > 0 ? ' is-invalid' : '')
+            }
+          }) }}
+          {% if form.experience.vars.errors|length > 0 %}
+            <div style="color: red !important; font-size: 13px !important; margin-top: 5px; display: block !important; font-weight: bold;">
+              {% for error in form.experience.vars.errors %}{{ error.message }}<br>{% endfor %}
+            </div>
+          {% endif %}
+        </div>
+
+      </div>
+
+      {# ── Photo de profil ── #}
+      <div class="form-section-title">Photo de profil</div>
+
+      <div class="field-group">
+        {{ form_label(form.avatar) }}
+        {{ form_widget(form.avatar, {
+          'attr': {
+            'class': 'form-control' ~ (form.avatar.vars.errors|length > 0 ? ' is-invalid' : '')
+          }
+        }) }}
+        {% if form.avatar.vars.errors|length > 0 %}
+          <div style="color: red !important; font-size: 13px !important; margin-top: 5px; display: block !important; font-weight: bold;">
+              {% for error in form.avatar.vars.errors %}{{ error.message }}<br>{% endfor %}
+            </div>
+        {% endif %}
+        <small class="form-text">Format accepté : JPG, PNG, GIF · Max 2 MB</small>
+      </div>
+
+      {# ── Sécurité ── #}
+      <div class="form-section-title">Sécurité</div>
+
+      <div class="field-group">
+        {{ form_label(form.plainPassword) }}
+        {{ form_widget(form.plainPassword, {
+          'attr': {
+            'class': 'form-control' ~ (form.plainPassword.vars.errors|length > 0 ? ' is-invalid' : ''),
+            'placeholder': '••••••••'
+          }
+        }) }}
+        {% if form.plainPassword.vars.errors|length > 0 %}
+          <div style="color: red !important; font-size: 13px !important; margin-top: 5px; display: block !important; font-weight: bold;">
+              {% for error in form.plainPassword.vars.errors %}{{ error.message }}<br>{% endfor %}
+            </div>
+        {% endif %}
+        <small class="form-text">Minimum 8 caractères, une majuscule, une minuscule et un chiffre.</small>
+      </div>
+      <div class="captcha-wrapper">
+        <label class="field-label" style="margin-bottom: 10px; display:block;">Vérification de sécurité</label>
+        <div class="captcha-box">
+          <img id="captcha-img"
+               src="{{ path('app_captcha_image') }}"
+               alt="captcha"
+               class="captcha-img">
+          <button type="button" class="captcha-refresh" onclick="refreshCaptcha()" title="Rafraîchir">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+            </svg>
+          </button>
+          <input type="text"
+                 name="captcha_input"
+                 placeholder="Recopie le code"
+                 class="field-input captcha-input"
+                 required
+                 autocomplete="off"
+                 maxlength="6">
+        </div>
+      </div>
+
+      {# Submit #}
+      <button type="submit" class="btn-submit">
+        <span>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          Créer mon profil candidat
+        </span>
+      </button>
+      <div class="mt-3">
+    <a href="{{ path('connect_google', {'type': 'candidat'}) }}" class="btn btn-lg btn-outline-danger w-100">
+        <img src="https://www.google.com/favicon.ico" width="20" style="margin-right:8px;">
+        Sign in with Google
+    </a>
+</div>
+
+    {{ form_end(form) }}
+
+    <div class="accent-line"></div>
+
+    <div class="bottom-links">
+      <p>Vous êtes employé ?
+        <a href="{{ path('app_register_employe') }}" class="login-link">Inscription Employé →</a>
+      </p>
+      <p style="margin-top:6px">Déjà inscrit ?
+        <a href="{{ path('app_login') }}" class="login-link">Connectez-vous →</a>
+      </p>
+    </div>
+
+  </div>{# /form-panel #}
+
+</div>{# /page-shell #}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const addressInput = document.querySelector('textarea[name="registration_candidat[adresse]"]') || document.querySelector('textarea[name="registration_employe[adresse]"]');
+    
+    if (!addressInput) return;
+
+    // Create list container
+    const listWrapper = document.createElement('ul');
+    listWrapper.className = 'autocomplete-list';
+    addressInput.parentNode.classList.add('autocomplete-wrapper');
+    addressInput.parentNode.appendChild(listWrapper);
+    addressInput.setAttribute('autocomplete', 'off');
+
+    let debounceTimer;
+
+    addressInput.addEventListener('input', function() {
+        clearTimeout(debounceTimer);
+        const query = this.value.trim();
+        
+        if (query.length < 3) {
+            listWrapper.style.display = 'none';
+            return;
+        }
+
+        debounceTimer = setTimeout(() => {
+            fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=5`)
+                .then(r => r.json())
+                .then(data => {
+                    listWrapper.innerHTML = '';
+                    if (data.features && data.features.length > 0) {
+                        data.features.forEach(feature => {
+                            const props = feature.properties;
+                            // Build a clean address string
+                            let addressParts = [];
+                            if (props.name) addressParts.push(props.name);
+                            if (props.city && props.city !== props.name) addressParts.push(props.city);
+                            if (props.state) addressParts.push(props.state);
+                            if (props.country) addressParts.push(props.country);
+                            
+                            const fullAddress = addressParts.join(', ');
+
+                            const li = document.createElement('li');
+                            li.textContent = fullAddress;
+                            li.addEventListener('click', () => {
+                                addressInput.value = fullAddress;
+                                listWrapper.style.display = 'none';
+                            });
+                            listWrapper.appendChild(li);
+                        });
+                        listWrapper.style.display = 'block';
+                    } else {
+                        listWrapper.style.display = 'none';
+                    }
+                })
+                .catch(() => listWrapper.style.display = 'none');
+        }, 300);
+    });
+
+    // Close when clicking outside
+    document.addEventListener('click', function(e) {
+        if (e.target !== addressInput && e.target !== listWrapper) {
+            listWrapper.style.display = 'none';
+        }
+    });
+});
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/intlTelInput.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const phoneInput = document.querySelector('input[type="tel"]') || document.querySelector('input[name="registration_candidat[telephone]"]') || document.querySelector('input[name="registration_employe[telephone]"]');
+    
+    if (phoneInput) {
+        window.intlTelInput(phoneInput, {
+            initialCountry: "auto",
+            geoIpLookup: function(success, failure) {
+                // VPN/IP Detection via ipinfo API
+                fetch("https://ipapi.co/json")
+                    .then(function(res) { return res.json(); })
+                    .then(function(data) { success(data.country_code); })
+                    .catch(function() { success("tn"); }); // Par défaut TN
+            },
+            utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
+            separateDialCode: true,
+            preferredCountries: ["tn", "fr", "dz", "ma", "ca"]
+        });
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,370 @@
+{% extends 'candidat/base.html.twig' %}
+
+{% block title %}Espace Offres{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+.mini-map {
+    width: 100%;
+    height: 150px;
+    border-radius: 10px 10px 0 0;
+    z-index: 1;
+    overflow: hidden;
+}
+.map-placeholder {
+    width: 100%;
+    height: 150px;
+    border-radius: 10px 10px 0 0;
+    background: linear-gradient(135deg, #F0EEFF, #E8E5FF);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 6px;
+    color: #AFA9EC;
+    font-size: 12px;
+    font-weight: 500;
+}
+.map-placeholder i {
+    font-size: 22px;
+    color: #7F77DD;
+}
+.offer-card {
+    overflow: hidden;
+    padding: 0 !important;
+    position: relative;
+}
+.offer-card-body {
+    padding: 18px 20px 20px;
+}
+
+/* ── Favourite button ── */
+.btn-favorite {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 10;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(6px);
+    box-shadow: 0 2px 10px rgba(39,19,79,.18);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
+    outline: none;
+    padding: 0;
+}
+.btn-favorite:hover {
+    transform: scale(1.15);
+    box-shadow: 0 4px 16px rgba(143,74,228,.28);
+    background: #fff;
+}
+.btn-favorite .heart-icon {
+    font-size: 16px;
+    line-height: 1;
+    transition: color .2s ease, transform .15s ease;
+}
+.btn-favorite.is-favorite .heart-icon {
+    color: #e63b6f;
+}
+.btn-favorite:not(.is-favorite) .heart-icon {
+    color: #c0b8d4;
+}
+@keyframes heartPop {
+    0%   { transform: scale(1); }
+    50%  { transform: scale(1.4); }
+    100% { transform: scale(1); }
+}
+.btn-favorite.is-favorite .heart-icon {
+    animation: heartPop .25s ease;
+}
+
+/* ── Toast notification ── */
+.fav-toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 9999;
+    background: #fff;
+    border-radius: 14px;
+    padding: 12px 20px;
+    box-shadow: 0 10px 30px rgba(39,19,79,.15);
+    font-size: .9rem;
+    font-weight: 600;
+    color: #342455;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transform: translateY(20px);
+    opacity: 0;
+    transition: opacity .3s ease, transform .3s ease;
+    pointer-events: none;
+    border-left: 4px solid #8f4ae4;
+}
+.fav-toast.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+.fav-toast.removed {
+    border-left-color: #c0b8d4;
+}
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">
+            <i class="bi bi-briefcase-fill"></i>
+            Espace Offres
+        </h1>
+        <p class="page-subtitle">Consultez les offres disponibles et choisissez celle qui vous convient.</p>
+    </div>
+    <div class="header-actions">
+        <a href="{{ path('candidat_mes_favoris') }}" class="btn btn-soft">
+            <i class="bi bi-heart-fill me-2" style="color:#e63b6f;"></i>Mes Favoris
+        </a>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-head">
+        <h2 class="panel-title">
+            <i class="bi bi-clock-history"></i>
+            Offres disponibles
+        </h2>
+    </div>
+
+    <div class="panel-body">
+        <div class="row g-4">
+            {% for offre in offres %}
+                <div class="col-md-6 col-xl-4">
+                    <div class="offer-card">
+
+                        {# ── Mini carte ou placeholder ── #}
+                        {% if offre.latitude and offre.longitude %}
+                            <div class="mini-map"
+                                 id="map-{{ offre.id }}"
+                                 data-lat="{{ offre.latitude }}"
+                                 data-lng="{{ offre.longitude }}"
+                                 data-title="{{ offre.titre|e('html_attr') }}">
+                            </div>
+                        {% else %}
+                            <div class="map-placeholder">
+                                <i class="bi bi-geo-alt-fill"></i>
+                                <span>{{ offre.localisation }}</span>
+                            </div>
+                        {% endif %}
+
+                        {# ── Bouton favori ── #}
+                        {% if app.user %}
+                            <button
+                                class="btn-favorite {% if offre.id in favoriteIds %}is-favorite{% endif %}"
+                                data-offre-id="{{ offre.id }}"
+                                data-toggle-url="{{ path('candidat_toggle_favori', {'id': offre.id}) }}"
+                                title="{% if offre.id in favoriteIds %}Retirer des favoris{% else %}Ajouter aux favoris{% endif %}"
+                                id="fav-btn-{{ offre.id }}"
+                                aria-label="Favori"
+                            >
+                                <i class="heart-icon {% if offre.id in favoriteIds %}bi bi-heart-fill{% else %}bi bi-heart{% endif %}"></i>
+                            </button>
+                        {% endif %}
+
+                        <div class="offer-card-body">
+                            <div class="offer-top">
+                                <div class="icon-box">
+                                    <i class="bi bi-briefcase"></i>
+                                </div>
+
+                                {% if offre.statut is defined and offre.statut %}
+                                    <span class="badge-soft badge-open">{{ offre.statut }}</span>
+                                {% endif %}
+                            </div>
+
+                            <div class="offer-title">{{ offre.titre }}</div>
+
+                            <div class="offer-meta">
+                                <i class="bi bi-geo-alt me-2"></i>{{ offre.localisation }}
+                            </div>
+
+                            {% if offre.typeContrat is defined and offre.typeContrat %}
+                                <div class="offer-meta">
+                                    <i class="bi bi-file-earmark-text me-2"></i>{{ offre.typeContrat }}
+                                </div>
+                            {% endif %}
+
+                            {% if offre.datePublication is defined and offre.datePublication %}
+                                <div class="offer-meta">
+                                    <i class="bi bi-calendar-event me-2"></i>{{ offre.datePublication|date('d/m/Y') }}
+                                </div>
+                            {% endif %}
+
+                            <div class="mt-4">
+                                <a href="{{ path('candidat_offre_show', {'id': offre.id}) }}" class="btn btn-main w-100">
+                                    <i class="bi bi-eye-fill me-2"></i>Voir l'offre
+                                </a>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            {% else %}
+                <div class="col-12">
+                    <div class="empty-box">
+                        <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+                        Aucune offre disponible pour le moment.
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+{# ── Toast de confirmation ── #}
+<div class="fav-toast" id="favToast">
+    <i class="bi bi-heart-fill" style="color:#e63b6f;"></i>
+    <span id="favToastMsg"></span>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+/* ─── Mini maps ─────────────────────────────────────────────────────────── */
+function initMaps() {
+    const GEOAPIFY_KEY = '{{ geoapify_key }}';
+
+    document.querySelectorAll('.mini-map').forEach(function (el) {
+        if (el.hasAttribute('data-map-initialized')) return;
+
+        const lat   = parseFloat(el.dataset.lat);
+        const lng   = parseFloat(el.dataset.lng);
+        const title = el.dataset.title || '';
+
+        if (isNaN(lat) || isNaN(lng)) return;
+
+        el.setAttribute('data-map-initialized', 'true');
+
+        const map = L.map(el, {
+            center: [lat, lng],
+            zoom: 12,
+            zoomControl: false,
+            scrollWheelZoom: false,
+            dragging: false,
+            doubleClickZoom: false,
+            attributionControl: false
+        });
+
+        L.tileLayer(
+            'https://maps.geoapify.com/v1/tile/osm-carto/{z}/{x}/{y}.png?apiKey=' + GEOAPIFY_KEY,
+            { maxZoom: 20 }
+        ).addTo(map);
+
+        const icon = L.divIcon({
+            html: '<div style="background:#534AB7;width:14px;height:14px;border-radius:50%;border:2px solid #fff;box-shadow:0 2px 6px rgba(83,74,183,0.5)"></div>',
+            iconSize: [14, 14],
+            iconAnchor: [7, 7],
+            className: ''
+        });
+
+        L.marker([lat, lng], { icon: icon }).addTo(map);
+    });
+}
+
+document.addEventListener('DOMContentLoaded', initMaps);
+document.addEventListener('turbo:load', initMaps);
+
+/* ─── Favourites toggle ─────────────────────────────────────────────────── */
+let toastTimer = null;
+
+function showToast(message, removed) {
+    const toast = document.getElementById('favToast');
+    const msgEl = document.getElementById('favToastMsg');
+    if (!toast || !msgEl) return;
+
+    msgEl.textContent = message;
+    toast.classList.toggle('removed', removed);
+    toast.classList.add('show');
+
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 2800);
+}
+
+function initFavouriteButtons() {
+    document.querySelectorAll('.btn-favorite').forEach(function (btn) {
+        if (btn.hasAttribute('data-fav-initialized')) return;
+        btn.setAttribute('data-fav-initialized', 'true');
+
+        btn.addEventListener('click', async function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const url   = btn.dataset.toggleUrl;
+            const icon  = btn.querySelector('.heart-icon');
+            const isFav = btn.classList.contains('is-favorite');
+
+            // Optimistic UI update
+            btn.classList.toggle('is-favorite', !isFav);
+            if (!isFav) {
+                icon.classList.replace('bi-heart', 'bi-heart-fill');
+                icon.style.color = '#e63b6f';
+            } else {
+                icon.classList.replace('bi-heart-fill', 'bi-heart');
+                icon.style.color = '#c0b8d4';
+            }
+
+            try {
+                const resp = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (!resp.ok) throw new Error('HTTP ' + resp.status);
+
+                const data = await resp.json();
+                if (!data.success) throw new Error(data.message || 'Erreur');
+
+                // Confirm server state
+                btn.classList.toggle('is-favorite', data.isFavorite);
+                if (data.isFavorite) {
+                    icon.classList.replace('bi-heart', 'bi-heart-fill');
+                    icon.style.color = '#e63b6f';
+                } else {
+                    icon.classList.replace('bi-heart-fill', 'bi-heart');
+                    icon.style.color = '#c0b8d4';
+                }
+
+                showToast(data.message, !data.isFavorite);
+
+            } catch (err) {
+                // Revert on error
+                btn.classList.toggle('is-favorite', isFav);
+                if (isFav) {
+                    icon.classList.replace('bi-heart', 'bi-heart-fill');
+                    icon.style.color = '#e63b6f';
+                } else {
+                    icon.classList.replace('bi-heart-fill', 'bi-heart');
+                    icon.style.color = '#c0b8d4';
+                }
+                showToast('Erreur : ' + err.message, true);
+                console.error('Favori toggle error:', err);
+            }
+        });
+    });
+}
+
+document.addEventListener('DOMContentLoaded', initFavouriteButtons);
+document.addEventListener('turbo:load', initFavouriteButtons);
+</script>
+{% endblock %}

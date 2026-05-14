@@ -1,0 +1,8 @@
+# Variables d'environnement et clés API
+.env
+.env.local
+.env.prod
+.env.*.local
+
+# Dossiers sensibles
+nlp_skills/

@@ -1,0 +1,408 @@
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  .rh-footer {
+    font-family: 'DM Sans', sans-serif;
+    background: linear-gradient(160deg, #1a0a2e 0%, #3d1a5c 50%, #2a0d45 100%);
+    position: relative;
+    overflow: hidden;
+    padding-top: 64px;
+    padding-bottom: 0;
+  }
+
+  /* Background decoration */
+  .rh-footer::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(ellipse 70% 50% at 10% 100%, rgba(201,168,76,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 40% at 90% 0%, rgba(124,61,172,0.3) 0%, transparent 50%),
+      repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 40px,
+        rgba(255,255,255,0.012) 40px,
+        rgba(255,255,255,0.012) 41px
+      );
+    pointer-events: none;
+  }
+
+  /* Skyline SVG strip */
+  .footer-skyline {
+    position: absolute;
+    bottom: 52px; /* above the copyright bar */
+    left: 0;
+    width: 100%;
+    height: 90px;
+    opacity: 0.06;
+    pointer-events: none;
+  }
+
+  .footer-inner {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Gold top accent bar */
+  .footer-gold-bar {
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #b39ddb 30%, #d1c4e9 50%, #b39ddb 70%, transparent);
+    margin-bottom: 52px;
+    opacity: 0.6;
+  }
+
+
+  /* Brand column */
+  .footer-brand-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: -0.01em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .footer-brand-name .brand-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #662696;
+    box-shadow: 0 0 8px rgba(141, 76, 201, 0.6);
+    flex-shrink: 0;
+  }
+
+  .footer-tagline {
+    font-size: 13px;
+    color: rgba(255,255,255,0.45);
+    line-height: 1.7;
+    max-width: 240px;
+    margin-bottom: 24px;
+  }
+
+  /* Social icons */
+  .footer-socials {
+    display: flex;
+    gap: 10px;
+  }
+
+  .social-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255,255,255,0.5);
+    text-decoration: none;
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+  }
+
+  .social-btn:hover {
+    background: rgba(201,168,76,0.15);
+    border-color: rgba(201,168,76,0.4);
+    color: #e8c97a;
+  }
+
+  /* Column headings */
+  .footer-col-title {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #a484e0;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .footer-col-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(201,168,76,0.2);
+    max-width: 40px;
+  }
+
+  /* Links */
+  .footer-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .footer-links a {
+    font-size: 13px;
+    color: rgba(255,255,255,0.5);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    transition: color 0.2s, gap 0.2s;
+  }
+
+  .footer-links a::before {
+    content: '';
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: #824cc9;
+    opacity: 0.4;
+    flex-shrink: 0;
+    transition: opacity 0.2s;
+  }
+
+  .footer-links a:hover {
+    color: rgba(255,255,255,0.85);
+    gap: 10px;
+  }
+
+  .footer-links a:hover::before {
+    opacity: 1;
+  }
+
+  /* Contact items */
+  .contact-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .contact-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .contact-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: #914cc9;
+  }
+
+  .contact-text {
+    font-size: 13px;
+    color: rgba(255,255,255,0.5);
+    line-height: 1.5;
+    padding-top: 5px;
+  }
+
+  /* Newsletter badge */
+  .footer-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(201,168,76,0.1);
+    border: 1px solid rgba(201,168,76,0.25);
+    border-radius: 100px;
+    padding: 4px 12px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #9643df;
+    margin-bottom: 14px;
+  }
+
+  .footer-badge::before {
+    content: '';
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #994cc9;
+    box-shadow: 0 0 6px rgba(207, 169, 233, 0.7);
+  }
+
+  /* Gold divider */
+  .footer-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08) 30%, rgba(255,255,255,0.08) 70%, transparent);
+    margin: 48px 0 0;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Copyright bar */
+  .footer-bottom {
+    position: relative;
+    z-index: 1;
+    padding: 18px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .footer-copyright {
+    font-size: 11px;
+    color: rgba(255,255,255,0.3);
+    letter-spacing: 0.04em;
+  }
+
+  .footer-copyright strong {
+    color: rgba(255,255,255,0.5);
+    font-weight: 600;
+  }
+
+  .footer-legal {
+    display: flex;
+    gap: 20px;
+  }
+
+  .footer-legal a {
+    font-size: 11px;
+    color: rgba(255,255,255,0.25);
+    text-decoration: none;
+    transition: color 0.2s;
+    letter-spacing: 0.04em;
+  }
+
+  .footer-legal a:hover {
+    color: rgba(255,255,255,0.55);
+  }
+
+  @media (max-width: 768px) {
+    .rh-footer { padding-top: 44px; }
+    .footer-bottom { justify-content: center; text-align: center; }
+    .footer-legal { justify-content: center; }
+    .footer-col { margin-bottom: 36px; }
+  }
+</style>
+
+<footer class="rh-footer mt-auto">
+
+  <!-- Skyline silhouette -->
+  <svg class="footer-skyline" viewBox="0 0 1440 90" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax meet">
+    <rect x="0"   y="40" width="40"  height="50" fill="white"/>
+    <rect x="50"  y="20" width="55"  height="70" fill="white"/>
+    <rect x="60"  y="10" width="35"  height="20" fill="white"/>
+    <rect x="115" y="35" width="35"  height="55" fill="white"/>
+    <rect x="160" y="5"  width="70"  height="85" fill="white"/>
+    <rect x="170" y="0"  width="50"  height="15" fill="white"/>
+    <rect x="240" y="30" width="40"  height="60" fill="white"/>
+    <rect x="290" y="15" width="60"  height="75" fill="white"/>
+    <rect x="300" y="5"  width="40"  height="18" fill="white"/>
+    <rect x="360" y="25" width="45"  height="65" fill="white"/>
+    <rect x="415" y="0"  width="80"  height="90" fill="white"/>
+    <rect x="425" y="-5" width="60"  height="15" fill="white"/>
+    <rect x="505" y="30" width="50"  height="60" fill="white"/>
+    <rect x="565" y="18" width="65"  height="72" fill="white"/>
+    <rect x="640" y="8"  width="90"  height="82" fill="white"/>
+    <rect x="650" y="0"  width="70"  height="18" fill="white"/>
+    <rect x="740" y="28" width="55"  height="62" fill="white"/>
+    <rect x="805" y="12" width="70"  height="78" fill="white"/>
+    <rect x="885" y="35" width="45"  height="55" fill="white"/>
+    <rect x="940" y="5"  width="80"  height="85" fill="white"/>
+    <rect x="950" y="0"  width="60"  height="15" fill="white"/>
+    <rect x="1030" y="22" width="55" height="68" fill="white"/>
+    <rect x="1095" y="10" width="75" height="80" fill="white"/>
+    <rect x="1105" y="2"  width="55" height="18" fill="white"/>
+    <rect x="1180" y="30" width="50" height="60" fill="white"/>
+    <rect x="1240" y="0"  width="85" height="90" fill="white"/>
+    <rect x="1250" y="-5" width="65" height="18" fill="white"/>
+    <rect x="1335" y="25" width="55" height="65" fill="white"/>
+    <rect x="1400" y="38" width="40" height="52" fill="white"/>
+  </svg>
+
+  <div class="container footer-inner">
+
+    <div class="footer-gold-bar"></div>
+
+    <div class="row">
+
+      <!-- Brand -->
+      <div class="col-md-4 footer-col mb-5 mb-md-0">
+        <div class="footer-brand-name">
+          <span class="brand-dot"></span>
+          RH Pro
+        </div>
+        <p class="footer-tagline">
+          Votre plateforme professionnelle de gestion de carrière et de recrutement, conçue pour les équipes ambitieuses.
+        </p>
+        <div class="footer-socials">
+          <a href="#" class="social-btn" aria-label="LinkedIn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+          </a>
+          <a href="#" class="social-btn" aria-label="Twitter">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"/></svg>
+          </a>
+          <a href="#" class="social-btn" aria-label="Email">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,12 2,6"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Quick links -->
+      <div class="col-md-2 offset-md-1 footer-col mb-5 mb-md-0">
+        <div class="footer-col-title">Navigation</div>
+        <ul class="footer-links">
+          <li><a href="{{ path('app_landing') }}">Accueil</a></li>
+          <li><a href="{{ path('app_register_candidat') }}">Inscription Candidat</a></li>
+          <li><a href="{{ path('app_register_employe') }}">Inscription Employé</a></li>
+          <li><a href="#">Offres d'emploi</a></li>
+          <li><a href="#">À propos</a></li>
+        </ul>
+      </div>
+
+      <!-- Contact -->
+      <div class="col-md-4 offset-md-1 footer-col">
+        <div class="footer-col-title">Contact</div>
+        <ul class="contact-list">
+          <li class="contact-item">
+            <div class="contact-icon">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,12 2,6"/></svg>
+            </div>
+            <span class="contact-text">contact@rhpro.com</span>
+          </li>
+          <li class="contact-item">
+            <div class="contact-icon">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.63 3.45 2 2 0 0 1 3.6 1.27h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.91a16 16 0 0 0 6 6l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.73 16.92z"/></svg>
+            </div>
+            <span class="contact-text">+216 XX XXX XXX</span>
+          </li>
+          <li class="contact-item">
+            <div class="contact-icon">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            </div>
+            <span class="contact-text">Tunis, Tunisie</span>
+          </li>
+        </ul>
+      </div>
+
+    </div><!-- /row -->
+
+    <div class="footer-divider"></div>
+
+    <div class="footer-bottom">
+      <span class="footer-copyright">
+        &copy; {{ "now"|date("Y") }} <strong>RH Pro</strong> · Tous droits réservés
+      </span>
+      <div class="footer-legal">
+        <a href="#">Confidentialité</a>
+        <a href="#">Conditions d'utilisation</a>
+        <a href="#">Mentions légales</a>
+      </div>
+    </div>
+
+  </div>
+</footer>

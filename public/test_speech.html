@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Web Speech API</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-box {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .error { color: #f44336; }
+        .success { color: #4CAF50; }
+        .info { color: #2196F3; }
+        pre {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        #log {
+            max-height: 400px;
+            overflow-y: auto;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Test Web Speech API</h1>
+    
+    <div class="test-box">
+        <h2>1. Vérification de Base</h2>
+        <button onclick="testBasic()">Tester</button>
+        <div id="basic-result"></div>
+    </div>
+    
+    <div class="test-box">
+        <h2>2. Liste des Voix</h2>
+        <button onclick="listVoices()">Lister les Voix</button>
+        <div id="voices-result"></div>
+    </div>
+    
+    <div class="test-box">
+        <h2>3. Test Simple (Bonjour)</h2>
+        <button onclick="testSimple()">Test Simple</button>
+        <div id="simple-result"></div>
+    </div>
+    
+    <div class="test-box">
+        <h2>4. Test avec Accents (Français)</h2>
+        <button onclick="testAccents()">Test Accents</button>
+        <div id="accents-result"></div>
+    </div>
+    
+    <div class="test-box">
+        <h2>5. Test Texte Long</h2>
+        <button onclick="testLong()">Test Long</button>
+        <div id="long-result"></div>
+    </div>
+    
+    <div class="test-box">
+        <h2>📋 Log</h2>
+        <button onclick="clearLog()">Effacer</button>
+        <pre id="log"></pre>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : 'info';
+            logDiv.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+
+        function testBasic() {
+            const result = document.getElementById('basic-result');
+            result.innerHTML = '<p>Test en cours...</p>';
+            
+            log('=== TEST BASIQUE ===');
+            
+            // Test 1: API disponible?
+            const available = !!window.speechSynthesis;
+            log(`speechSynthesis disponible: ${available}`, available ? 'success' : 'error');
+            
+            // Test 2: Méthodes disponibles?
+            if (available) {
+                log(`speak() disponible: ${typeof window.speechSynthesis.speak === 'function'}`, 'success');
+                log(`cancel() disponible: ${typeof window.speechSynthesis.cancel === 'function'}`, 'success');
+                log(`getVoices() disponible: ${typeof window.speechSynthesis.getVoices === 'function'}`, 'success');
+            }
+            
+            // Test 3: Navigateur
+            const userAgent = navigator.userAgent;
+            log(`Navigateur: ${userAgent}`);
+            
+            result.innerHTML = available ? 
+                '<p class="success">✅ Web Speech API est disponible!</p>' :
+                '<p class="error">❌ Web Speech API n\'est PAS disponible!</p>';
+        }
+
+        function listVoices() {
+            const result = document.getElementById('voices-result');
+            result.innerHTML = '<p>Chargement des voix...</p>';
+            
+            log('=== LISTE DES VOIX ===');
+            
+            setTimeout(function() {
+                const voices = window.speechSynthesis.getVoices();
+                log(`Nombre total de voix: ${voices.length}`);
+                
+                if (voices.length === 0) {
+                    result.innerHTML = '<p class="error">❌ Aucune voix disponible!</p>';
+                    log('ERREUR: Aucune voix trouvée!', 'error');
+                    return;
+                }
+                
+                const frenchVoices = voices.filter(v => v.lang.startsWith('fr'));
+                log(`Voix françaises: ${frenchVoices.length}`);
+                
+                let html = `<p class="success">✅ ${voices.length} voix disponibles (${frenchVoices.length} françaises)</p>`;
+                html += '<h4>Voix Françaises:</h4><ul>';
+                
+                frenchVoices.forEach(v => {
+                    html += `<li><strong>${v.name}</strong> (${v.lang}) ${v.default ? '⭐ Défaut' : ''}</li>`;
+                    log(`  - ${v.name} (${v.lang})${v.default ? ' [DÉFAUT]' : ''}`);
+                });
+                
+                html += '</ul>';
+                result.innerHTML = html;
+            }, 100);
+        }
+
+        function testSimple() {
+            const result = document.getElementById('simple-result');
+            result.innerHTML = '<p>Test en cours...</p>';
+            
+            log('=== TEST SIMPLE ===');
+            log('Texte: "Bonjour"');
+            
+            window.speechSynthesis.cancel();
+            
+            setTimeout(function() {
+                const utterance = new SpeechSynthesisUtterance('Bonjour');
+                utterance.lang = 'fr-FR';
+                utterance.rate = 0.9;
+                
+                utterance.onstart = function() {
+                    log('✅ Synthèse démarrée', 'success');
+                    result.innerHTML = '<p class="success">✅ Synthèse en cours...</p>';
+                };
+                
+                utterance.onend = function() {
+                    log('✅ Synthèse terminée', 'success');
+                    result.innerHTML = '<p class="success">✅ Test réussi!</p>';
+                };
+                
+                utterance.onerror = function(e) {
+                    log(`❌ ERREUR: ${e.error}`, 'error');
+                    log(`Détails: ${JSON.stringify(e)}`, 'error');
+                    result.innerHTML = `<p class="error">❌ Erreur: ${e.error}</p>`;
+                };
+                
+                try {
+                    window.speechSynthesis.speak(utterance);
+                    log('speak() appelé');
+                } catch (error) {
+                    log(`❌ Exception: ${error.message}`, 'error');
+                    result.innerHTML = `<p class="error">❌ Exception: ${error.message}</p>`;
+                }
+            }, 300);
+        }
+
+        function testAccents() {
+            const result = document.getElementById('accents-result');
+            result.innerHTML = '<p>Test en cours...</p>';
+            
+            const texte = 'Bonjour. Vous écoutez le rapport généré automatiquement. Très bien!';
+            log('=== TEST ACCENTS ===');
+            log(`Texte: "${texte}"`);
+            
+            window.speechSynthesis.cancel();
+            
+            setTimeout(function() {
+                const utterance = new SpeechSynthesisUtterance(texte);
+                utterance.lang = 'fr-FR';
+                utterance.rate = 0.9;
+                
+                utterance.onstart = function() {
+                    log('✅ Synthèse démarrée', 'success');
+                    result.innerHTML = '<p class="success">✅ Synthèse en cours...</p>';
+                };
+                
+                utterance.onend = function() {
+                    log('✅ Synthèse terminée', 'success');
+                    result.innerHTML = '<p class="success">✅ Test réussi! Les accents sont prononcés correctement.</p>';
+                };
+                
+                utterance.onerror = function(e) {
+                    log(`❌ ERREUR: ${e.error}`, 'error');
+                    result.innerHTML = `<p class="error">❌ Erreur: ${e.error}</p>`;
+                };
+                
+                window.speechSynthesis.speak(utterance);
+            }, 300);
+        }
+
+        function testLong() {
+            const result = document.getElementById('long-result');
+            result.innerHTML = '<p>Test en cours...</p>';
+            
+            const texte = 'Bonjour. Voici le rapport analytique des demandes de service RH. Au total, 3 demandes ont été enregistrées. 2 demandes ont été acceptées, 1 demande a été refusée, et 0 demande est encore en attente de traitement. Le taux de résolution est de 100 pourcent. Merci de votre attention. Bonne journée à toute l\'équipe.';
+            
+            log('=== TEST TEXTE LONG ===');
+            log(`Longueur: ${texte.length} caractères`);
+            log(`Texte: "${texte.substring(0, 50)}..."`);
+            
+            window.speechSynthesis.cancel();
+            
+            setTimeout(function() {
+                const utterance = new SpeechSynthesisUtterance(texte);
+                utterance.lang = 'fr-FR';
+                utterance.rate = 0.9;
+                
+                utterance.onstart = function() {
+                    log('✅ Synthèse démarrée', 'success');
+                    result.innerHTML = '<p class="success">✅ Synthèse en cours...</p>';
+                };
+                
+                utterance.onend = function() {
+                    log('✅ Synthèse terminée', 'success');
+                    result.innerHTML = '<p class="success">✅ Test réussi! Le texte long fonctionne.</p>';
+                };
+                
+                utterance.onerror = function(e) {
+                    log(`❌ ERREUR: ${e.error}`, 'error');
+                    log(`CharIndex: ${e.charIndex}, CharLength: ${e.charLength}`, 'error');
+                    result.innerHTML = `<p class="error">❌ Erreur: ${e.error}<br>Position: ${e.charIndex}</p>`;
+                };
+                
+                window.speechSynthesis.speak(utterance);
+            }, 300);
+        }
+
+        // Auto-test au chargement
+        window.addEventListener('load', function() {
+            log('=== PAGE CHARGÉE ===');
+            log('Prêt pour les tests!', 'success');
+            
+            // Charger les voix
+            if (window.speechSynthesis) {
+                window.speechSynthesis.getVoices();
+                window.speechSynthesis.onvoiceschanged = function() {
+                    log('Voix chargées!', 'success');
+                };
+            }
+        });
+    </script>
+</body>
+</html>

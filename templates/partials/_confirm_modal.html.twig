@@ -1,0 +1,147 @@
+{# ============================================================
+   _confirm_modal.html.twig — Modal de confirmation réutilisable
+   À inclure via : {{ include('partials/_confirm_modal.html.twig') }}
+   ============================================================ #}
+<style>
+.rh-modal-backdrop {
+  position: fixed; inset: 0; z-index: 9000;
+  background: rgba(0,0,0,0.45); backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity 0.2s;
+}
+.rh-modal-backdrop.open { opacity: 1; pointer-events: all; }
+
+.rh-modal {
+  background: #fff; border-radius: 18px; padding: 32px;
+  max-width: 420px; width: 90%; box-shadow: 0 24px 64px rgba(0,0,0,0.22);
+  transform: scale(0.9) translateY(16px);
+  transition: transform 0.22s cubic-bezier(.34,1.56,.64,1);
+  text-align: center;
+}
+.rh-modal-backdrop.open .rh-modal { transform: scale(1) translateY(0); }
+
+.rh-modal-icon {
+  width: 56px; height: 56px; border-radius: 16px;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 18px; font-size: 26px;
+}
+.rh-modal-icon.warning { background: #fef3c7; }
+.rh-modal-icon.danger  { background: #fee2e2; }
+.rh-modal-icon.success { background: #d1fae5; }
+
+.rh-modal h3 {
+  font-size: 18px; font-weight: 700; color: #111827; margin: 0 0 8px;
+}
+.rh-modal p {
+  font-size: 14px; color: #6b7280; margin: 0 0 24px; line-height: 1.6;
+}
+.rh-modal-btns { display: flex; gap: 10px; justify-content: center; }
+.rh-modal-btn {
+  padding: 10px 24px; border-radius: 10px; font-size: 14px; font-weight: 600;
+  cursor: pointer; border: none; font-family: 'Inter', sans-serif; transition: transform 0.15s, background 0.2s;
+}
+.rh-modal-btn:hover { transform: translateY(-1px); }
+.rh-modal-btn-cancel { background: #f3f4f6; color: #6b7280; }
+.rh-modal-btn-cancel:hover { background: #e5e7eb; }
+.rh-modal-btn-confirm-warn { background: #f59e0b; color: #fff; }
+.rh-modal-btn-confirm-warn:hover { background: #d97706; }
+.rh-modal-btn-confirm-del  { background: #ef4444; color: #fff; }
+.rh-modal-btn-confirm-del:hover  { background: #dc2626; }
+.rh-modal-btn-confirm-ok   { background: #10b981; color: #fff; }
+.rh-modal-btn-confirm-ok:hover   { background: #059669; }
+</style>
+
+<!-- Modal backdrop -->
+<div class="rh-modal-backdrop" id="rhModalBackdrop" onclick="rhModalClose(event)">
+  <div class="rh-modal" id="rhModal">
+    <div class="rh-modal-icon" id="rhModalIcon">❓</div>
+    <h3 id="rhModalTitle">Confirmer l'action</h3>
+    <p id="rhModalText">Êtes-vous sûr de vouloir effectuer cette action ?</p>
+    <div class="rh-modal-btns">
+      <button class="rh-modal-btn rh-modal-btn-cancel" onclick="rhModalCancel()">Annuler</button>
+      <button class="rh-modal-btn" id="rhModalConfirmBtn" onclick="rhModalExecute()">Confirmer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var _rhModalCallback = null;
+
+function rhConfirm(opts) {
+  /* opts: {
+       title: string, text: string, type: 'warn'|'delete'|'ok',
+       confirmLabel: string, callback: function
+     }
+  */
+  var backdrop = document.getElementById('rhModalBackdrop');
+  var icon     = document.getElementById('rhModalIcon');
+  var title    = document.getElementById('rhModalTitle');
+  var text     = document.getElementById('rhModalText');
+  var btn      = document.getElementById('rhModalConfirmBtn');
+
+  var t = opts.type || 'warn';
+  icon.className = 'rh-modal-icon ' + (t === 'delete' ? 'danger' : t === 'ok' ? 'success' : 'warning');
+  icon.innerHTML = t === 'delete' ? '🗑️' : t === 'ok' ? '✅' : '⚠️';
+  title.textContent = opts.title || 'Confirmer';
+  text.textContent  = opts.text  || 'Êtes-vous sûr ?';
+  btn.textContent   = opts.confirmLabel || 'Confirmer';
+  btn.className = 'rh-modal-btn ' + (t === 'delete' ? 'rh-modal-btn-confirm-del' : t === 'ok' ? 'rh-modal-btn-confirm-ok' : 'rh-modal-btn-confirm-warn');
+
+  _rhModalCallback = opts.callback || null;
+  backdrop.classList.add('open');
+  return false;
+}
+
+function rhModalExecute() {
+  var backdrop = document.getElementById('rhModalBackdrop');
+  backdrop.classList.remove('open');
+  if (typeof _rhModalCallback === 'function') {
+    _rhModalCallback();
+  }
+}
+
+function rhModalCancel() {
+  document.getElementById('rhModalBackdrop').classList.remove('open');
+  _rhModalCallback = null;
+}
+
+function rhModalClose(e) {
+  if (e.target === document.getElementById('rhModalBackdrop')) {
+    rhModalCancel();
+  }
+}
+
+/* Helper: intercepts a delete form and shows modal first */
+function rhConfirmDelete(formEl, message) {
+  rhConfirm({
+    title: 'Confirmer la suppression',
+    text: message || 'Cette action est irréversible. Voulez-vous continuer ?',
+    type: 'delete',
+    confirmLabel: 'Supprimer',
+    callback: function () { formEl.submit(); }
+  });
+  return false;
+}
+
+function rhConfirmEdit(formEl, message) {
+  rhConfirm({
+    title: 'Confirmer la modification',
+    text: message || 'Êtes-vous sûr de vouloir enregistrer ces modifications ?',
+    type: 'warn',
+    confirmLabel: 'Enregistrer',
+    callback: function () { formEl.submit(); }
+  });
+  return false;
+}
+
+function rhConfirmAdd(formEl, message) {
+  rhConfirm({
+    title: 'Confirmer l\'ajout',
+    text: message || 'Êtes-vous sûr de vouloir ajouter cet élément ?',
+    type: 'ok',
+    confirmLabel: 'Ajouter',
+    callback: function () { formEl.submit(); }
+  });
+  return false;
+}
+</script>

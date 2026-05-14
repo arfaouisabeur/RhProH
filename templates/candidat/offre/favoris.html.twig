@@ -1,0 +1,438 @@
+{% extends 'candidat/base.html.twig' %}
+
+{% block title %}Mes Favoris{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+/* ── Mini map & placeholder (identique à index.html.twig) ── */
+.mini-map {
+    width: 100%;
+    height: 150px;
+    border-radius: 10px 10px 0 0;
+    z-index: 1;
+    overflow: hidden;
+}
+.map-placeholder {
+    width: 100%;
+    height: 150px;
+    border-radius: 10px 10px 0 0;
+    background: linear-gradient(135deg, #F0EEFF, #E8E5FF);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 6px;
+    color: #AFA9EC;
+    font-size: 12px;
+    font-weight: 500;
+}
+.map-placeholder i {
+    font-size: 22px;
+    color: #7F77DD;
+}
+
+/* ── Carte offre ── */
+.offer-card {
+    overflow: hidden;
+    padding: 0 !important;
+    position: relative;
+    transition: transform .2s ease, box-shadow .2s ease;
+}
+.offer-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 14px 28px rgba(39,19,79,.1);
+}
+.offer-card-body {
+    padding: 20px 22px 22px;
+}
+
+/* ── Bouton retirer favori ── */
+.btn-remove-fav {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 10;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(6px);
+    box-shadow: 0 2px 10px rgba(39,19,79,.18);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform .2s, box-shadow .2s, background .2s;
+    padding: 0;
+    outline: none;
+}
+.btn-remove-fav:hover {
+    transform: scale(1.12);
+    box-shadow: 0 4px 16px rgba(230,59,111,.25);
+    background: #fff;
+}
+.btn-remove-fav i {
+    font-size: 15px;
+    color: #e63b6f;
+}
+
+/* ── Hero stat ── */
+.fav-stat-box {
+    background: linear-gradient(135deg, #6c2bd9 0%, #8f4ae4 100%);
+    border-radius: 20px;
+    padding: 22px 28px;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 28px;
+    box-shadow: 0 12px 32px rgba(108,43,217,.25);
+}
+.fav-stat-icon {
+    width: 54px;
+    height: 54px;
+    background: rgba(255,255,255,.15);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    flex-shrink: 0;
+}
+.fav-stat-count {
+    font-size: 2rem;
+    font-weight: 800;
+    line-height: 1;
+}
+.fav-stat-label {
+    font-size: .9rem;
+    opacity: .85;
+    margin-top: 4px;
+}
+
+/* ── Empty state ── */
+.empty-fav {
+    text-align: center;
+    padding: 64px 20px;
+    color: var(--muted);
+}
+.empty-fav-icon {
+    font-size: 4rem;
+    color: #d4c8f0;
+    margin-bottom: 18px;
+    display: block;
+}
+.empty-fav h3 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #4a3770;
+    margin-bottom: 10px;
+}
+.empty-fav p {
+    font-size: .95rem;
+    margin-bottom: 24px;
+}
+
+/* ── Toast ── */
+.fav-toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 9999;
+    background: #fff;
+    border-radius: 14px;
+    padding: 12px 20px;
+    box-shadow: 0 10px 30px rgba(39,19,79,.15);
+    font-size: .9rem;
+    font-weight: 600;
+    color: #342455;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transform: translateY(20px);
+    opacity: 0;
+    transition: opacity .3s ease, transform .3s ease;
+    pointer-events: none;
+    border-left: 4px solid #c0b8d4;
+}
+.fav-toast.show { opacity: 1; transform: translateY(0); }
+
+/* ── Card removal animation ── */
+.offer-card-wrapper {
+    transition: opacity .35s ease, transform .35s ease;
+}
+.offer-card-wrapper.removing {
+    opacity: 0;
+    transform: scale(.94);
+    pointer-events: none;
+}
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">
+            <i class="bi bi-heart-fill" style="color:#e63b6f;"></i>
+            Mes Favoris
+        </h1>
+        <p class="page-subtitle">Retrouvez toutes les offres que vous avez sauvegardées.</p>
+    </div>
+    <div class="header-actions">
+        <a href="{{ path('candidat_offres') }}" class="btn btn-soft">
+            <i class="bi bi-arrow-left me-2"></i>Retour aux offres
+        </a>
+    </div>
+</div>
+
+{# ── Stat Box ── #}
+<div class="fav-stat-box">
+    <div class="fav-stat-icon">
+        <i class="bi bi-heart-fill"></i>
+    </div>
+    <div>
+        <div class="fav-stat-count" id="fav-count">{{ offres|length }}</div>
+        <div class="fav-stat-label">offre{{ offres|length != 1 ? 's' : '' }} sauvegardée{{ offres|length != 1 ? 's' : '' }}</div>
+    </div>
+</div>
+
+{% if offres|length > 0 %}
+    <div class="panel" id="fav-panel">
+        <div class="panel-head">
+            <h2 class="panel-title">
+                <i class="bi bi-bookmark-heart"></i>
+                Offres sauvegardées
+            </h2>
+        </div>
+
+        <div class="panel-body">
+            <div class="row g-4" id="fav-grid">
+                {% for offre in offres %}
+                    <div class="col-md-6 col-xl-4 offer-card-wrapper" id="wrapper-{{ offre.id }}">
+                        <div class="offer-card">
+
+                            {# ── Mini carte ou placeholder (identique à index.html.twig) ── #}
+                            {% if offre.latitude and offre.longitude %}
+                                <div class="mini-map"
+                                     id="fav-map-{{ offre.id }}"
+                                     data-lat="{{ offre.latitude }}"
+                                     data-lng="{{ offre.longitude }}"
+                                     data-title="{{ offre.titre|e('html_attr') }}">
+                                </div>
+                            {% else %}
+                                <div class="map-placeholder">
+                                    <i class="bi bi-geo-alt-fill"></i>
+                                    <span>{{ offre.localisation }}</span>
+                                </div>
+                            {% endif %}
+
+                            {# ── Bouton retirer favori ── #}
+                            <button
+                                class="btn-remove-fav"
+                                data-offre-id="{{ offre.id }}"
+                                data-toggle-url="{{ path('candidat_toggle_favori', {'id': offre.id}) }}"
+                                data-wrapper-id="wrapper-{{ offre.id }}"
+                                title="Retirer des favoris"
+                                aria-label="Retirer des favoris"
+                            >
+                                <i class="bi bi-heart-fill"></i>
+                            </button>
+
+                            <div class="offer-card-body">
+                                <div class="offer-top">
+                                    <div class="icon-box">
+                                        <i class="bi bi-briefcase"></i>
+                                    </div>
+                                    {% if offre.statut is defined and offre.statut %}
+                                        <span class="badge-soft badge-open">{{ offre.statut }}</span>
+                                    {% endif %}
+                                </div>
+
+                                <div class="offer-title">{{ offre.titre }}</div>
+
+                                <div class="offer-meta">
+                                    <i class="bi bi-geo-alt me-2"></i>{{ offre.localisation }}
+                                </div>
+
+                                {% if offre.typeContrat is defined and offre.typeContrat %}
+                                    <div class="offer-meta">
+                                        <i class="bi bi-file-earmark-text me-2"></i>{{ offre.typeContrat }}
+                                    </div>
+                                {% endif %}
+
+                                {% if offre.datePublication is defined and offre.datePublication %}
+                                    <div class="offer-meta">
+                                        <i class="bi bi-calendar-event me-2"></i>{{ offre.datePublication|date('d/m/Y') }}
+                                    </div>
+                                {% endif %}
+
+                                <div class="d-flex gap-2 mt-4">
+                                    <a href="{{ path('candidat_offre_show', {'id': offre.id}) }}" class="btn btn-main flex-grow-1">
+                                        <i class="bi bi-eye-fill me-2"></i>Voir l'offre
+                                    </a>
+                                    <a href="{{ path('candidat_postuler', {'offreId': offre.id}) }}" class="btn btn-soft" title="Postuler">
+                                        <i class="bi bi-send-fill"></i>
+                                    </a>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+{% else %}
+    <div class="empty-fav" id="empty-state">
+        <i class="bi bi-heart empty-fav-icon"></i>
+        <h3>Aucun favori pour l'instant</h3>
+        <p>Parcourez les offres disponibles et cliquez sur le ❤ pour les sauvegarder ici.</p>
+        <a href="{{ path('candidat_offres') }}" class="btn btn-main">
+            <i class="bi bi-briefcase-fill me-2"></i>Voir les offres
+        </a>
+    </div>
+{% endif %}
+
+{# ── Toast ── #}
+<div class="fav-toast" id="favToast">
+    <i class="bi bi-heart" style="color:#c0b8d4;"></i>
+    <span id="favToastMsg"></span>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const GEOAPIFY_KEY = '{{ geoapify_key }}';
+
+/* ─── Mini maps (même logique que index.html.twig) ─────────────────────── */
+function initFavMaps() {
+    document.querySelectorAll('.mini-map').forEach(function (el) {
+        if (el.hasAttribute('data-map-initialized')) return;
+
+        const lat   = parseFloat(el.dataset.lat);
+        const lng   = parseFloat(el.dataset.lng);
+
+        if (isNaN(lat) || isNaN(lng)) return;
+
+        el.setAttribute('data-map-initialized', 'true');
+
+        const map = L.map(el, {
+            center: [lat, lng],
+            zoom: 12,
+            zoomControl: false,
+            scrollWheelZoom: false,
+            dragging: false,
+            doubleClickZoom: false,
+            attributionControl: false
+        });
+
+        L.tileLayer(
+            'https://maps.geoapify.com/v1/tile/osm-carto/{z}/{x}/{y}.png?apiKey=' + GEOAPIFY_KEY,
+            { maxZoom: 20 }
+        ).addTo(map);
+
+        const icon = L.divIcon({
+            html: '<div style="background:#534AB7;width:14px;height:14px;border-radius:50%;border:2px solid #fff;box-shadow:0 2px 6px rgba(83,74,183,0.5)"></div>',
+            iconSize: [14, 14],
+            iconAnchor: [7, 7],
+            className: ''
+        });
+
+        L.marker([lat, lng], { icon: icon }).addTo(map);
+    });
+}
+
+document.addEventListener('DOMContentLoaded', initFavMaps);
+document.addEventListener('turbo:load', initFavMaps);
+
+/* ─── Toast ─────────────────────────────────────────────────────────────── */
+let toastTimer = null;
+
+function showToast(message) {
+    const toast = document.getElementById('favToast');
+    const msg   = document.getElementById('favToastMsg');
+    if (!toast || !msg) return;
+    msg.textContent = message;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 2800);
+}
+
+/* ─── Compteur ───────────────────────────────────────────────────────────── */
+function updateCount(delta) {
+    const countEl = document.getElementById('fav-count');
+    if (!countEl) return;
+    const next = Math.max(0, (parseInt(countEl.textContent, 10) || 0) + delta);
+    countEl.textContent = next;
+
+    if (next === 0) {
+        const panel = document.getElementById('fav-panel');
+        if (panel) {
+            panel.style.transition = 'opacity .3s ease';
+            panel.style.opacity = '0';
+            setTimeout(() => {
+                panel.remove();
+                const emptyEl = document.createElement('div');
+                emptyEl.className = 'empty-fav';
+                emptyEl.innerHTML = `
+                    <i class="bi bi-heart empty-fav-icon"></i>
+                    <h3>Aucun favori pour l'instant</h3>
+                    <p>Parcourez les offres disponibles et cliquez sur le ❤ pour les sauvegarder ici.</p>
+                    <a href="{{ path('candidat_offres') }}" class="btn btn-main">
+                        <i class="bi bi-briefcase-fill me-2"></i>Voir les offres
+                    </a>`;
+                document.querySelector('main').appendChild(emptyEl);
+            }, 320);
+        }
+    }
+}
+
+/* ─── Boutons retirer ────────────────────────────────────────────────────── */
+function initRemoveButtons() {
+    document.querySelectorAll('.btn-remove-fav').forEach(function (btn) {
+        if (btn.hasAttribute('data-fav-initialized')) return;
+        btn.setAttribute('data-fav-initialized', 'true');
+
+        btn.addEventListener('click', async function () {
+            const url       = btn.dataset.toggleUrl;
+            const wrapperId = btn.dataset.wrapperId;
+            const wrapper   = document.getElementById(wrapperId);
+
+            if (wrapper) wrapper.classList.add('removing');
+
+            try {
+                const resp = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (!resp.ok) throw new Error('HTTP ' + resp.status);
+                const data = await resp.json();
+                if (!data.success) throw new Error(data.message);
+
+                setTimeout(() => { if (wrapper) wrapper.remove(); }, 370);
+                updateCount(-1);
+                showToast(data.message);
+
+            } catch (err) {
+                if (wrapper) wrapper.classList.remove('removing');
+                showToast('Erreur : ' + err.message);
+                console.error(err);
+            }
+        });
+    });
+}
+
+document.addEventListener('DOMContentLoaded', initRemoveButtons);
+document.addEventListener('turbo:load', initRemoveButtons);
+</script>
+{% endblock %}

@@ -1,0 +1,2005 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Demandes de Service{% endblock %}
+
+{% block stylesheets %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+:root {
+  --mv-950:#2e0d52; --mv-800:#5b2b82; --mv-700:#7c3dac;
+  --mv-600:#8f4cc9; --mv-500:#b39ddb; --mv-400:#c4b0e4;
+  --mv-200:#e9d5ff; --mv-100:#f3e8ff; --mv-50:#faf5ff;
+  --mv-glow: rgba(143,76,201,0.4);
+  --mv-glass: rgba(179,157,219,0.13);
+}
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+
+/* ── Shared Shell ── */
+.rh-shell, .emp-shell {
+  font-family:'Inter',sans-serif;
+  background: radial-gradient(ellipse at 20% 0%, #f3e8ff 0%, #ffffff 50%, #faf5ff 100%);
+  min-height:90vh; padding:44px 20px; color:#0f172a;
+  position:relative; overflow:hidden;
+}
+.rh-shell::before, .emp-shell::before {
+  content:''; position:fixed; top:-180px; right:-180px;
+  width:560px; height:560px; border-radius:50%;
+  background: radial-gradient(circle, rgba(143,76,201,.16), transparent 68%);
+  pointer-events:none; z-index:0; animation:orbFloat1 9s ease-in-out infinite;
+}
+.rh-shell::after, .emp-shell::after {
+  content:''; position:fixed; bottom:-120px; left:-120px;
+  width:420px; height:420px; border-radius:50%;
+  background: radial-gradient(circle, rgba(179,157,219,.14), transparent 68%);
+  pointer-events:none; z-index:0; animation:orbFloat2 11s ease-in-out infinite;
+}
+.rh-wrap, .emp-wrap {
+  max-width:1220px; margin:0 auto; position:relative; z-index:1;
+}
+
+/* ── Glass base ── */
+.glass {
+  background:rgba(255,255,255,.85);
+  backdrop-filter:blur(22px); -webkit-backdrop-filter:blur(22px);
+  border:1.5px solid rgba(179,157,219,.28);
+  border-radius:24px;
+  box-shadow:0 10px 40px rgba(143,76,201,.10);
+}
+
+/* ── Page Head ── */
+.rh-head, .head {
+  display:flex; justify-content:space-between; align-items:flex-end;
+  gap:18px; flex-wrap:wrap; margin-bottom:24px;
+  animation:slideDown .7s cubic-bezier(.16,1,.3,1) both;
+}
+.rh-title h1, .head h1 {
+  font-family:'Outfit'; font-weight:900; font-size:2.4rem; margin:0;
+  background: linear-gradient(135deg, var(--mv-950), var(--mv-600));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  display:flex; align-items:center; gap:14px;
+}
+.rh-title h1 i, .head h1 i { font-size:2rem; -webkit-text-fill-color:var(--mv-600); }
+.rh-title p, .head p { margin:8px 0 0; color:#64748b; font-size:1.02rem; font-weight:500; }
+
+/* Stat button */
+.btn-stats {
+  display:inline-flex; align-items:center; gap:9px; padding:11px 22px;
+  border-radius:999px; border:1.5px solid rgba(179,157,219,.35);
+  background:rgba(255,255,255,.88); color:var(--mv-700);
+  font-weight:800; font-size:.93rem; cursor:pointer;
+  transition:all .2s; backdrop-filter:blur(10px);
+}
+.btn-stats:hover { background:#fff; border-color:var(--mv-500); transform:translateY(-2px); box-shadow:0 8px 20px rgba(143,76,201,.16); }
+
+/* ── KPIs ── */
+.kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:20px; }
+.kpi {
+  padding:20px 22px; display:flex; align-items:center; gap:16px;
+  transition:transform .25s, box-shadow .25s; cursor:default;
+  position:relative; overflow:hidden;
+}
+.kpi::after {
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,.2),transparent);
+  opacity:0; transition:opacity .2s;
+}
+.kpi:hover { transform:translateY(-5px); }
+.kpi:hover::after { opacity:1; }
+.kpi:nth-child(1){ animation:slideUp .5s cubic-bezier(.16,1,.3,1) .1s both; }
+.kpi:nth-child(2){ animation:slideUp .5s cubic-bezier(.16,1,.3,1) .18s both; }
+.kpi:nth-child(3){ animation:slideUp .5s cubic-bezier(.16,1,.3,1) .26s both; }
+.kpi:nth-child(4){ animation:slideUp .5s cubic-bezier(.16,1,.3,1) .34s both; }
+
+.kpi-ic { width:54px; height:54px; border-radius:18px; display:flex; align-items:center; justify-content:center; color:#fff; font-size:21px; flex-shrink:0; }
+.ic-all  { background:linear-gradient(135deg,var(--mv-700),var(--mv-600)); box-shadow:0 8px 20px var(--mv-glow); }
+.ic-pend { background:linear-gradient(135deg,#f59e0b,#d97706); box-shadow:0 8px 20px rgba(245,158,11,.26); }
+.ic-ok   { background:linear-gradient(135deg,#10b981,#059669); box-shadow:0 8px 20px rgba(16,185,129,.24); }
+.ic-no   { background:linear-gradient(135deg,#f43f5e,#e11d48); box-shadow:0 8px 20px rgba(244,63,94,.22); }
+.kpi-txt h3 { font-family:'Outfit'; font-weight:900; font-size:2.1rem; color:#0f172a; line-height:1; }
+.kpi-txt p  { margin:5px 0 0; color:#64748b; font-weight:800; text-transform:uppercase; letter-spacing:.08em; font-size:.73rem; }
+/* KPI shimmer */
+.kpi-shimmer {
+  position:absolute; top:0; left:-110%; width:60%; height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.45),transparent);
+  animation:shimmer 4s ease-in-out infinite; pointer-events:none;
+}
+
+/* ── Table block ── */
+.tbl, .tbl-em { overflow:hidden; animation:slideUp .7s cubic-bezier(.16,1,.3,1) .3s both; }
+.tbl-head, .tbl-head-em {
+  padding:20px 26px; display:flex; justify-content:space-between; align-items:center;
+  gap:12px; border-bottom:1px solid rgba(143,76,201,.1);
+  background:linear-gradient(135deg,rgba(143,76,201,.07),rgba(179,157,219,.04));
+  position:relative;
+}
+.tbl-head::before, .tbl-head-em::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:3px;
+  background:linear-gradient(90deg,var(--mv-700),var(--mv-600),var(--mv-400));
+}
+.tbl-head h2, .tbl-head-em h2 {
+  margin:0; font-family:'Outfit'; font-weight:900; color:#0f172a;
+  font-size:1.38rem; display:flex; align-items:center; gap:10px;
+}
+.tbl-head h2 i { color:var(--mv-600); }
+.tbl-head-em h2 i { color:var(--mv-600); }
+
+/* ── Table styles ── */
+.rh-shell table, .emp-shell table { width:100%; border-collapse:collapse; }
+.rh-shell th, .emp-shell th {
+  text-align:left; padding:14px 26px; font-size:.79rem;
+  text-transform:uppercase; letter-spacing:.13em;
+  color:var(--mv-700); border-bottom:1px solid rgba(143,76,201,.12);
+  font-weight:800; background:rgba(179,157,219,.04);
+}
+.rh-shell td, .emp-shell td { padding:16px 26px; border-bottom:1px solid rgba(0,0,0,.04); vertical-align:middle; }
+.rh-shell tr, .emp-shell tr { transition:background .18s; }
+.rh-shell tbody tr:hover td, .emp-shell tbody tr:hover td { background:rgba(143,76,201,.05); }
+
+/* ── Filter bar ── */
+.filter-bar {
+  display:flex; flex-wrap:wrap; gap:10px; align-items:flex-end;
+  padding:18px 24px 14px;
+  background:rgba(255,255,255,.55);
+  border-bottom:1px solid rgba(143,76,201,.08);
+}
+.filter-group { display:flex; flex-direction:column; gap:5px; }
+.filter-label { font-size:.72rem; font-weight:800; text-transform:uppercase; letter-spacing:.09em; color:#64748b; }
+.filter-select, .filter-input {
+  padding:10px 14px; border-radius:14px;
+  border:1.5px solid rgba(143,76,201,.22); background:var(--mv-50);
+  font-family:inherit; font-size:.9rem; color:#0f172a;
+  outline:none; appearance:none;
+  transition:border-color .2s, box-shadow .2s, background .2s;
+}
+.filter-select {
+  cursor:pointer; padding-right:38px;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238f4cc9' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat; background-position:right 12px center;
+}
+.filter-select:focus, .filter-input:focus { border-color:var(--mv-600); box-shadow:0 0 0 4px rgba(143,76,201,.14); background:#fff; }
+.filter-divider { width:1px; background:linear-gradient(to bottom,transparent,rgba(143,76,201,.25),transparent); align-self:stretch; margin:0 4px; }
+.btn-filter {
+  display:inline-flex; align-items:center; gap:7px; padding:10px 20px;
+  border-radius:14px; border:none; cursor:pointer;
+  font-family:inherit; font-size:.9rem; font-weight:800;
+  transition:transform .18s, box-shadow .18s;
+}
+.btn-filter:hover { transform:translateY(-2px); }
+.btn-search-rh, .btn-search-em {
+  background:linear-gradient(135deg,var(--mv-700),var(--mv-600));
+  color:#fff; box-shadow:0 8px 18px var(--mv-glow);
+}
+.btn-search-rh:hover, .btn-search-em:hover { box-shadow:0 12px 26px var(--mv-glow); }
+.btn-dir-rh, .btn-dir-em { background:#fff; color:var(--mv-700); border:1.5px solid var(--mv-500); }
+.btn-dir-rh:hover, .btn-dir-em:hover { background:var(--mv-100); }
+.btn-reset { background:#fff1f2; color:#be123c; border:1.5px solid #fecdd3; text-decoration:none; }
+.btn-reset:hover { background:#f43f5e; color:#fff; border-color:#f43f5e; }
+.filter-input { flex:1; min-width:200px; }
+
+/* ── Status pills ── */
+.pill { padding:6px 13px; border-radius:999px; font-weight:800; font-size:.83rem; display:inline-flex; align-items:center; gap:7px; white-space:nowrap; }
+.pill::before { content:''; width:7px; height:7px; border-radius:50%; display:inline-block; }
+.p-pend { background:#fffbeb; color:#b45309; border:1px solid #fde68a; } .p-pend::before { background:#f59e0b; animation:pulseDot 2s infinite; }
+.p-ok   { background:#ecfdf5; color:#047857; border:1px solid #a7f3d0; } .p-ok::before   { background:#10b981; }
+.p-no   { background:#fff1f2; color:#be123c; border:1px solid #fecdd3; } .p-no::before   { background:#f43f5e; }
+
+/* ── Avatar / Who ── */
+.who { display:flex; align-items:center; gap:12px; }
+.av  { width:42px; height:42px; border-radius:14px; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:900; font-family:'Outfit'; font-size:1rem; flex-shrink:0; }
+.av-em { background:linear-gradient(135deg,var(--mv-700),var(--mv-600)); box-shadow:0 6px 14px var(--mv-glow); }
+.who .nm { font-weight:800; color:#0f172a; font-size:.97rem; }
+.who .sb { color:#64748b; font-size:.85rem; margin-top:2px; }
+
+/* ── Actions ── */
+.act { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+.btn-ghost {
+  width:42px; height:42px; border-radius:14px;
+  display:flex; align-items:center; justify-content:center;
+  text-decoration:none; border:1.5px solid rgba(143,76,201,.22);
+  background:var(--mv-50); color:var(--mv-700); transition:all .2s;
+}
+.btn-ghost:hover { transform:translateY(-3px); box-shadow:0 10px 24px var(--mv-glow); background:var(--mv-700); color:#fff; border-color:var(--mv-700); }
+.btn-ghost-em { color:var(--mv-700); }
+.btn-ghost-em:hover { background:var(--mv-700); color:#fff; border-color:var(--mv-700); }
+
+.btn-dec { height:42px; border-radius:14px; border:none; cursor:pointer; padding:0 16px; font-weight:900; display:inline-flex; align-items:center; gap:8px; transition:transform .2s, box-shadow .2s; font-family:inherit; font-size:.9rem; }
+.btn-ok  { background:linear-gradient(135deg,#10b981,#059669); color:#fff; box-shadow:0 8px 18px rgba(16,185,129,.24); }
+.btn-no  { background:linear-gradient(135deg,#f43f5e,#e11d48); color:#fff; box-shadow:0 8px 18px rgba(244,63,94,.22); }
+.btn-dec:hover { transform:translateY(-3px); }
+
+/* ── Create button ── */
+.btn-create {
+  display:inline-flex; align-items:center; gap:9px;
+  background:linear-gradient(135deg,var(--mv-700),var(--mv-600));
+  color:#fff !important; font-weight:900; padding:14px 26px;
+  border-radius:999px; text-decoration:none;
+  box-shadow:0 12px 28px var(--mv-glow);
+  font-family:'Outfit'; font-size:1rem;
+  transition:transform .2s, box-shadow .2s;
+}
+.btn-create:hover { transform:translateY(-3px); box-shadow:0 18px 38px var(--mv-glow); }
+
+/* ── Empty ── */
+.empty-state { text-align:center; padding:70px 20px; }
+.empty-state i { font-size:3.5rem; color:var(--mv-400); opacity:.7; display:inline-block; animation:float 3s ease-in-out infinite; margin-bottom:14px; }
+.empty-state h4 { font-family:'Outfit'; font-size:1.6rem; font-weight:900; color:#475569; }
+.empty-state p  { color:#64748b; margin:8px 0 0; font-size:1.02rem; }
+
+/* ── Modal décision RH ── */
+.modal.fade .modal-content { border-radius:24px; border:0; box-shadow:0 24px 70px rgba(2,6,23,.18); overflow:hidden; }
+.modal-header.mv { background:linear-gradient(135deg,var(--mv-950),var(--mv-700)); color:#fff; border:0; padding:20px 24px; }
+.modal-header.mv h5 { font-family:'Outfit'; font-weight:900; margin:0; }
+
+/* ── Stats modal ── */
+.stats-modal-overlay {
+  display:none; position:fixed; inset:0; z-index:9999;
+  background:rgba(46,13,82,.55); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+  align-items:center; justify-content:center;
+}
+.stats-modal-box {
+  background:#fff; border-radius:28px; padding:38px 36px;
+  max-width:720px; width:95%; position:relative;
+  box-shadow:0 32px 90px rgba(46,13,82,.24);
+  animation:modalPop .35s cubic-bezier(.175,.885,.32,1.275);
+  border-top:4px solid var(--mv-600);
+}
+.stats-close-btn {
+  position:absolute; top:16px; right:16px;
+  width:38px; height:38px; border-radius:50%; border:none;
+  background:var(--mv-50); color:#475569;
+  font-size:16px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  transition:all .18s;
+}
+.stats-close-btn:hover { background:var(--mv-100); color:var(--mv-700); }
+.stats-title {
+  font-family:'Outfit'; font-weight:900; font-size:1.75rem; margin:0 0 5px;
+  background:linear-gradient(135deg,var(--mv-950),var(--mv-600));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  display:flex; align-items:center; gap:10px;
+}
+.stats-title i { -webkit-text-fill-color:var(--mv-600); }
+.stats-sub { color:#64748b; margin:0 0 30px; font-size:.95rem; }
+.stats-grid { display:grid; grid-template-columns:1fr 1fr; gap:30px; align-items:center; }
+.stat-item {
+  display:flex; align-items:center; gap:16px; padding:16px 20px;
+  border-radius:18px; transition:transform .18s;
+}
+.stat-item:hover { transform:translateY(-2px); }
+.stat-dot { width:16px; height:16px; border-radius:50%; flex-shrink:0; }
+.stat-num { font-family:'Outfit'; font-weight:900; font-size:1.65rem; color:#0f172a; line-height:1; }
+.stat-lbl { font-size:.76rem; font-weight:800; text-transform:uppercase; letter-spacing:.09em; margin-top:3px; }
+.si-pend  { background:#fffbeb; border:1px solid #fde68a; }
+.si-ok    { background:#ecfdf5; border:1px solid #a7f3d0; }
+.si-no    { background:#fff1f2; border:1px solid #fecdd3; }
+.si-total { background:linear-gradient(135deg,rgba(143,76,201,.09),rgba(179,157,219,.06)); border:1.5px solid rgba(143,76,201,.22); }
+
+/* ── Animations ── */
+@keyframes slideDown { from{opacity:0;transform:translateY(-18px);}to{opacity:1;transform:translateY(0);} }
+@keyframes slideUp   { from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);} }
+@keyframes shimmer   { 0%{left:-110%;}55%{left:120%;}100%{left:120%;} }
+@keyframes pulseDot  { 0%,100%{opacity:1;}50%{opacity:.35;} }
+@keyframes float     { 0%,100%{transform:translateY(0);}50%{transform:translateY(-12px);} }
+@keyframes orbFloat1 { 0%,100%{transform:translate(0,0) scale(1);}50%{transform:translate(-28px,20px) scale(1.05);} }
+@keyframes orbFloat2 { 0%,100%{transform:translate(0,0) scale(1);}50%{transform:translate(20px,-26px) scale(1.07);} }
+@keyframes modalPop  { from{opacity:0;transform:scale(.88);}to{opacity:1;transform:scale(1);} }
+
+  /* ── React cards like/dislike ── */
+  .react-card {
+    background: #fff;
+    border: 1.5px solid rgba(143,76,201,.16);
+    border-radius: 18px;
+    padding: 16px 18px;
+    display: flex; flex-direction: column; gap: 10px;
+    transition: transform .2s, box-shadow .2s;
+  }
+  .react-card:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(143,76,201,.13); }
+  .react-card-nom  { font-family: 'Outfit'; font-weight: 800; color: #0f172a; font-size: .95rem; line-height: 1.3; }
+  .react-card-cat  { font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--mv-600); }
+  .react-btns { display: flex; gap: 10px; margin-top: 4px; }
+  .btn-react {
+    flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+    padding: 8px 12px; border-radius: 12px; border: 1.5px solid #e2e8f0;
+    background: #f8fafc; cursor: pointer; font-weight: 800; font-size: .88rem;
+    transition: all .2s; font-family: inherit;
+  }
+  .btn-react:hover { transform: translateY(-2px); }
+  .btn-like  { color: #059669; }
+  .btn-like:hover  { background: #ecfdf5; border-color: #10b981; box-shadow: 0 6px 16px rgba(16,185,129,.18); }
+  .btn-like.active { background: linear-gradient(135deg,#10b981,#059669); color: #fff; border-color: transparent; box-shadow: 0 6px 16px rgba(16,185,129,.28); }
+  .btn-dislike { color: #e11d48; }
+  .btn-dislike:hover  { background: #fff1f2; border-color: #f43f5e; box-shadow: 0 6px 16px rgba(244,63,94,.18); }
+  .btn-dislike.active { background: linear-gradient(135deg,#f43f5e,#e11d48); color: #fff; border-color: transparent; box-shadow: 0 6px 16px rgba(244,63,94,.28); }
+  .btn-react.loading { opacity: .6; pointer-events: none; }
+  .react-count { font-size: .82rem; }
+
+@media(max-width:1000px){ .kpis{grid-template-columns:1fr 1fr;} }
+@media(max-width:950px){
+  .tbl,tbl-em{overflow:auto;} table{min-width:880px;}
+  .filter-input{min-width:120px;}
+}
+@media(max-width:600px){
+  .kpis{grid-template-columns:1fr;}
+  .rh-title h1,.head h1{font-size:1.85rem;}
+  .stats-grid{grid-template-columns:1fr;}
+}
+</style>
+{% endblock %}
+
+{% block body %}
+{% set isRH = is_granted('ROLE_RH') %}
+
+{# ══ Stats Twig (communes RH + employé) ══ #}
+{% set total    = demande_services|length %}
+{% set pending  = demande_services|filter(d => d.statut == 'En attente')|length %}
+{% set accepted = demande_services|filter(d => d.statut == 'Accepté' or d.statut == 'approuvé')|length %}
+{% set rejected = demande_services|filter(d => d.statut == 'Refusé'  or d.statut == 'refusé')|length %}
+{% set resolved  = accepted + rejected %}
+{% set tauxRes   = total > 0 ? (resolved / total * 100)|round : 0 %}
+
+{# Top 5 types de service #}
+{% set typeCountRaw = {} %}
+{% for d in demande_services %}
+  {% if d.type %}
+    {% set k = d.type.nom %}
+    {% set typeCountRaw = typeCountRaw|merge({(k): (typeCountRaw[k] is defined ? typeCountRaw[k] + 1 : 1)}) %}
+  {% endif %}
+{% endfor %}
+
+{# ══════════════════════════════════════════════════
+   VUE RH
+══════════════════════════════════════════════════ #}
+{% if isRH %}
+
+<div class="rh-shell">
+  <div class="rh-wrap">
+
+    {# ── En-tête RH ── #}
+    <div class="rh-head">
+      <div class="rh-title">
+        <h1><i class="fas fa-toolbox"></i> Demandes de service</h1>
+        <p>Traitez les demandes (matériel, accès, assistance…) avec une décision RH.</p>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+        <button type="button" id="btn-ai-analyse"
+                style="display:inline-flex;align-items:center;gap:9px;padding:11px 22px;border-radius:999px;border:1.5px solid rgba(109,40,217,.3);background:linear-gradient(135deg,rgba(109,40,217,.1),rgba(139,92,246,.06));color:#6d28d9;font-weight:800;font-size:.93rem;cursor:pointer;transition:all .2s;backdrop-filter:blur(10px);font-family:inherit;"
+                title="Analyser les réactions avec l'IA">
+          <i class="fas fa-brain" id="btn-ai-analyse-icon"></i>
+          <span id="btn-ai-analyse-txt">✨ Analyser les réactions</span>
+        </button>
+        <button type="button" class="btn-stats"
+                onclick="document.getElementById('statsSvcModal').style.display='flex'"
+                title="Statistiques">
+          <i class="fas fa-chart-pie"></i> Statistiques
+        </button>
+      </div>
+    </div>
+
+    {# ── KPIs ── #}
+    <div class="kpis">
+      <div class="glass kpi">
+        <div class="kpi-shimmer"></div>
+        <div class="kpi-ic ic-all"><i class="fas fa-layer-group"></i></div>
+        <div class="kpi-txt"><h3>{{ total }}</h3><p>Total</p></div>
+      </div>
+      <div class="glass kpi">
+        <div class="kpi-shimmer" style="animation-delay:.9s"></div>
+        <div class="kpi-ic ic-pend"><i class="fas fa-hourglass-half"></i></div>
+        <div class="kpi-txt"><h3>{{ pending }}</h3><p>En attente</p></div>
+      </div>
+      <div class="glass kpi">
+        <div class="kpi-shimmer" style="animation-delay:1.8s"></div>
+        <div class="kpi-ic ic-ok"><i class="fas fa-check-double"></i></div>
+        <div class="kpi-txt"><h3>{{ accepted }}</h3><p>Acceptées</p></div>
+      </div>
+      <div class="glass kpi">
+        <div class="kpi-shimmer" style="animation-delay:2.7s"></div>
+        <div class="kpi-ic ic-no"><i class="fas fa-ban"></i></div>
+        <div class="kpi-txt"><h3>{{ rejected }}</h3><p>Refusées</p></div>
+      </div>
+    </div>
+
+    {# ── Tableau ── #}
+    <div class="glass tbl">
+      <div class="tbl-head">
+        <h2><i class="fas fa-clipboard-check"></i> File de traitement</h2>
+        <span style="color:#64748b;font-size:.9rem;font-weight:700;">Décision + commentaire optionnel</span>
+      </div>
+
+      {# Barre filtre RH #}
+      <form method="get" action="" class="filter-bar" id="rh-svc-form"
+            data-turbo="false"
+            data-search-url="{{ path('app_demande_service_search') }}">
+        <div class="filter-group">
+          <span class="filter-label"><i class="fas fa-filter"></i> Rechercher par</span>
+          <select name="searchBy" class="filter-select" style="min-width:175px;">
+            <option value="all"    {% if searchBy == 'all'     %}selected{% endif %}>🔍 Tous les champs</option>
+            <option value="type"   {% if searchBy == 'type'    %}selected{% endif %}>🏷️ Type de service</option>
+            <option value="statut" {% if searchBy == 'statut'  %}selected{% endif %}>📌 Statut</option>
+            <option value="employe"{% if searchBy == 'employe' %}selected{% endif %}>👤 Employé</option>
+          </select>
+        </div>
+
+        <div class="filter-group" style="flex:1;">
+          <span class="filter-label"><i class="fas fa-keyboard"></i> Mot-clé</span>
+          <input type="text" name="search" value="{{ search }}" placeholder="Saisir un terme…" class="filter-input">
+        </div>
+
+        <button type="submit" class="btn-filter btn-search-rh">
+          <i class="fas fa-search"></i> Rechercher
+        </button>
+
+        <div class="filter-divider"></div>
+
+        <div class="filter-group">
+          <span class="filter-label"><i class="fas fa-sort"></i> Trier par</span>
+          <select name="sortBy" class="filter-select" style="min-width:165px;">
+            <option value="dateDemande"{% if sortBy == 'dateDemande' %}selected{% endif %}>📅 Date de demande</option>
+            <option value="type"       {% if sortBy == 'type'        %}selected{% endif %}>🏷️ Type de service</option>
+            <option value="statut"     {% if sortBy == 'statut'      %}selected{% endif %}>📌 Statut</option>
+          </select>
+        </div>
+
+        <input type="hidden" name="sortDir" id="rh-svc-sort-dir" value="{{ sortDir }}">
+        <div class="filter-group">
+          <span class="filter-label" style="visibility:hidden;">Ordre</span>
+          <button type="button" class="btn-filter btn-dir-rh"
+            onclick="var d=document.getElementById('rh-svc-sort-dir');d.value=(d.value==='asc'?'desc':'asc');document.getElementById('rh-svc-form').submit();">
+            {% if sortDir == 'asc' %}
+              <i class="fas fa-arrow-up-a-z"></i> Croissant
+            {% else %}
+              <i class="fas fa-arrow-down-z-a"></i> Décroissant
+            {% endif %}
+          </button>
+        </div>
+
+        {% if search %}
+          <div class="filter-group">
+            <span class="filter-label" style="visibility:hidden;">Reset</span>
+            <a href="{{ path('app_demande_service_index') }}" class="btn-filter btn-reset">
+              <i class="fas fa-xmark"></i> Réinitialiser
+            </a>
+          </div>
+        {% endif %}
+      </form>
+
+      {% if demande_services|length > 0 %}
+      <div style="overflow:auto;" id="rh-svc-table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Employé</th>
+              <th>Type service</th>
+              <th>Date</th>
+              <th>Statut</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="rh-svc-tbody">
+            {% for d in demande_services %}
+              {% set st    = d.statut %}
+              {% set isPend = (st == 'En attente') %}
+              {% set isOk   = (st == 'Accepté' or st == 'approuvé') %}
+              {% set isNo   = (st == 'Refusé'  or st == 'refusé') %}
+              <tr>
+                <td>
+                  {% if d.employe and d.employe.user %}
+                    <div class="who">
+                      <div class="av av-em">{{ d.employe.user.prenom|slice(0,1)|upper }}{{ d.employe.user.nom|slice(0,1)|upper }}</div>
+                      <div><div class="nm">{{ d.employe.user.prenom }} {{ d.employe.user.nom }}</div><div class="sb">Employé</div></div>
+                    </div>
+                  {% else %}
+                    <span style="color:#94a3b8;">Non défini</span>
+                  {% endif %}
+                </td>
+                <td style="font-weight:800;color:#0f172a;">{{ d.type ? d.type.nom : '—' }}</td>
+                <td style="color:#64748b;font-weight:700;">
+                  {% if d.dateDemande and d.dateDemande != '0000-00-00' %}{{ d.dateDemande|date('d/m/Y') }}{% else %}—{% endif %}
+                </td>
+                <td>
+                  {% if isOk %}<span class="pill p-ok">Accepté</span>
+                  {% elseif isNo %}<span class="pill p-no">Refusé</span>
+                  {% else %}<span class="pill p-pend">En attente</span>{% endif %}
+                </td>
+                <td>
+                  <div class="act">
+                    <a class="btn-ghost" href="{{ path('app_demande_service_show', {'id': d.id}) }}" title="Voir"><i class="fas fa-eye"></i></a>
+                    {% if isPend %}
+                      <button type="button" class="btn-dec btn-ok"
+                              data-bs-toggle="modal" data-bs-target="#rhDecisionModal"
+                              data-id="{{ d.id }}" data-decision="approuvé"
+                              data-type="{{ (d.type ? d.type.nom : 'Service')|e('html_attr') }}"
+                              data-action="{{ path('app_demande_service_repondre', {'id': d.id}) }}">
+                        <i class="fas fa-check"></i> Accepter
+                      </button>
+                      <button type="button" class="btn-dec btn-no"
+                              data-bs-toggle="modal" data-bs-target="#rhDecisionModal"
+                              data-id="{{ d.id }}" data-decision="refusé"
+                              data-type="{{ (d.type ? d.type.nom : 'Service')|e('html_attr') }}"
+                              data-action="{{ path('app_demande_service_repondre', {'id': d.id}) }}">
+                        <i class="fas fa-times"></i> Refuser
+                      </button>
+                    {% else %}
+                      <span style="color:#94a3b8;font-weight:800;font-size:.88rem;">Décision prise</span>
+                    {% endif %}
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+        <div class="empty-state" id="rh-svc-empty-data">
+          <i class="fas fa-inbox"></i>
+          <h4>Aucune demande</h4>
+          <p>Les demandes des employés apparaîtront ici.</p>
+        </div>
+        <div class="empty-state" id="rh-svc-empty-search" style="display:none;">
+          <i class="fas fa-search"></i>
+          <h4>Aucun résultat</h4>
+          <p>Aucune demande ne correspond à votre recherche.</p>
+        </div>
+      {% endif %}
+    </div>{# /tbl #}
+  </div>{# /rh-wrap #}
+
+  {# Bootstrap Modal décision RH #}
+  <div class="modal fade" id="rhDecisionModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content" style="border-radius:24px;border:0;box-shadow:0 24px 70px rgba(2,6,23,.18);overflow:hidden;">
+        <div class="modal-header mv">
+          <h5 class="modal-title">Décision RH</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="rhDecisionForm" method="post" action="#">
+          <div class="modal-body" style="padding:22px 24px;">
+            <div style="font-weight:900;color:#0f172a;margin-bottom:6px;font-family:'Outfit';font-size:1.05rem;" id="rhDecisionTitle">—</div>
+            <div style="color:#64748b;font-weight:700;margin-bottom:16px;" id="rhDecisionSubtitle">—</div>
+            <input type="hidden" name="decision" id="rhDecisionValue" value="">
+            <label style="display:block;font-size:.78rem;font-weight:900;text-transform:uppercase;letter-spacing:.09em;color:#475569;margin-bottom:8px;">Commentaire (optionnel)</label>
+            <textarea name="commentaire" class="form-control" rows="4"
+                      style="border-radius:16px;border:1.5px solid rgba(179,157,219,.3);background:var(--mv-50);font-family:inherit;padding:12px 14px;outline:none;resize:vertical;"
+                      placeholder="Ex: Accordé / refus pour informations manquantes…"></textarea>
+          </div>
+          <div class="modal-footer" style="border:0;padding:0 24px 22px;display:flex;gap:10px;justify-content:flex-end;">
+            <button type="button" class="btn btn-light" data-bs-dismiss="modal"
+                    style="border-radius:999px;padding:10px 18px;font-weight:800;">Annuler</button>
+            <button type="submit" id="rhDecisionSubmit"
+                    style="border-radius:999px;padding:11px 22px;font-weight:900;border:0;font-family:'Outfit';">Confirmer</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>{# /rh-shell #}
+
+{# ══════ MODAL IA ANALYSE DES RÉACTIONS (OPTION B) ══════ #}
+<div id="aiAnalyseModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(46,13,82,.6);backdrop-filter:blur(8px);align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:28px;padding:36px 34px;max-width:680px;width:95%;position:relative;box-shadow:0 32px 90px rgba(46,13,82,.26);animation:modalPop .35s cubic-bezier(.175,.885,.32,1.275);border-top:4px solid #8b5cf6;max-height:90vh;overflow-y:auto;">
+    <button onclick="document.getElementById('aiAnalyseModal').style.display='none'"
+            style="position:absolute;top:16px;right:16px;width:38px;height:38px;border-radius:50%;border:none;background:#f5f3ff;color:#475569;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .18s;">
+      <i class="fas fa-xmark"></i>
+    </button>
+
+    {# Header modal #}
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:24px;">
+      <div style="width:52px;height:52px;border-radius:16px;background:linear-gradient(135deg,#8b5cf6,#6d28d9);display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;flex-shrink:0;box-shadow:0 8px 20px rgba(109,40,217,.3);">
+        <i class="fas fa-brain"></i>
+      </div>
+      <div>
+        <div style="font-family:'Outfit',sans-serif;font-weight:900;font-size:1.5rem;background:linear-gradient(135deg,#3b0764,#6d28d9);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Analyse IA des Réactions</div>
+        <div style="color:#64748b;font-size:.9rem;font-weight:500;">Rapport généré par Groq LLaMA-3.3 70B</div>
+      </div>
+    </div>
+
+    {# Loading state #}
+    <div id="ai-analyse-loading" style="text-align:center;padding:40px 20px;">
+      <i class="fas fa-spinner fa-spin" style="font-size:2.5rem;color:#8b5cf6;margin-bottom:14px;display:block;"></i>
+      <div style="font-weight:700;color:#475569;">L'IA analyse les données de satisfaction…</div>
+      <div style="font-size:.85rem;color:#94a3b8;margin-top:6px;">Cela peut prendre 5 à 15 secondes</div>
+    </div>
+
+    {# Content #}
+    <div id="ai-analyse-content" style="display:none;">
+      {# Rapport général #}
+      <div style="background:linear-gradient(135deg,rgba(109,40,217,.07),rgba(139,92,246,.04));border:1.5px solid rgba(109,40,217,.15);border-radius:16px;padding:18px 20px;margin-bottom:16px;">
+        <div style="font-size:.72rem;font-weight:900;text-transform:uppercase;letter-spacing:.09em;color:#6d28d9;margin-bottom:8px;"><i class="fas fa-align-left"></i> Analyse globale</div>
+        <div id="ai-analyse-rapport" style="color:#1e1b4b;font-size:.95rem;line-height:1.65;font-weight:500;"></div>
+      </div>
+
+      {# Point fort / Point faible #}
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;">
+        <div style="background:rgba(16,185,129,.08);border:1.5px solid rgba(16,185,129,.25);border-radius:16px;padding:16px 18px;">
+          <div style="font-size:.72rem;font-weight:900;text-transform:uppercase;letter-spacing:.09em;color:#059669;margin-bottom:8px;"><i class="fas fa-thumbs-up"></i> Point fort</div>
+          <div id="ai-analyse-fort" style="color:#064e3b;font-size:.9rem;font-weight:700;line-height:1.5;"></div>
+        </div>
+        <div style="background:rgba(244,63,94,.07);border:1.5px solid rgba(244,63,94,.22);border-radius:16px;padding:16px 18px;">
+          <div style="font-size:.72rem;font-weight:900;text-transform:uppercase;letter-spacing:.09em;color:#be123c;margin-bottom:8px;"><i class="fas fa-thumbs-down"></i> Point faible</div>
+          <div id="ai-analyse-faible" style="color:#7f1d1d;font-size:.9rem;font-weight:700;line-height:1.5;"></div>
+        </div>
+      </div>
+
+      {# Recommandation #}
+      <div style="background:rgba(245,158,11,.08);border:1.5px solid rgba(245,158,11,.28);border-radius:16px;padding:16px 18px;">
+        <div style="font-size:.72rem;font-weight:900;text-transform:uppercase;letter-spacing:.09em;color:#d97706;margin-bottom:8px;"><i class="fas fa-lightbulb"></i> Recommandations RH</div>
+        <div id="ai-analyse-reco" style="color:#78350f;font-size:.9rem;font-weight:600;line-height:1.6;"></div>
+      </div>
+    </div>
+
+    {# Error #}
+    <div id="ai-analyse-error" style="display:none;color:#be123c;font-weight:700;text-align:center;padding:20px;">
+      <i class="fas fa-exclamation-triangle" style="font-size:2rem;display:block;margin-bottom:10px;"></i>
+      <span id="ai-analyse-error-msg"></span>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var btn     = document.getElementById('btn-ai-analyse');
+  var modal   = document.getElementById('aiAnalyseModal');
+  var loading = document.getElementById('ai-analyse-loading');
+  var content = document.getElementById('ai-analyse-content');
+  var errBox  = document.getElementById('ai-analyse-error');
+  var errMsg  = document.getElementById('ai-analyse-error-msg');
+  var btnTxt  = document.getElementById('btn-ai-analyse-txt');
+  var btnIcon = document.getElementById('btn-ai-analyse-icon');
+  var ANALYSE_URL = '{{ path("app_demande_service_ai_analyse_reactions") }}';
+
+  if (!btn || !modal) return;
+
+  btn.addEventListener('click', function () {
+    // Ouvrir le modal
+    modal.style.display = 'flex';
+    loading.style.display = 'block';
+    content.style.display = 'none';
+    errBox.style.display  = 'none';
+
+    // Loading state sur le bouton
+    btn.disabled = true;
+    btnIcon.className = 'fas fa-spinner fa-spin';
+    btnTxt.textContent = 'Analyse en cours…';
+
+    fetch(ANALYSE_URL, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      if (data.error) {
+        showError(data.error);
+        return;
+      }
+      // Afficher le rapport
+      loading.style.display = 'none';
+      content.style.display = 'block';
+
+      document.getElementById('ai-analyse-rapport').textContent = data.rapport      || '—';
+      document.getElementById('ai-analyse-fort').textContent    = data.point_fort   || '—';
+      document.getElementById('ai-analyse-faible').textContent  = data.point_faible || '—';
+      document.getElementById('ai-analyse-reco').textContent    = data.recommandation || '—';
+    })
+    .catch(function (err) {
+      showError('Erreur de connexion à l\'IA. Vérifiez votre connexion.');
+      console.error('[AI Analyse]', err);
+    })
+    .finally(function () {
+      btn.disabled = false;
+      btnIcon.className = 'fas fa-brain';
+      btnTxt.textContent = '✨ Analyser les réactions';
+    });
+  });
+
+  // Fermer en cliquant sur l'overlay
+  modal.addEventListener('click', function (e) {
+    if (e.target === modal) modal.style.display = 'none';
+  });
+
+  function showError(msg) {
+    loading.style.display = 'none';
+    errBox.style.display  = 'block';
+    errMsg.textContent    = msg;
+  }
+})();
+</script>
+
+<script>
+(function(){
+  const modal = document.getElementById('rhDecisionModal');
+  const form  = document.getElementById('rhDecisionForm');
+  const title = document.getElementById('rhDecisionTitle');
+  const sub   = document.getElementById('rhDecisionSubtitle');
+  const val   = document.getElementById('rhDecisionValue');
+  const btn   = document.getElementById('rhDecisionSubmit');
+  if(modal && form && btn){
+    modal.addEventListener('show.bs.modal', function(evt){
+      const t = evt.relatedTarget; if(!t) return;
+      const id       = t.getAttribute('data-id');
+      const decision = t.getAttribute('data-decision');
+      const type     = t.getAttribute('data-type') || 'Service';
+      form.action    = t.getAttribute('data-action') || '#';
+      val.value      = decision || '';
+      const isOk = (decision||'').includes('approuv');
+      title.textContent = (isOk ? '✅ Accepter' : '❌ Refuser') + ' la demande #' + id;
+      sub.textContent   = 'Type : ' + type + ' — Le statut sera mis à jour côté employé.';
+      btn.textContent   = isOk ? "Confirmer l'acceptation" : 'Confirmer le refus';
+      btn.style.background  = isOk ? 'linear-gradient(135deg,#10b981,#059669)' : 'linear-gradient(135deg,#f43f5e,#e11d48)';
+      btn.style.color       = '#fff';
+      btn.style.boxShadow   = isOk ? '0 10px 24px rgba(16,185,129,.22)' : '0 10px 24px rgba(244,63,94,.20)';
+    });
+  }
+})();
+</script>
+
+{# ══════════════════════════════════════════════════
+   VUE EMPLOYÉ
+══════════════════════════════════════════════════ #}
+{% else %}
+<div class="emp-shell">
+  <div class="emp-wrap">
+    <div class="head">
+      <div>
+        <h1><i class="fas fa-toolbox"></i> Espace Services</h1>
+        <p>Demandez du matériel / assistance et suivez le traitement RH.</p>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+        <a href="{{ path('app_demande_service_new') }}" class="btn-create">
+          <i class="fas fa-plus-circle"></i> Nouvelle demande
+        </a>
+        <a href="{{ path('app_demande_service_mes_reactions') }}" class="btn-stats" style="text-decoration:none;">
+          <i class="fas fa-heart" style="color:#f43f5e;"></i> Mes réactions
+        </a>
+        <button type="button" class="btn-stats"
+                onclick="document.getElementById('statsSvcModal').style.display='flex'"
+                title="Statistiques">
+          <i class="fas fa-chart-pie"></i> Mes stats
+        </button>
+      </div>
+    </div>
+
+    {# ═══ Section Like/Dislike par type de service ═══ #}
+    {% if allTypes|length > 0 %}
+    <div class="glass" style="margin-bottom:24px;overflow:hidden;animation:slideUp .6s cubic-bezier(.16,1,.3,1) .15s both;">
+      <div style="padding:18px 26px 14px;border-bottom:1px solid rgba(143,76,201,.1);background:linear-gradient(135deg,rgba(143,76,201,.07),rgba(179,157,219,.04));position:relative;">
+        <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#f43f5e,#8b5cf6,#10b981);"></div>
+        <h2 style="margin:0;font-family:'Outfit';font-weight:900;color:#0f172a;font-size:1.2rem;display:flex;align-items:center;gap:10px;">
+          <i class="fas fa-thumbs-up" style="color:#10b981;"></i> Évaluez les types de service
+          <span style="font-size:.78rem;font-weight:700;color:#64748b;text-transform:none;">— Votre avis aide à améliorer nos services</span>
+        </h2>
+      </div>
+      <div style="padding:20px 22px;">
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;">
+          {% for ts in allTypes %}
+            {% set myReaction = reactionMap[ts.id] ?? null %}
+            {% set counts = countsMap[ts.id] ?? {'likes': 0, 'dislikes': 0} %}
+            <div class="react-card" data-type-id="{{ ts.id }}" data-type-nom="{{ ts.nom|e('html_attr') }}">
+              <div class="react-card-nom">{{ ts.nom }}</div>
+              <div class="react-card-cat">{{ ts.categorie }}</div>
+              <div class="react-btns">
+                <button type="button"
+                        class="btn-react btn-like {{ myReaction == 'like' ? 'active' : '' }}"
+                        data-type-id="{{ ts.id }}"
+                        data-reaction="like"
+                        title="J'aime ce service">
+                  <i class="fas fa-thumbs-up"></i>
+                  <span class="react-count" id="likes-{{ ts.id }}">{{ counts.likes }}</span>
+                </button>
+                <button type="button"
+                        class="btn-react btn-dislike {{ myReaction == 'dislike' ? 'active' : '' }}"
+                        data-type-id="{{ ts.id }}"
+                        data-reaction="dislike"
+                        title="Je n'aime pas ce service">
+                  <i class="fas fa-thumbs-down"></i>
+                  <span class="react-count" id="dislikes-{{ ts.id }}">{{ counts.dislikes }}</span>
+                </button>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="glass tbl-em">
+      <div class="tbl-head-em">
+        <h2><i class="fas fa-history"></i> Historique des demandes</h2>
+      </div>
+
+      {# Barre filtre employé AJAX #}
+      <form method="get" action="" class="filter-bar" id="em-svc-form"
+            data-search-url="{{ path('app_demande_service_search') }}">
+        <div class="filter-group">
+          <span class="filter-label"><i class="fas fa-filter"></i> Rechercher par</span>
+          <select name="searchBy" class="filter-select" style="min-width:165px;">
+            <option value="all"   {% if searchBy == 'all'    %}selected{% endif %}>🔍 Tous les champs</option>
+            <option value="type"  {% if searchBy == 'type'   %}selected{% endif %}>🏷️ Type de service</option>
+            <option value="statut"{% if searchBy == 'statut' %}selected{% endif %}>📌 Statut</option>
+          </select>
+        </div>
+
+        <div class="filter-group" style="flex:1;">
+          <span class="filter-label"><i class="fas fa-keyboard"></i> Mot-clé</span>
+          <input type="text" name="search" value="{{ search }}" placeholder="Saisir un terme…" class="filter-input">
+        </div>
+
+        <button type="submit" class="btn-filter btn-search-em">
+          <i class="fas fa-search"></i> Rechercher
+        </button>
+
+        <div class="filter-divider"></div>
+
+        <div class="filter-group">
+          <span class="filter-label"><i class="fas fa-sort"></i> Trier par</span>
+          <select name="sortBy" class="filter-select" style="min-width:165px;">
+            <option value="dateDemande"{% if sortBy == 'dateDemande' %}selected{% endif %}>📅 Date de demande</option>
+            <option value="type"       {% if sortBy == 'type'        %}selected{% endif %}>🏷️ Type de service</option>
+            <option value="statut"     {% if sortBy == 'statut'      %}selected{% endif %}>📌 Statut</option>
+          </select>
+        </div>
+
+        <input type="hidden" name="sortDir" id="em-svc-sort-dir" value="{{ sortDir }}">
+        <div class="filter-group">
+          <span class="filter-label" style="visibility:hidden;">Ordre</span>
+          <button type="button" class="btn-filter btn-dir-em"
+            onclick="var d=document.getElementById('em-svc-sort-dir');d.value=(d.value==='asc'?'desc':'asc');document.getElementById('em-svc-form').submit();">
+            {% if sortDir == 'asc' %}
+              <i class="fas fa-arrow-up-a-z"></i> Croissant
+            {% else %}
+              <i class="fas fa-arrow-down-z-a"></i> Décroissant
+            {% endif %}
+          </button>
+        </div>
+
+        {% if search %}
+          <div class="filter-group">
+            <span class="filter-label" style="visibility:hidden;">Reset</span>
+            <a href="{{ path('app_demande_service_index') }}" class="btn-filter btn-reset">
+              <i class="fas fa-xmark"></i> Réinitialiser
+            </a>
+          </div>
+        {% endif %}
+      </form>
+
+      {% if demande_services|length > 0 %}
+      <div id="em-svc-count" style="padding:8px 28px 4px;font-size:.83rem;font-weight:800;color:#64748b;display:flex;align-items:center;gap:7px;">
+        <i class="fas fa-list-ul" style="color:#b39ddb;"></i>
+        <span id="em-svc-count-num">{{ demande_services|length }}</span> résultat(s)
+      </div>
+      <div style="overflow:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th style="display:none;">Nom</th>
+              <th>Type service</th>
+              <th>Date</th>
+              <th>Statut</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="em-svc-tbody">
+            {% for d in demande_services %}
+              {% set st  = d.statut %}
+              {% set isOk = (st == 'Accepté' or st == 'approuvé') %}
+              {% set isNo = (st == 'Refusé'  or st == 'refusé') %}
+              <tr>
+                <td style="font-weight:800;display:none;">
+                  {% if d.employe and d.employe.user %}
+                    {{ d.employe.user.prenom }} {{ d.employe.user.nom }}
+                  {% else %}
+                    <span style="color:#94a3b8;">—</span>
+                  {% endif %}
+                </td>
+                <td style="font-weight:800;color:#0f172a;">{{ d.type ? d.type.nom : '—' }}</td>
+                <td style="color:#64748b;font-weight:700;">
+                  {% if d.dateDemande and d.dateDemande != '0000-00-00' %}{{ d.dateDemande|date('d/m/Y') }}{% else %}—{% endif %}
+                </td>
+                <td>
+                  {% if isOk %}<span class="pill p-ok">Accepté</span>
+                  {% elseif isNo %}<span class="pill p-no">Refusé</span>
+                  {% else %}<span class="pill p-pend">En attente</span>{% endif %}
+                </td>
+                <td>
+                  <div class="act">
+                    <a class="btn-ghost btn-ghost-em" href="{{ path('app_demande_service_show', {'id': d.id}) }}" title="Voir"><i class="fas fa-eye"></i></a>
+                    {% if st == 'En attente' %}
+                      <a class="btn-ghost btn-ghost-em" href="{{ path('app_demande_service_edit', {'id': d.id}) }}" title="Modifier"><i class="fas fa-pen"></i></a>
+                    {% endif %}
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+        <div class="empty-state" id="em-svc-empty-search" style="display:none;">
+          <i class="fas fa-search"></i>
+          <h4>Aucun résultat</h4>
+          <p>Essayez un autre terme de recherche.</p>
+        </div>
+        <div class="empty-state" id="em-svc-empty-data">
+          <i class="fas fa-inbox"></i>
+          <h4>Aucune demande</h4>
+          <p>Crée ta première demande de service.</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{# ══════════════════════
+   MODAL STATISTIQUES SERVICES — VERSION ENRICHIE
+══════════════════════ #}
+<style>
+/* ── Stats Modal enrichi ── */
+.sm2 { display:none; position:fixed; inset:0; z-index:9999; background:rgba(46,13,82,.58); backdrop-filter:blur(9px); -webkit-backdrop-filter:blur(9px); align-items:center; justify-content:center; }
+.sm2-box {
+  background:#fff; border-radius:28px; padding:0;
+  max-width:860px; width:96%; position:relative;
+  box-shadow:0 32px 90px rgba(46,13,82,.26);
+  animation:modalPop .35s cubic-bezier(.175,.885,.32,1.275);
+  overflow:hidden; max-height:92vh; display:flex; flex-direction:column;
+}
+.sm2-top {
+  background:linear-gradient(135deg,var(--mv-950),var(--mv-700));
+  padding:22px 28px 18px; flex-shrink:0;
+  display:flex; justify-content:space-between; align-items:flex-start;
+}
+.sm2-title { font-family:'Outfit'; font-weight:900; font-size:1.6rem; color:#fff; display:flex; align-items:center; gap:12px; }
+.sm2-sub   { color:rgba(255,255,255,.65); font-size:.88rem; margin-top:4px; }
+.sm2-close {
+  width:36px; height:36px; border-radius:50%; border:none;
+  background:rgba(255,255,255,.15); color:#fff;
+  font-size:15px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  transition:background .18s; flex-shrink:0;
+}
+.sm2-close:hover { background:rgba(255,255,255,.28); }
+.sm2-body { overflow-y:auto; padding:24px 28px 28px; flex:1; }
+
+/* KPI row */
+.sm2-kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:22px; }
+.sm2-kpi {
+  border-radius:16px; padding:14px 16px; display:flex; align-items:center; gap:12px;
+  transition:transform .2s;
+}
+.sm2-kpi:hover { transform:translateY(-3px); }
+.sm2-kpi-ic { width:42px; height:42px; border-radius:14px; display:flex; align-items:center; justify-content:center; color:#fff; font-size:18px; flex-shrink:0; }
+.sm2-kpi-val { font-family:'Outfit'; font-weight:900; font-size:1.7rem; color:#0f172a; line-height:1; }
+.sm2-kpi-lbl { font-size:.68rem; font-weight:800; text-transform:uppercase; letter-spacing:.09em; margin-top:2px; }
+
+/* Charts row */
+.sm2-charts { display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-bottom:22px; }
+.sm2-chart-box { background:var(--mv-50); border:1.5px solid rgba(143,76,201,.12); border-radius:18px; padding:16px 18px; }
+.sm2-chart-label { font-size:.72rem; font-weight:900; text-transform:uppercase; letter-spacing:.09em; color:var(--mv-700); margin-bottom:12px; display:flex; align-items:center; gap:7px; }
+
+/* Progress rate */
+.sm2-rate { background:rgba(16,185,129,.07); border:1.5px solid rgba(16,185,129,.2); border-radius:18px; padding:18px 22px; margin-bottom:22px; }
+.sm2-rate-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+.sm2-rate-lbl  { font-size:.78rem; font-weight:900; text-transform:uppercase; letter-spacing:.09em; color:#059669; }
+.sm2-rate-pct  { font-family:'Outfit'; font-weight:900; font-size:1.5rem; color:#0f172a; }
+.sm2-bar-track { height:10px; background:rgba(16,185,129,.12); border-radius:999px; overflow:hidden; }
+.sm2-bar-fill  { height:100%; border-radius:999px; background:linear-gradient(90deg,#10b981,#059669); transition:width 1.2s cubic-bezier(.16,1,.3,1); width:0%; }
+
+/* Reactions row */
+.sm2-react { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:22px; }
+.sm2-react-box { border-radius:16px; padding:14px 18px; }
+.sm2-react-box-like { background:rgba(16,185,129,.07); border:1.5px solid rgba(16,185,129,.22); }
+.sm2-react-box-dis  { background:rgba(244,63,94,.06); border:1.5px solid rgba(244,63,94,.2); }
+.sm2-react-lbl { font-size:.7rem; font-weight:900; text-transform:uppercase; letter-spacing:.09em; margin-bottom:6px; display:flex; align-items:center; gap:7px; }
+.sm2-react-num { font-family:'Outfit'; font-weight:900; font-size:1.5rem; }
+
+/* Voice report */
+.sm2-voice { background:linear-gradient(135deg,rgba(109,40,217,.07),rgba(139,92,246,.04)); border:1.5px solid rgba(109,40,217,.2); border-radius:18px; padding:18px 22px; }
+.sm2-voice-row { display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
+.sm2-voice-info { flex:1; }
+.sm2-voice-title { font-family:'Outfit'; font-weight:900; font-size:1.05rem; color:#3b0764; display:flex; align-items:center; gap:8px; }
+.sm2-voice-sub { color:#64748b; font-size:.85rem; margin-top:3px; }
+.btn-voice {
+  display:inline-flex; align-items:center; gap:8px; padding:11px 22px;
+  border-radius:999px; border:none; cursor:pointer;
+  background:linear-gradient(135deg,#7c3aed,#4c1d95);
+  color:#fff; font-weight:900; font-size:.9rem;
+  font-family:inherit;
+  box-shadow:0 8px 20px rgba(109,40,217,.26);
+  transition:transform .2s, box-shadow .2s;
+}
+.btn-voice:hover { transform:translateY(-2px); box-shadow:0 12px 28px rgba(109,40,217,.36); }
+.btn-voice:disabled { opacity:.65; cursor:default; transform:none; }
+.sm2-audio-wrap { margin-top:14px; display:none; }
+.sm2-audio-wrap audio { width:100%; border-radius:10px; outline:none; }
+
+/* SLA alert */
+.sm2-sla { border-radius:16px; padding:14px 18px; margin-bottom:16px; display:flex; align-items:center; gap:14px; }
+.sm2-sla-warn { background:rgba(245,158,11,.08); border:1.5px solid rgba(245,158,11,.28); }
+.sm2-sla-ok   { background:rgba(16,185,129,.07); border:1.5px solid rgba(16,185,129,.22); }
+
+@media(max-width:640px){
+  .sm2-kpis,.sm2-charts,.sm2-react { grid-template-columns:1fr 1fr; }
+  .sm2-kpis { grid-template-columns:repeat(2,1fr); }
+}
+</style>
+
+{# ── Calcul des SLA dépassés (en attente > 7 jours) ── #}
+{% set slaDepasses = 0 %}
+{% set now = 'now'|date('U') %}
+{% for d in demande_services %}
+  {% if d.statut == 'En attente' and d.dateDemande %}
+    {% set diff = (now - d.dateDemande|date('U')) / 86400 %}
+    {% if diff > 7 %}
+      {% set slaDepasses = slaDepasses + 1 %}
+    {% endif %}
+  {% endif %}
+{% endfor %}
+
+{# ── Totaux réactions ── #}
+{% set totalLikes = 0 %}
+{% set totalDislikes = 0 %}
+{% if countsMap is defined %}
+  {% for id, c in countsMap %}
+    {% set totalLikes    = totalLikes    + c.likes %}
+    {% set totalDislikes = totalDislikes + c.dislikes %}
+  {% endfor %}
+{% endif %}
+
+<div id="statsSvcModal" class="sm2" role="dialog" aria-modal="true">
+  <div class="sm2-box">
+
+    {# Header #}
+    <div class="sm2-top">
+      <div>
+        <div class="sm2-title"><i class="fas fa-chart-pie"></i> Tableau de bord Services</div>
+        <div class="sm2-sub">Analyse complète • {{ total }} demande{{ total > 1 ? 's' : '' }} au total</div>
+      </div>
+      <button class="sm2-close" id="sm2CloseBtn" aria-label="Fermer">
+        <i class="fas fa-xmark"></i>
+      </button>
+    </div>
+
+    {# Body #}
+    <div class="sm2-body">
+
+      {# ── KPIs #}
+      <div class="sm2-kpis">
+        <div class="sm2-kpi" style="background:linear-gradient(135deg,rgba(143,76,201,.1),rgba(179,157,219,.06));border:1.5px solid rgba(143,76,201,.2);">
+          <div class="sm2-kpi-ic" style="background:linear-gradient(135deg,var(--mv-700),var(--mv-600));box-shadow:0 6px 16px var(--mv-glow);"><i class="fas fa-layer-group"></i></div>
+          <div><div class="sm2-kpi-val">{{ total }}</div><div class="sm2-kpi-lbl" style="color:var(--mv-800);">Total</div></div>
+        </div>
+        <div class="sm2-kpi" style="background:#fffbeb;border:1.5px solid #fde68a;">
+          <div class="sm2-kpi-ic" style="background:linear-gradient(135deg,#f59e0b,#d97706);box-shadow:0 6px 16px rgba(245,158,11,.24);"><i class="fas fa-hourglass-half"></i></div>
+          <div><div class="sm2-kpi-val">{{ pending }}</div><div class="sm2-kpi-lbl" style="color:#92400e;">En attente</div></div>
+        </div>
+        <div class="sm2-kpi" style="background:#ecfdf5;border:1.5px solid #a7f3d0;">
+          <div class="sm2-kpi-ic" style="background:linear-gradient(135deg,#10b981,#059669);box-shadow:0 6px 16px rgba(16,185,129,.24);"><i class="fas fa-check-double"></i></div>
+          <div><div class="sm2-kpi-val">{{ accepted }}</div><div class="sm2-kpi-lbl" style="color:#065f46;">Acceptées</div></div>
+        </div>
+        <div class="sm2-kpi" style="background:#fff1f2;border:1.5px solid #fecdd3;">
+          <div class="sm2-kpi-ic" style="background:linear-gradient(135deg,#f43f5e,#e11d48);box-shadow:0 6px 16px rgba(244,63,94,.22);"><i class="fas fa-ban"></i></div>
+          <div><div class="sm2-kpi-val">{{ rejected }}</div><div class="sm2-kpi-lbl" style="color:#9f1239;">Refusées</div></div>
+        </div>
+      </div>
+
+      {# ── Rapport vocal (toujours visible pour debug) #}
+      <div class="sm2-voice">
+        <div class="sm2-voice-row">
+          <div class="sm2-voice-info">
+            <div class="sm2-voice-title"><i class="fas fa-waveform-lines"></i> Rapport vocal RH</div>
+            <div class="sm2-voice-sub">Synthèse vocale du navigateur (Web Speech API) - Gratuit et illimité</div>
+          </div>
+          <button type="button" class="btn-voice" id="btnVoiceReport">
+            <i class="fas fa-volume-high" id="btnVoiceIcon"></i>
+            <span id="btnVoiceTxt">🎤 Écouter le rapport</span>
+          </button>
+        </div>
+        <div class="sm2-audio-wrap" id="sm2AudioWrap">
+          <audio id="sm2AudioPlayer" controls style="width:100%;border-radius:12px;"></audio>
+          <div style="font-size:.75rem;color:#64748b;margin-top:6px;text-align:center;">
+            <i class="fas fa-info-circle"></i> Rapport généré le {{ 'now'|date('d/m/Y à H:i') }}
+          </div>
+        </div>
+      </div>
+
+      {# ── SLA Alert #}
+      {% if slaDepasses > 0 %}
+      <div class="sm2-sla sm2-sla-warn">
+        <div style="width:38px;height:38px;border-radius:12px;background:rgba(245,158,11,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <i class="fas fa-exclamation-triangle" style="color:#d97706;"></i>
+        </div>
+        <div>
+          <div style="font-weight:900;color:#92400e;">{{ slaDepasses }} demande{{ slaDepasses > 1 ? 's' : '' }} en retard SLA</div>
+          <div style="font-size:.82rem;color:#b45309;">En attente depuis plus de 7 jours — action requise</div>
+        </div>
+      </div>
+      {% else %}
+      <div class="sm2-sla sm2-sla-ok">
+        <div style="width:38px;height:38px;border-radius:12px;background:rgba(16,185,129,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <i class="fas fa-shield-check" style="color:#059669;"></i>
+        </div>
+        <div>
+          <div style="font-weight:900;color:#065f46;">Aucun retard SLA détecté</div>
+          <div style="font-size:.82rem;color:#047857;">Toutes les demandes sont traitées dans les délais</div>
+        </div>
+      </div>
+      {% endif %}
+
+      {# ── Graphiques #}
+      <div class="sm2-charts">
+        <div class="sm2-chart-box">
+          <div class="sm2-chart-label"><i class="fas fa-chart-pie"></i> Répartition par statut</div>
+          <canvas id="sm2DonutChart" width="220" height="220"></canvas>
+        </div>
+        <div class="sm2-chart-box">
+          <div class="sm2-chart-label"><i class="fas fa-chart-bar"></i> Top types de service</div>
+          <canvas id="sm2BarChart" height="220"></canvas>
+        </div>
+      </div>
+
+      {# ── Taux de résolution #}
+      <div class="sm2-rate">
+        <div class="sm2-rate-row">
+          <div>
+            <div class="sm2-rate-lbl"><i class="fas fa-bullseye"></i> Taux de résolution</div>
+            <div style="font-size:.78rem;color:#64748b;margin-top:2px;">Demandes traitées (acceptées + refusées) / total</div>
+          </div>
+          <div class="sm2-rate-pct" id="sm2RatePct">{{ tauxRes }}%</div>
+        </div>
+        <div class="sm2-bar-track">
+          <div class="sm2-bar-fill" id="sm2RateBar" style="width:0%;"></div>
+        </div>
+      </div>
+
+      {# ── Réactions like/dislike #}
+      {% if totalLikes + totalDislikes > 0 %}
+      <div class="sm2-react">
+        <div class="sm2-react-box sm2-react-box-like">
+          <div class="sm2-react-lbl" style="color:#059669;"><i class="fas fa-thumbs-up"></i> J'aime</div>
+          <div class="sm2-react-num" style="color:#059669;">{{ totalLikes }}</div>
+          {% if totalLikes + totalDislikes > 0 %}
+          <div style="font-size:.75rem;color:#065f46;margin-top:4px;">{{ ((totalLikes / (totalLikes + totalDislikes)) * 100)|round }}% satisfaction</div>
+          {% endif %}
+        </div>
+        <div class="sm2-react-box sm2-react-box-dis">
+          <div class="sm2-react-lbl" style="color:#be123c;"><i class="fas fa-thumbs-down"></i> Je n'aime pas</div>
+          <div class="sm2-react-num" style="color:#be123c;">{{ totalDislikes }}</div>
+          <div style="font-size:.75rem;color:#9f1239;margin-top:4px;">{{ totalLikes + totalDislikes }} réaction{{ (totalLikes + totalDislikes) > 1 ? 's' : '' }} au total</div>
+        </div>
+      </div>
+      {% endif %}
+
+    </div>{# /sm2-body #}
+  </div>{# /sm2-box #}
+</div>{# /statsSvcModal #}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+(function(){
+  // ── Donut statuts
+  var p = {{ pending }};
+  var a = {{ accepted }};
+  var r = {{ rejected }};
+  var t = p + a + r;
+
+  // Top types data (depuis Twig)
+  var typeCountRaw = {{ typeCountRaw|json_encode|raw }};
+  var topLabels = Object.keys(typeCountRaw);
+  var topData   = Object.values(typeCountRaw);
+
+  // Trier par valeur décroissante, garder top 5
+  var combined = topLabels.map(function(l,i){ return {l:l,v:topData[i]}; });
+  combined.sort(function(a,b){ return b.v - a.v; });
+  combined = combined.slice(0,5);
+  topLabels = combined.map(function(x){ return x.l; });
+  topData   = combined.map(function(x){ return x.v; });
+
+  // ══ Modal open / close
+  var modal    = document.getElementById('statsSvcModal');
+  var closeBtn = document.getElementById('sm2CloseBtn');
+
+  // Ouvrir le modal — on enregistre les listeners AVANT le check modal
+  var openBtns = document.querySelectorAll('[onclick*="statsSvcModal"]');
+  openBtns.forEach(function(b){
+    b.removeAttribute('onclick');
+    b.addEventListener('click', function(){ if (modal) openModal(); });
+  });
+
+  if (!modal) return;
+
+  function openModal(){
+    modal.style.display = 'flex';
+    // Animer la barre de taux de résolution
+    var bar = document.getElementById('sm2RateBar');
+    if (bar) setTimeout(function(){ bar.style.width = '{{ tauxRes }}%'; }, 100);
+    // Initialiser les charts (une seule fois)
+    initCharts();
+  }
+  function closeModal(){ modal.style.display = 'none'; }
+  if (closeBtn)  closeBtn.addEventListener('click', closeModal);
+  modal.addEventListener('click', function(e){ if (e.target === modal) closeModal(); });
+
+  // ══ Charts init
+  var chartsInited = false;
+  function initCharts(){
+    if (chartsInited) return;
+    chartsInited = true;
+
+    // Donut
+    var donutCtx = document.getElementById('sm2DonutChart');
+    if (donutCtx) {
+      new Chart(donutCtx.getContext('2d'), {
+        type: 'doughnut',
+        data: {
+          labels: ['En attente','Acceptées','Refusées'],
+          datasets:[{
+            data: [p, a, r],
+            backgroundColor: ['#f59e0b','#10b981','#f43f5e'],
+            borderColor: ['#fff','#fff','#fff'],
+            borderWidth: 3,
+            hoverOffset: 14
+          }]
+        },
+        options: {
+          cutout: '68%',
+          animation: { animateRotate:true, duration:900 },
+          plugins: {
+            legend: { display:true, position:'bottom', labels:{ font:{size:11}, boxWidth:12 } },
+            tooltip: { callbacks: { label: function(c){ var pct=t>0?Math.round(c.parsed/t*100):0; return ' '+c.raw+' ('+pct+'%)'; } } }
+          }
+        }
+      });
+    }
+
+    // Bar chart
+    var barCtx = document.getElementById('sm2BarChart');
+    if (barCtx && topLabels.length > 0) {
+      var palette = [
+        'rgba(143,76,201,.85)','rgba(245,158,11,.85)','rgba(16,185,129,.85)',
+        'rgba(244,63,94,.85)','rgba(59,130,246,.85)'
+      ];
+      new Chart(barCtx.getContext('2d'), {
+        type: 'bar',
+        data: {
+          labels: topLabels,
+          datasets:[{
+            label: 'Demandes',
+            data: topData,
+            backgroundColor: palette.slice(0, topLabels.length),
+            borderRadius: 8,
+            borderSkipped: false,
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          scales: {
+            x: { ticks:{ stepSize:1 }, grid:{ color:'rgba(0,0,0,.04)' } },
+            y: { grid:{ display:false }, ticks:{ font:{size:11} } }
+          },
+          plugins: {
+            legend: { display:false },
+            tooltip: { callbacks: { label: function(c){ return ' '+c.parsed.x+' demande'+(c.parsed.x>1?'s':''); } } }
+          },
+          animation: { duration:800 }
+        }
+      });
+    } else if (barCtx) {
+      barCtx.parentElement.innerHTML +=
+        '<p style="text-align:center;color:#94a3b8;font-size:.85rem;margin-top:30px;">Aucune donnée disponible</p>';
+    }
+  }
+
+  // ══ Rapport vocal — ElevenLabs avec fallback speechSynthesis
+  var btnVoice   = document.getElementById('btnVoiceReport');
+  var btnIcon    = document.getElementById('btnVoiceIcon');
+  var btnTxt     = document.getElementById('btnVoiceTxt');
+  var audioWrap  = document.getElementById('sm2AudioWrap');
+  var audioEl    = document.getElementById('sm2AudioPlayer');
+  var VOCAL_URL  = '{{ path("app_demande_service_rapport_vocal") }}';
+  var RAPPORT_TEXTE = {{ rapportTexte is defined ? rapportTexte|json_encode|raw : '""' }};
+
+  // ── Fallback : synthèse vocale navigateur avec chunking ──
+  function lireAvecNavigateur() {
+    if (!window.speechSynthesis) {
+      btnIcon.className = 'fas fa-exclamation-triangle';
+      btnTxt.textContent = 'Synthèse vocale non supportée';
+      return;
+    }
+    
+    // IMPORTANT: Arrêter TOUTE synthèse en cours
+    window.speechSynthesis.cancel();
+    
+    // Attendre que le cancel soit effectif
+    setTimeout(function() {
+      // Si le texte est vide, construire un résumé depuis les données de la page
+      var texte = RAPPORT_TEXTE;
+      if (!texte || texte.trim() === '') {
+        var tx = (p + a + r) > 0 ? Math.round((a + r) / (p + a + r) * 100) : 0;
+        texte = 'Bonjour. Voici le rapport analytique des demandes de service RH. '
+          + 'Au total, ' + (p + a + r) + ' demandes ont été enregistrées. '
+          + a + ' demandes ont été acceptées, '
+          + r + ' demandes ont été refusées, '
+          + 'et ' + p + ' demandes sont encore en attente de traitement. '
+          + 'Le taux de résolution est de ' + tx + ' pour cent. '
+          + 'Merci de votre attention.';
+      }
+
+      // Nettoyer le texte
+      texte = texte
+        .replace(/[^\wÀ-ÿ\s\.,!?;:'-]/gu, ' ')
+        .replace(/\s+/g, ' ')
+        .replace(/pourcent/g, 'pour cent')
+        .trim();
+
+      // SOLUTION: Diviser en phrases courtes (max 80 caractères par chunk)
+      var sentences = texte.split(/\.\s+/);
+      var chunks = [];
+      var currentChunk = '';
+      
+      for (var i = 0; i < sentences.length; i++) {
+        var sentence = sentences[i].trim();
+        if (!sentence) continue;
+        
+        // Ajouter le point final si manquant
+        if (!sentence.endsWith('.')) {
+          sentence += '.';
+        }
+        
+        // Si ajouter cette phrase dépasse 80 chars, créer un nouveau chunk
+        if (currentChunk.length + sentence.length > 80) {
+          if (currentChunk) {
+            chunks.push(currentChunk.trim());
+          }
+          currentChunk = sentence + ' ';
+        } else {
+          currentChunk += sentence + ' ';
+        }
+      }
+      
+      // Ajouter le dernier chunk
+      if (currentChunk.trim()) {
+        chunks.push(currentChunk.trim());
+      }
+      
+      // Limiter à 5 chunks maximum pour ne pas être trop long
+      if (chunks.length > 5) {
+        chunks = chunks.slice(0, 5);
+        chunks[4] = chunks[4] + ' Fin du rapport.';
+      }
+      
+      console.log('[Vocal] 📝 Texte divisé en', chunks.length, 'chunks');
+      chunks.forEach(function(chunk, idx) {
+        console.log('[Vocal] Chunk', idx + 1, ':', chunk.substring(0, 50) + '...');
+      });
+
+      // Fonction pour parler chunk par chunk
+      var currentChunkIndex = 0;
+      var voices = [];
+      var selectedVoice = null;
+      
+      function speakNextChunk() {
+        if (currentChunkIndex >= chunks.length) {
+          console.log('[Vocal] ✅ Tous les chunks terminés');
+          btnIcon.className = 'fas fa-volume-high';
+          btnTxt.textContent = '🎤 Rejouer';
+          btnVoice.disabled = false;
+          _synthPaused = false;
+          return;
+        }
+        
+        var chunk = chunks[currentChunkIndex];
+        console.log('[Vocal] 🎤 Speaking chunk', currentChunkIndex + 1, '/', chunks.length);
+        
+        var utter = new SpeechSynthesisUtterance(chunk);
+        utter.lang = 'fr-FR';
+        utter.rate = 0.9;
+        utter.pitch = 1.0;
+        utter.volume = 1.0;
+        
+        // Utiliser la voix sélectionnée
+        if (selectedVoice) {
+          utter.voice = selectedVoice;
+        }
+        
+        utter.onstart = function() {
+          if (currentChunkIndex === 0) {
+            console.log('[Vocal] ✅ Synthèse démarrée');
+            btnIcon.className = 'fas fa-volume-high';
+            btnTxt.textContent = '⏸ Pause (' + (currentChunkIndex + 1) + '/' + chunks.length + ')';
+            btnVoice.disabled = false;
+          }
+        };
+        
+        utter.onend = function() {
+          console.log('[Vocal] ✅ Chunk', currentChunkIndex + 1, 'terminé');
+          currentChunkIndex++;
+          // Petit délai entre les chunks pour éviter les problèmes
+          setTimeout(speakNextChunk, 200);
+        };
+        
+        utter.onerror = function(e) {
+          console.error('[Vocal] ❌ Erreur chunk', currentChunkIndex + 1, ':', e.error);
+          
+          // Si synthesis-failed, essayer un message ultra-simple
+          if (e.error === 'synthesis-failed' && currentChunkIndex === 0) {
+            console.log('[Vocal] 🔄 Fallback vers message simple');
+            window.speechSynthesis.cancel();
+            
+            setTimeout(function() {
+              var simpleMsg = 'Rapport vocal. ' + (p + a + r) + ' demandes. ' 
+                            + a + ' acceptées. ' + r + ' refusées.';
+              var simpleUtter = new SpeechSynthesisUtterance(simpleMsg);
+              simpleUtter.lang = 'fr-FR';
+              simpleUtter.rate = 0.9;
+              
+              simpleUtter.onstart = function() {
+                btnIcon.className = 'fas fa-volume-high';
+                btnTxt.textContent = '⏸ Pause';
+                btnVoice.disabled = false;
+              };
+              
+              simpleUtter.onend = function() {
+                btnIcon.className = 'fas fa-volume-high';
+                btnTxt.textContent = '🎤 Rejouer';
+                btnVoice.disabled = false;
+              };
+              
+              simpleUtter.onerror = function() {
+                btnIcon.className = 'fas fa-exclamation-triangle';
+                btnTxt.textContent = 'Synthèse indisponible';
+                btnVoice.disabled = false;
+              };
+              
+              window.speechSynthesis.speak(simpleUtter);
+            }, 500);
+          } else {
+            // Passer au chunk suivant en cas d'erreur
+            currentChunkIndex++;
+            setTimeout(speakNextChunk, 200);
+          }
+        };
+        
+        try {
+          window.speechSynthesis.speak(utter);
+        } catch (err) {
+          console.error('[Vocal] ❌ Exception:', err);
+          currentChunkIndex++;
+          setTimeout(speakNextChunk, 200);
+        }
+      }
+      
+      // Charger les voix et démarrer
+      function startSpeaking() {
+        voices = window.speechSynthesis.getVoices();
+        console.log('[Vocal] Voix disponibles:', voices.length);
+        
+        if (voices.length === 0) {
+          console.warn('[Vocal] ⚠️ Aucune voix disponible!');
+          btnIcon.className = 'fas fa-exclamation-triangle';
+          btnTxt.textContent = 'Aucune voix disponible';
+          btnVoice.disabled = false;
+          return;
+        }
+        
+        // Choisir une voix française (éviter Google)
+        var voixFr = voices.filter(function(v) { return v.lang.startsWith('fr'); });
+        console.log('[Vocal] Voix françaises:', voixFr.length);
+        
+        selectedVoice = voixFr.find(function(v) { 
+          return !v.name.toLowerCase().includes('google'); 
+        }) || voixFr[0] || voices[0];
+        
+        if (selectedVoice) {
+          console.log('[Vocal] Voix sélectionnée:', selectedVoice.name);
+        }
+        
+        btnIcon.className = 'fas fa-spinner fa-spin';
+        btnTxt.textContent = 'Démarrage...';
+        
+        // Démarrer la lecture des chunks
+        setTimeout(speakNextChunk, 100);
+      }
+      
+      // Vérifier si les voix sont chargées
+      var loadedVoices = window.speechSynthesis.getVoices();
+      if (loadedVoices.length > 0) {
+        startSpeaking();
+      } else {
+        var voicesLoaded = false;
+        window.speechSynthesis.onvoiceschanged = function() {
+          if (!voicesLoaded) {
+            voicesLoaded = true;
+            startSpeaking();
+          }
+        };
+        
+        // Timeout de sécurité
+        setTimeout(function() {
+          if (!voicesLoaded) {
+            voicesLoaded = true;
+            startSpeaking();
+          }
+        }, 2000);
+      }
+    }, 300);
+  }
+
+  var _synthPaused = false;
+  var _audioLoaded = false;
+
+  if (btnVoice) {
+    btnVoice.addEventListener('click', function(){
+      if (btnVoice.disabled) return;
+
+      // Si un audio ElevenLabs est en cours, le contrôler
+      if (audioEl && _audioLoaded && !audioEl.paused) {
+        audioEl.pause();
+        btnIcon.className = 'fas fa-play';
+        btnTxt.textContent = '▶ Reprendre';
+        return;
+      }
+
+      if (audioEl && _audioLoaded && audioEl.paused) {
+        audioEl.play();
+        btnIcon.className = 'fas fa-volume-high';
+        btnTxt.textContent = '⏸ Pause';
+        return;
+      }
+
+      // Si speechSynthesis est actif, basculer pause/reprise
+      if (window.speechSynthesis && window.speechSynthesis.speaking) {
+        if (_synthPaused) { 
+          window.speechSynthesis.resume(); 
+          _synthPaused = false; 
+          btnTxt.textContent = '⏸ Pause'; 
+        } else { 
+          window.speechSynthesis.pause();  
+          _synthPaused = true;  
+          btnTxt.textContent = '▶ Reprendre'; 
+        }
+        return;
+      }
+
+      // Utiliser ElevenLabs API (haute qualité, voix professionnelle)
+      console.log('[Vocal] 🎤 Utilisation de ElevenLabs API');
+      btnVoice.disabled = true;
+      btnIcon.className = 'fas fa-spinner fa-spin';
+      btnTxt.textContent = 'Génération audio...';
+      
+      // Appeler l'endpoint ElevenLabs
+      fetch(VOCAL_URL)
+        .then(function(response) {
+          if (!response.ok) {
+            throw new Error('Erreur HTTP ' + response.status);
+          }
+          return response.blob();
+        })
+        .then(function(blob) {
+          console.log('[Vocal] ✅ Audio reçu:', blob.size, 'bytes');
+          
+          // Créer une URL pour le blob audio
+          var audioUrl = URL.createObjectURL(blob);
+          audioEl.src = audioUrl;
+          _audioLoaded = true;
+          
+          // Configurer les événements audio
+          audioEl.onplay = function() {
+            btnIcon.className = 'fas fa-volume-high';
+            btnTxt.textContent = '⏸ Pause';
+            btnVoice.disabled = false;
+          };
+          
+          audioEl.onpause = function() {
+            btnIcon.className = 'fas fa-play';
+            btnTxt.textContent = '▶ Reprendre';
+          };
+          
+          audioEl.onended = function() {
+            btnIcon.className = 'fas fa-volume-high';
+            btnTxt.textContent = '🎤 Rejouer';
+            btnVoice.disabled = false;
+          };
+          
+          audioEl.onerror = function(e) {
+            console.error('[Vocal] ❌ Erreur lecture audio:', e);
+            btnIcon.className = 'fas fa-exclamation-triangle';
+            btnTxt.textContent = 'Erreur lecture';
+            btnVoice.disabled = false;
+            
+            // Fallback vers Web Speech API
+            console.log('[Vocal] 🔄 Fallback vers Web Speech API');
+            lireAvecNavigateur();
+          };
+          
+          // Lancer la lecture
+          audioEl.play()
+            .then(function() {
+              console.log('[Vocal] ✅ Lecture démarrée');
+            })
+            .catch(function(error) {
+              console.error('[Vocal] ❌ Erreur play():', error);
+              btnIcon.className = 'fas fa-exclamation-triangle';
+              btnTxt.textContent = 'Erreur lecture';
+              btnVoice.disabled = false;
+              
+              // Fallback vers Web Speech API
+              console.log('[Vocal] 🔄 Fallback vers Web Speech API');
+              lireAvecNavigateur();
+            });
+        })
+        .catch(function(error) {
+          console.error('[Vocal] ❌ Erreur ElevenLabs:', error);
+          btnIcon.className = 'fas fa-exclamation-triangle';
+          btnTxt.textContent = 'Erreur API';
+          btnVoice.disabled = false;
+          
+          // Fallback vers Web Speech API
+          console.log('[Vocal] 🔄 Fallback vers Web Speech API');
+          lireAvecNavigateur();
+        });
+    });
+
+    // Charger les voix dès que disponibles (Chrome les charge en async)
+    if (window.speechSynthesis) {
+      // Forcer le chargement des voix
+      window.speechSynthesis.getVoices();
+      
+      // Gestionnaire pour le chargement des voix
+      var voicesLoaded = false;
+      window.speechSynthesis.onvoiceschanged = function() {
+        if (!voicesLoaded) {
+          voicesLoaded = true;
+          var voices = window.speechSynthesis.getVoices();
+          console.log('[Vocal] Voix chargées:', voices.length);
+        }
+      };
+      
+      // Timeout pour forcer le chargement si nécessaire
+      setTimeout(function() {
+        if (!voicesLoaded) {
+          window.speechSynthesis.getVoices();
+        }
+      }, 1000);
+    }
+  }
+})();
+</script>
+
+{# ══════ AJAX SEARCH — VUE RH SERVICES ══════ #}
+<script>
+(function () {
+  var form = document.getElementById('rh-svc-form');
+  if (!form) return;
+
+  var searchUrl  = form.getAttribute('data-search-url');
+  var input      = form.querySelector('input[name="search"]');
+  var selBy      = form.querySelector('select[name="searchBy"]');
+  var selSort    = form.querySelector('select[name="sortBy"]');
+  var dirInput   = document.getElementById('rh-svc-sort-dir');
+  var tbody      = document.getElementById('rh-svc-tbody');
+  var emptySearch = document.getElementById('rh-svc-empty-search');
+  var emptyData   = document.getElementById('rh-svc-empty-data');
+
+  if (!tbody) return;
+
+  var repondreBase = '{{ path("app_demande_service_repondre", {"id": "__ID__"}) }}';
+  var showBase     = '{{ path("app_demande_service_show",     {"id": "__ID__"}) }}';
+
+  function escHtml(s) {
+    return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function buildPill(st) {
+    if (st === 'Accepté' || st === 'approuvé') return '<span class="pill p-ok">Accepté</span>';
+    if (st === 'Refusé'  || st === 'refusé')   return '<span class="pill p-no">Refusé</span>';
+    return '<span class="pill p-pend">En attente</span>';
+  }
+
+  function buildRow(r, idx) {
+    var isPend = (r.statut === 'En attente');
+    var nom = (r.prenom || r.nom)
+      ? '<div class="who"><div class="av av-em">' + escHtml((r.prenom||'').charAt(0).toUpperCase() + (r.nom||'').charAt(0).toUpperCase()) + '</div>'
+        + '<div><div class="nm">' + escHtml((r.prenom||'') + ' ' + (r.nom||'')) + '</div><div class="sb">Employé</div></div></div>'
+      : '<span style="color:#94a3b8;">Non défini</span>';
+
+    var actionUrl = repondreBase.replace('__ID__', r.id);
+    var showUrl   = showBase.replace('__ID__', r.id);
+
+    var actions = isPend
+      ? '<button type="button" class="btn-dec btn-ok" data-bs-toggle="modal" data-bs-target="#rhDecisionModal"'
+          + ' data-id="' + r.id + '" data-decision="approuvé"'
+          + ' data-type="' + escHtml(r.typeNom || 'Service') + '"'
+          + ' data-action="' + actionUrl + '">'
+          + '<i class="fas fa-check"></i> Accepter</button>'
+        + '<button type="button" class="btn-dec btn-no" data-bs-toggle="modal" data-bs-target="#rhDecisionModal"'
+          + ' data-id="' + r.id + '" data-decision="refusé"'
+          + ' data-type="' + escHtml(r.typeNom || 'Service') + '"'
+          + ' data-action="' + actionUrl + '">'
+          + '<i class="fas fa-times"></i> Refuser</button>'
+      : '<span style="color:#94a3b8;font-weight:800;font-size:.88rem;">Décision prise</span>';
+
+    var tr = document.createElement('tr');
+    tr.style.animation = 'slideUp .3s cubic-bezier(.16,1,.3,1) ' + (idx * 0.04) + 's both';
+    tr.innerHTML =
+      '<td>' + nom + '</td>' +
+      '<td style="font-weight:800;color:#0f172a;">' + escHtml(r.typeNom || '—') + '</td>' +
+      '<td style="color:#64748b;font-weight:700;">' + escHtml(r.date || '—') + '</td>' +
+      '<td>' + buildPill(r.statut) + '</td>' +
+      '<td><div class="act">' +
+        '<a class="btn-ghost" href="' + showUrl + '" title="Voir"><i class="fas fa-eye"></i></a>' +
+        actions +
+      '</div></td>';
+    return tr;
+  }
+
+  function renderRows(rows) {
+    tbody.innerHTML = '';
+    if (rows.length === 0) {
+      if (emptySearch) emptySearch.style.display = '';
+      if (emptyData)   emptyData.style.display   = 'none';
+    } else {
+      if (emptySearch) emptySearch.style.display = 'none';
+      if (emptyData)   emptyData.style.display   = 'none';
+      rows.forEach(function (r, i) {
+        tbody.appendChild(buildRow(r, i));
+        // Rebind modal trigger events after DOM insert
+      });
+      // Re-attach modal data handlers for newly created buttons
+      tbody.querySelectorAll('[data-bs-target="#rhDecisionModal"]').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var dec  = btn.getAttribute('data-decision');
+          var type = btn.getAttribute('data-type');
+          var act  = btn.getAttribute('data-action');
+          var titleEl    = document.getElementById('rhDecisionTitle');
+          var subtitleEl = document.getElementById('rhDecisionSubtitle');
+          var valueEl    = document.getElementById('rhDecisionValue');
+          var submitEl   = document.getElementById('rhDecisionSubmit');
+          var formEl     = document.getElementById('rhDecisionForm');
+          if (titleEl)    titleEl.textContent    = (dec === 'approuvé' ? '✅ Approuver' : '❌ Refuser') + ' — ' + type;
+          if (subtitleEl) subtitleEl.textContent = dec === 'approuvé' ? 'Cette demande sera marquée comme acceptée.' : 'Cette demande sera marquée comme refusée.';
+          if (valueEl)    valueEl.value          = dec;
+          if (submitEl)   { submitEl.textContent = dec === 'approuvé' ? 'Confirmer l\'approbation' : 'Confirmer le refus'; submitEl.style.background = dec === 'approuvé' ? 'linear-gradient(135deg,#10b981,#059669)' : 'linear-gradient(135deg,#f43f5e,#e11d48)'; submitEl.style.color = '#fff'; }
+          if (formEl)     formEl.action = act;
+        });
+      });
+    }
+  }
+
+  var _timer = null;
+  function doSearch(immediate) {
+    clearTimeout(_timer);
+    _timer = setTimeout(function () {
+      var params = new URLSearchParams({
+        search:   input   ? input.value   : '',
+        searchBy: selBy   ? selBy.value   : 'all',
+        sortBy:   selSort ? selSort.value : 'dateDemande',
+        sortDir:  dirInput ? dirInput.value : 'desc',
+      });
+      fetch(searchUrl + '?' + params.toString(), {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+      })
+      .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(function (data) { renderRows(data.rows || []); })
+      .catch(function (err) { console.error('[AJAX RH Services]', err); });
+    }, immediate ? 0 : 350);
+  }
+
+  if (input)   input.addEventListener('input',   function () { doSearch(false); });
+  if (selBy)   selBy.addEventListener('change',  function () { doSearch(true); });
+  if (selSort) selSort.addEventListener('change', function () { doSearch(true); });
+
+  var dirBtn = form.querySelector('.btn-dir-rh');
+  if (dirBtn && dirInput) {
+    dirBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      var cur = dirInput.value === 'asc' ? 'desc' : 'asc';
+      dirInput.value = cur;
+      dirBtn.innerHTML = cur === 'asc'
+        ? '<i class="fas fa-arrow-up-a-z"></i> Croissant'
+        : '<i class="fas fa-arrow-down-z-a"></i> Décroissant';
+      doSearch(true);
+    });
+  }
+
+  form.addEventListener('submit', function (e) { e.preventDefault(); doSearch(true); });
+
+  var resetLink = form.querySelector('.btn-reset');
+  if (resetLink) {
+    resetLink.addEventListener('click', function (e) {
+      e.preventDefault();
+      if (input)    input.value    = '';
+      if (selBy)    selBy.value    = 'all';
+      if (selSort)  selSort.value  = 'dateDemande';
+      if (dirInput) dirInput.value = 'desc';
+      doSearch(true);
+    });
+  }
+
+  // Chargement initial
+  doSearch(true);
+})();
+</script>
+
+{# ══════ AJAX SEARCH — VUE EMPLOYÉ SERVICES ══════ #}
+<script>
+(function () {
+  var form = document.getElementById('em-svc-form');
+  if (!form) return;
+
+  var searchUrl  = form.getAttribute('data-search-url');
+  var input      = form.querySelector('input[name="search"]');
+  var selBy      = form.querySelector('select[name="searchBy"]');
+  var selSort    = form.querySelector('select[name="sortBy"]');
+  var dirInput   = document.getElementById('em-svc-sort-dir');
+  var tbody      = document.getElementById('em-svc-tbody');
+  var countNum   = document.getElementById('em-svc-count-num');
+  var countBox   = document.getElementById('em-svc-count');
+  var emptySearch = document.getElementById('em-svc-empty-search');
+  var emptyData   = document.getElementById('em-svc-empty-data');
+
+  if (!tbody) return;
+
+  function setLoading(on) {
+    tbody.style.opacity = on ? '0.4' : '1';
+    tbody.style.pointerEvents = on ? 'none' : '';
+  }
+
+  function escHtml(s) {
+    return String(s || '')
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function buildPill(statut) {
+    var ok = (statut === 'Accepté' || statut === 'approuvé');
+    var no = (statut === 'Refusé'  || statut === 'refusé');
+    if (ok) return '<span class="pill p-ok">Accepté</span>';
+    if (no) return '<span class="pill p-no">Refusé</span>';
+    return '<span class="pill p-pend">En attente</span>';
+  }
+
+  function buildRow(r, idx) {
+    var nom = (r.prenom || r.nom)
+      ? escHtml((r.prenom || '') + ' ' + (r.nom || '')).trim()
+      : '<span style="color:#94a3b8">—</span>';
+
+    var editBtn = (r.statut === 'En attente')
+      ? '<a class="btn-ghost btn-ghost-em" href="' + r.editUrl + '" title="Modifier"><i class="fas fa-pen"></i></a>'
+      : '';
+
+    var tr = document.createElement('tr');
+    tr.style.animation = 'slideUp .3s cubic-bezier(.16,1,.3,1) ' + (idx * 0.04) + 's both';
+    tr.innerHTML =
+      '<td style="font-weight:800;">' + nom + '</td>' +
+      '<td style="font-weight:800;color:#0f172a;">' + escHtml(r.typeNom || '—') + '</td>' +
+      '<td style="color:#64748b;font-weight:700;">' + escHtml(r.date || '—') + '</td>' +
+      '<td>' + buildPill(r.statut) + '</td>' +
+      '<td><div class="act">' +
+        '<a class="btn-ghost btn-ghost-em" href="' + r.showUrl + '" title="Voir"><i class="fas fa-eye"></i></a>' +
+        editBtn +
+      '</div></td>';
+    return tr;
+  }
+
+  function renderRows(rows) {
+    tbody.innerHTML = '';
+    if (rows.length === 0) {
+      if (emptySearch) emptySearch.style.display = '';
+      if (emptyData)   emptyData.style.display   = 'none';
+      if (countBox)    countBox.style.display     = 'none';
+    } else {
+      if (emptySearch) emptySearch.style.display = 'none';
+      if (emptyData)   emptyData.style.display   = 'none';
+      if (countBox)    countBox.style.display     = '';
+      rows.forEach(function (r, i) { tbody.appendChild(buildRow(r, i)); });
+    }
+    if (countNum) countNum.textContent = rows.length;
+  }
+
+  var _timer = null;
+  function doSearch(immediate) {
+    clearTimeout(_timer);
+    _timer = setTimeout(function () {
+      var params = new URLSearchParams({
+        search:   input   ? input.value    : '',
+        searchBy: selBy   ? selBy.value    : 'all',
+        sortBy:   selSort ? selSort.value  : 'dateDemande',
+        sortDir:  dirInput ? dirInput.value : 'desc',
+      });
+      setLoading(true);
+      fetch(searchUrl + '?' + params.toString(), {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+      })
+      .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(function (data) { setLoading(false); renderRows(data.rows || []); })
+      .catch(function (err) { setLoading(false); console.error('[AJAX Services]', err); });
+    }, immediate ? 0 : 350);
+  }
+
+  if (input) input.addEventListener('input', function () { doSearch(false); });
+  if (selBy)   selBy.addEventListener('change',  function () { doSearch(true); });
+  if (selSort) selSort.addEventListener('change', function () { doSearch(true); });
+
+  var dirBtn = form.querySelector('.btn-dir-em');
+  if (dirBtn && dirInput) {
+    dirBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      var cur = dirInput.value === 'asc' ? 'desc' : 'asc';
+      dirInput.value = cur;
+      dirBtn.innerHTML = cur === 'asc'
+        ? '<i class="fas fa-arrow-up-a-z"></i> Croissant'
+        : '<i class="fas fa-arrow-down-z-a"></i> Décroissant';
+      doSearch(true);
+    });
+  }
+
+  form.addEventListener('submit', function (e) { e.preventDefault(); doSearch(true); });
+
+  var resetLink = form.querySelector('.btn-reset');
+  if (resetLink) {
+    resetLink.addEventListener('click', function (e) {
+      e.preventDefault();
+      if (input)    input.value    = '';
+      if (selBy)    selBy.value    = 'all';
+      if (selSort)  selSort.value  = 'dateDemande';
+      if (dirInput) dirInput.value = 'desc';
+      doSearch(true);
+    });
+  }
+})();
+</script>
+
+{# ══════ LIKE / DISLIKE AJAX ══════ #}
+<script>
+(function () {
+  var CSRF = document.querySelector('meta[name="csrf-token"]');
+  var reactBase = '{{ path("app_demande_service_react", {"typeId": 0, "reaction": "like"}) }}';
+  // remplace /react/0/like par /react/{id}/{reaction}
+  function reactUrl(typeId, reaction) {
+    return reactBase.replace('/0/', '/' + typeId + '/').replace('/like', '/' + reaction);
+  }
+
+  document.querySelectorAll('.btn-react').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var typeId   = btn.getAttribute('data-type-id');
+      var reaction = btn.getAttribute('data-reaction');
+      if (!typeId || !reaction) return;
+
+      // UI optimiste : toggle visuel immédiat
+      btn.classList.add('loading');
+
+      fetch(reactUrl(typeId, reaction), {
+        method: 'POST',
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest',
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        // Mettre à jour les compteurs
+        var likesEl    = document.getElementById('likes-'    + typeId);
+        var dislikesEl = document.getElementById('dislikes-' + typeId);
+        if (likesEl)    likesEl.textContent    = data.likes;
+        if (dislikesEl) dislikesEl.textContent = data.dislikes;
+
+        // Mettre à jour l'état actif des boutons
+        var card = btn.closest('.react-card');
+        if (card) {
+          card.querySelectorAll('.btn-like,.btn-dislike').forEach(function (b) {
+            b.classList.remove('active');
+          });
+        }
+        if (data.reaction) {
+          var activeBtn = card
+            ? card.querySelector('.btn-' + data.reaction)
+            : document.querySelector('[data-type-id="'+typeId+'"][data-reaction="'+data.reaction+'"]');
+          if (activeBtn) activeBtn.classList.add('active');
+        }
+      })
+      .catch(function (err) { console.error('[Like/Dislike]', err); })
+      .finally(function () { btn.classList.remove('loading'); });
+    });
+  });
+})();
+</script>
+{% endblock %}

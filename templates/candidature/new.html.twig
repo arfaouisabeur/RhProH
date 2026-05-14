@@ -1,0 +1,59 @@
+{% extends 'base.html.twig' %}
+{% block title %}Nouvelle candidature{% endblock %}
+
+{% block styles %}
+<style>
+    body { background:#F7F4FB !important; }
+    .pg { max-width:700px; margin:0 auto; padding:36px 24px 60px; }
+    .btn-op { display:inline-flex; align-items:center; gap:7px; padding:9px 18px; border-radius:99px; background:transparent; color:#6D2269; border:1.5px solid #6D2269; font-size:13px; font-weight:600; text-decoration:none; transition:all .22s; }
+    .btn-op:hover { background:#6D2269; color:#fff; }
+    .fc { background:#fff; border-radius:18px; box-shadow:0 2px 12px rgba(109,34,105,0.08); border:1px solid rgba(109,34,105,0.07); overflow:hidden; }
+    .fc-hd { background:linear-gradient(135deg,#4E1A4B,#6D2269); padding:26px 30px; color:#fff; display:flex; align-items:center; gap:14px; }
+    .fc-hd-ico { width:46px; height:46px; background:rgba(255,255,255,0.15); border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:20px; }
+    .fc-hd h5 { font-size:18px; font-weight:700; margin:0; }
+    .fc-hd p  { font-size:13px; opacity:.75; margin:3px 0 0; }
+    .fc-bd { padding:28px 30px; }
+    .fg { margin-bottom:18px; }
+    .fg label { display:block; font-size:13px; font-weight:600; color:#4E1A4B; margin-bottom:6px; }
+    .fg input, .fg select, .fg textarea { width:100%; padding:11px 14px; border-radius:12px; border:1.5px solid rgba(109,34,105,0.15); background:#F7F4FB; font-size:14px; transition:all .22s; }
+    .fg input:focus, .fg select:focus, .fg textarea:focus { outline:none; border-color:#6D2269; background:#fff; box-shadow:0 0 0 3px rgba(109,34,105,0.09); }
+    .fg textarea { resize:vertical; min-height:100px; }
+    .btn-p { display:inline-flex; align-items:center; gap:7px; padding:11px 28px; border-radius:99px; background:linear-gradient(135deg,#6D2269,#8B3A86); color:#fff; font-size:14px; font-weight:600; border:none; cursor:pointer; box-shadow:0 4px 14px rgba(109,34,105,0.3); transition:all .22s; }
+    .btn-p:hover { transform:translateY(-2px); color:#fff; }
+    .fc-ft { padding:18px 30px; border-top:1px solid rgba(109,34,105,0.07); display:flex; gap:12px; }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="pg">
+    <div style="margin-bottom:20px;">
+        <a href="{{ path('app_candidature_index') }}" class="btn-op"><i class="bi bi-arrow-left"></i> Retour</a>
+    </div>
+
+    {% if offre is defined %}
+    <div style="background:linear-gradient(135deg,rgba(253,214,254,.4),rgba(207,195,230,.3));border:1px solid rgba(109,34,105,0.12);border-radius:12px;padding:12px 18px;margin-bottom:20px;display:flex;align-items:center;gap:10px;font-size:14px;color:#4E1A4B;font-weight:500;">
+        <i class="bi bi-briefcase" style="color:#6D2269;font-size:16px;"></i>
+        Candidature pour : <strong>{{ offre.titre }}</strong>
+    </div>
+    {% endif %}
+
+    <div class="fc">
+        <div class="fc-hd">
+            <div class="fc-hd-ico"><i class="bi bi-send"></i></div>
+            <div>
+                <h5>Nouvelle candidature</h5>
+                <p>Remplissez le formulaire pour postuler</p>
+            </div>
+        </div>
+        <div class="fc-bd">
+            {{ form_start(form) }}
+            {{ form_widget(form) }}
+            <div class="fc-ft">
+                <button type="submit" class="btn-p"><i class="bi bi-send-fill"></i> Envoyer ma candidature</button>
+                <a href="{{ path('app_candidature_index') }}" class="btn-op" style="padding:11px 22px;">Annuler</a>
+            </div>
+            {{ form_end(form) }}
+        </div>
+    </div>
+</div>
+{% endblock %}

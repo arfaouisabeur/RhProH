@@ -1,0 +1,213 @@
+{% extends 'base.html.twig' %}
+{% block title %}Mes Participations — RHPro{% endblock %}
+
+{% block styles %}
+:root { --green: #7c3aed; --green-dark: #6d28d9; --surface: #f5f0ff; --border: #e5e7eb; --text-dark: #111827; --text-muted: #6b7280; }
+body { background: var(--surface); }
+.mpart-page { min-height: 100vh; background: var(--surface); font-family: 'Inter', sans-serif; padding-bottom: 60px; }
+.mpart-header { background: var(--surface); padding: 36px 0 0; }
+.mpart-header-inner { max-width: 900px; margin: 0 auto; padding: 0 32px; display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; flex-wrap: wrap; }
+.mpart-title { font-size: 28px; font-weight: 700; color: var(--green-dark); margin: 0 0 6px; }
+.mpart-subtitle { font-size: 14px; color: var(--text-muted); margin: 0; }
+.btn-ev { display: inline-flex; align-items: center; gap: 7px; padding: 10px 20px; border-radius: 10px; background: var(--green); color: #fff; font-size: 13px; font-weight: 600; text-decoration: none; transition: background 0.2s; }
+.btn-ev:hover { background: var(--green-dark); color: #fff; text-decoration: none; }
+/* Stats */
+.mpart-stats { max-width: 900px; margin: 28px auto 0; padding: 0 32px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+@media(max-width:600px){ .mpart-stats { grid-template-columns: 1fr; } }
+.stat-card { background: #fff; border-radius: 14px; border: 1px solid var(--border); padding: 18px 20px; box-shadow: 0 2px 6px rgba(0,0,0,0.04); display: flex; align-items: center; gap: 14px; cursor: pointer; transition: box-shadow 0.2s, transform 0.15s; }
+.stat-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(124,58,237,0.15); }
+.stat-card.active-filter { outline: 2px solid var(--green); }
+.stat-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+.stat-icon.orange { background: #fff7ed; } .stat-icon.green { background: #ede9fe; } .stat-icon.red { background: #fee2e2; }
+.stat-number { font-size: 28px; font-weight: 700; color: var(--text-dark); line-height: 1; }
+.stat-label  { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 3px; }
+
+/* Filter tabs */
+.mpart-content { max-width: 900px; margin: 24px auto 0; padding: 0 32px; }
+.filter-strip {
+  display: flex; gap: 6px; margin-bottom: 16px;
+  background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 6px;
+}
+.filter-tab {
+  flex: 1; padding: 8px 12px; background: none; border: none;
+  border-radius: 8px; font-size: 13px; font-weight: 600; font-family: 'Inter', sans-serif;
+  color: var(--text-muted); cursor: pointer; transition: background 0.2s, color 0.2s;
+  text-align: center;
+}
+.filter-tab:hover { background: #f5f3ff; color: var(--green-dark); }
+.filter-tab.active { background: var(--green); color: #fff; }
+
+/* Table */
+.mpart-table-card { background: #fff; border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 2px 8px rgba(0,0,0,0.05); overflow: hidden; }
+.mpart-table-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.mpart-table-title { font-size: 16px; font-weight: 600; color: var(--text-dark); margin: 0; display: flex; align-items: center; gap: 8px; }
+.result-count { font-size: 12px; color: var(--text-muted); background: #f3f4f6; padding: 4px 10px; border-radius: 100px; }
+table.mpart-table { width: 100%; border-collapse: collapse; }
+.mpart-table th { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; padding: 12px 20px; text-align: left; background: #f9fafb; border-bottom: 1px solid var(--border); }
+.mpart-table td { padding: 16px 20px; font-size: 14px; color: var(--text-dark); border-bottom: 1px solid #f3f4f6; vertical-align: middle; }
+.mpart-table tr:last-child td { border-bottom: none; }
+.mpart-table tbody tr:hover td { background: #faf5ff; }
+.ev-name { font-weight: 600; margin: 0 0 2px; }
+.ev-location { font-size: 12px; color: var(--text-muted); margin: 0; }
+.status-badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 12px; border-radius: 100px; font-size: 12px; font-weight: 600; }
+.status-pending  { background: #fef3c7; color: #92400e; }
+.status-accepted { background: #ede9fe; color: #5b21b6; }
+.status-refused  { background: #fee2e2; color: #991b1b; }
+.btn-annuler { display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 600; border: none; cursor: pointer; font-family: 'Inter', sans-serif; background: #fee2e2; color: #991b1b; transition: background 0.2s; }
+.btn-annuler:hover { background: #fecaca; }
+.mpart-empty { text-align: center; padding: 60px 32px; color: var(--text-muted); }
+.no-results { text-align: center; padding: 40px 32px; color: var(--text-muted); font-size: 14px; }
+{% endblock %}
+
+{% block body %}
+{{ include('partials/_confirm_modal.html.twig') }}
+
+{% set pending  = participations|filter(p => p.statut == 'en_attente')|length %}
+{% set accepted = participations|filter(p => p.statut == 'accepte')|length %}
+{% set refused  = participations|filter(p => p.statut == 'refuse')|length %}
+
+<div class="mpart-page">
+  <div class="mpart-header">
+    <div class="mpart-header-inner">
+      <div>
+        <h1 class="mpart-title">📋 Mes Participations</h1>
+        <p class="mpart-subtitle">Gérez vos demandes de participation aux événements.</p>
+      </div>
+      <a href="{{ path('app_employe_evenements') }}" class="btn-ev">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Voir les événements
+      </a>
+    </div>
+  </div>
+
+  {# Stats cliquables pour filtrer #}
+  <div class="mpart-stats">
+    <div class="stat-card" id="card-pending" onclick="setFilter('en_attente')" title="Filtrer : En attente">
+      <div class="stat-icon orange">⏳</div>
+      <div><div class="stat-number">{{ pending }}</div><div class="stat-label">En attente</div></div>
+    </div>
+    <div class="stat-card" id="card-accepted" onclick="setFilter('accepte')" title="Filtrer : Acceptées">
+      <div class="stat-icon green">✅</div>
+      <div><div class="stat-number">{{ accepted }}</div><div class="stat-label">Acceptées</div></div>
+    </div>
+    <div class="stat-card" id="card-refused" onclick="setFilter('refuse')" title="Filtrer : Refusées">
+      <div class="stat-icon red">❌</div>
+      <div><div class="stat-number">{{ refused }}</div><div class="stat-label">Refusées</div></div>
+    </div>
+  </div>
+
+  <div class="mpart-content">
+
+    {# Filtres tabs #}
+    <div class="filter-strip">
+      <button class="filter-tab active" id="tab-all"       onclick="setFilter('all')">Toutes ({{ participations|length }})</button>
+      <button class="filter-tab"         id="tab-pending"   onclick="setFilter('en_attente')">⏳ En attente ({{ pending }})</button>
+      <button class="filter-tab"         id="tab-accepted"  onclick="setFilter('accepte')">✅ Acceptées ({{ accepted }})</button>
+      <button class="filter-tab"         id="tab-refused"   onclick="setFilter('refuse')">❌ Refusées ({{ refused }})</button>
+    </div>
+
+    <div class="mpart-table-card">
+      <div class="mpart-table-header">
+        <h3 class="mpart-table-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Historique des participations
+        </h3>
+        <span class="result-count" id="result-count">{{ participations|length }} résultat(s)</span>
+      </div>
+
+      {% if participations is empty %}
+        <div class="mpart-empty">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="1.5" style="margin-bottom:12px;"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <p>Vous n'avez encore participé à aucun événement.</p>
+          <a href="{{ path('app_employe_evenements') }}" class="btn-ev" style="display:inline-flex;margin-top:16px;">Découvrir les événements</a>
+        </div>
+      {% else %}
+        <table class="mpart-table">
+          <thead>
+            <tr>
+              <th>Événement</th>
+              <th>Période</th>
+              <th>Inscrit le</th>
+              <th>Statut</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="part-tbody">
+            {% for p in participations %}
+            <tr data-statut="{{ p.statut }}">
+              <td>
+                <p class="ev-name">{{ p.evenement.titre }}</p>
+                <p class="ev-location">📍 {{ p.evenement.lieu }}</p>
+              </td>
+              <td>
+                <div style="font-size:13px;font-weight:500;">{{ p.evenement.dateDebut }}</div>
+                <div style="font-size:12px;color:var(--text-muted);">au {{ p.evenement.dateFin }}</div>
+              </td>
+              <td style="font-size:13px;">{{ p.dateInscription }}</td>
+              <td>
+                {% if p.statut == 'en_attente' %}
+                  <span class="status-badge status-pending">● En attente</span>
+                {% elseif p.statut == 'accepte' %}
+                  <span class="status-badge status-accepted">● Accepté</span>
+                {% else %}
+                  <span class="status-badge status-refused">● Refusé</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if p.statut == 'en_attente' %}
+                  <form id="annuler-{{ p.id }}" method="post" action="{{ path('app_employe_annuler_participation', {'id': p.id}) }}" style="display:inline;">
+                    <input type="hidden" name="_token" value="{{ csrf_token('annuler' ~ p.id) }}">
+                    <button type="button" class="btn-annuler"
+                      onclick="rhConfirmDelete(document.getElementById('annuler-{{ p.id }}'), 'Annuler votre participation à « {{ p.evenement.titre|e('js') }} » ?')">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                      Annuler
+                    </button>
+                  </form>
+                {% else %}
+                  <span style="font-size:12px;color:var(--text-muted);">—</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        <div class="no-results" id="no-results" style="display:none;">Aucune participation dans cette catégorie.</div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<script>
+var activeFilter = 'all';
+
+function setFilter(statut) {
+  activeFilter = statut;
+
+  // Update stat cards
+  ['card-pending','card-accepted','card-refused'].forEach(function(id){ document.getElementById(id) && document.getElementById(id).classList.remove('active-filter'); });
+  if (statut === 'en_attente' && document.getElementById('card-pending'))  document.getElementById('card-pending').classList.add('active-filter');
+  if (statut === 'accepte'   && document.getElementById('card-accepted')) document.getElementById('card-accepted').classList.add('active-filter');
+  if (statut === 'refuse'    && document.getElementById('card-refused'))  document.getElementById('card-refused').classList.add('active-filter');
+
+  // Update tabs
+  ['tab-all','tab-pending','tab-accepted','tab-refused'].forEach(function(id){ document.getElementById(id) && document.getElementById(id).classList.remove('active'); });
+  var map = { all: 'tab-all', en_attente: 'tab-pending', accepte: 'tab-accepted', refuse: 'tab-refused' };
+  if (map[statut]) document.getElementById(map[statut]).classList.add('active');
+
+  // Filter rows
+  var rows = document.querySelectorAll('#part-tbody tr');
+  var visible = 0;
+  rows.forEach(function(row) {
+    var show = (statut === 'all') || (row.dataset.statut === statut);
+    row.style.display = show ? '' : 'none';
+    if (show) visible++;
+  });
+
+  var noRes = document.getElementById('no-results');
+  if (noRes) noRes.style.display = (visible === 0) ? 'block' : 'none';
+
+  var rc = document.getElementById('result-count');
+  if (rc) rc.textContent = visible + ' résultat(s)';
+}
+</script>
+{% endblock %}

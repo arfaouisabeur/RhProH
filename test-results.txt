@@ -1,0 +1,253 @@
+Candidature (App\Tests\Entity\Candidature)
+ [x] Candidature can be created
+ [x] Set and get date candidature
+ [x] Set and get statut
+ [x] Set and get cv path
+ [x] Set and get cv original name
+ [x] Set and get cv size
+ [x] Set and get cv uploaded at
+ [x] Set and get match score
+ [x] Set and get match updated at
+ [x] Set and get cv skills
+ [x] Set and get ai analysis
+ [x] Set and get signature request id
+ [x] Set and get contract status
+ [x] Set and get lettre motivation
+ [x] Set and get disponibilite
+ [x] Set and get pretention salariale
+ [x] Set and get candidat
+ [x] Set and get offre emploi
+ [x] Fluent interface
+ [x] Validation fails when statut is blank
+ [x] Validation fails when lettre motivation is too short
+ [x] Validation fails when lettre motivation is too long
+ [x] Validation fails when pretention salariale is negative
+ [x] Validation passes with valid data
+ [x] Different statut values
+ [x] Nullable fields
+ [x] Match score range
+ [x] Lettre motivation minimum length
+ [x] Lettre motivation maximum length
+
+Candidature Controller (App\Tests\Controller\CandidatureController)
+ [x] Verify endpoint exists
+ [x] Index page requires authentication
+ [x] Ajax search endpoint exists
+ [x] Generate lettre endpoint exists
+ [x] New page requires authentication
+ [x] Show page requires authentication
+ [x] Edit page requires authentication
+ [x] Delete requires authentication
+ [x] Change statut requires authentication
+ [x] Mes candidatures requires authentication
+ [x] Postuler requires authentication
+ [x] Download certificat requires authentication
+ [x] Regenerate certificat requires authentication
+ [x] Analyse cv requires authentication
+ [x] Index with search parameter
+ [x] Index with statut filter
+ [x] Ajax search with parameters
+
+Contract (App\Tests\Entity\Contract)
+ [x] Contract can be created
+ [x] Set and get date debut
+ [x] Set and get date fin
+ [x] Set and get type
+ [x] Set and get statut
+ [x] Set and get salaire base
+ [x] Set and get description
+ [x] Description can be null
+ [x] Set and get employe
+ [x] Employe can be null
+ [x] Set and get rh
+ [x] Rh can be null
+ [x] Fluent interface
+ [x] Validation fails when date debut is blank
+ [x] Validation fails when date fin is blank
+ [x] Validation fails when type is blank
+ [x] Validation fails when type is too short
+ [x] Validation fails when statut is blank
+ [x] Validation fails when salaire base is blank
+ [x] Validation fails when salaire base is negative
+ [x] Validation fails when description is too long
+ [x] Validation fails when date fin is before date debut
+ [x] Validation fails when date fin equals date debut
+ [x] Validation passes with valid data
+ [x] Validation passes without description
+ [x] Validation passes with max length description
+ [x] Different contract types
+ [x] Different statut values
+ [x] Salaire base with different formats
+ [x] Valid date ranges
+ [x] Type minimum length
+
+Contract Controller (App\Tests\Controller\ContractController)
+ [x] Index page loads
+ [x] New page requires authentication
+ [x] Check active endpoint exists
+ [x] Average salary api endpoint exists
+
+Contract Repository (App\Tests\Repository\ContractRepository)
+ [x] Repository is instance of contract repository
+ [ ] Can persist and find contract
+ [ ] Can find all contracts
+ [ ] Can find contract by type
+ [ ] Can find contract by statut
+ [ ] Can find one contract by multiple criteria
+ [ ] Can update contract
+ [ ] Can delete contract
+ [ ] Can persist contract without description
+ [ ] Find returns null for non existent id
+ [ ] Find one by returns null when no match
+ [ ] Can find contracts ordered by date debut
+ [ ] Can find contracts ordered by salaire base
+ [ ] Can find active contracts
+
+Employee Contract Controller (App\Tests\Controller\EmployeeContractController)
+ [x] Index page requires authentication
+ [x] Pdf generation requires authentication
+
+Employee Prime Controller (App\Tests\Controller\EmployeePrimeController)
+ [x] Index page requires authentication
+
+Employee Salaire Controller (App\Tests\Controller\EmployeeSalaireController)
+ [x] Index page requires authentication
+
+Offre Emploi (App\Tests\Entity\OffreEmploi)
+ [x] Remove candidature
+ [x] Offre emploi can be created
+ [x] Set and get titre
+ [x] Set and get localisation
+ [x] Set and get type contrat
+ [x] Set and get statut
+ [x] Set and get date publication
+ [x] Set and get date expiration
+ [x] Set and get description
+ [x] Set and get rh
+ [x] Set and get latitude
+ [x] Set and get longitude
+ [x] Candidatures collection
+ [x] Add candidature
+ [x] Add candidature does not duplicates
+ [x] Fluent interface
+ [x] Validation fails when titre is blank
+ [x] Validation fails when titre is too short
+ [x] Validation fails when titre is too long
+ [x] Validation fails when localisation is blank
+ [x] Validation fails when type contrat is blank
+ [x] Validation fails when statut is blank
+ [x] Validation fails when description is blank
+ [x] Validation fails when description is too short
+ [x] Validation fails when date expiration is before date publication
+ [x] Validation passes with valid data
+ [x] Different type contrat values
+ [x] Different statut values
+ [x] Titre minimum length
+ [x] Description minimum length
+ [x] Nullable coordinates
+ [x] Valid coordinates
+
+Offre Emploi Controller (App\Tests\Controller\OffreEmploiController)
+ [x] Admin routes are protected
+ [x] Admin index page requires authentication
+ [x] Admin ajax search endpoint exists
+ [x] Admin new page requires authentication
+ [x] Admin show page requires authentication
+ [x] Admin edit page requires authentication
+ [x] Admin delete requires authentication
+ [x] Candidat index page is public
+ [x] Candidat show page is public
+ [x] Toggle favori requires authentication
+ [x] Mes favoris requires authentication
+ [x] Admin index with search parameter
+ [x] Admin ajax search with query
+ [x] Candidat index with search parameter
+ [x] Public routes are accessible
+ [x] Delete with invalid csrf token
+ [x] Toggle favori returns json response
+
+Prime (App\Tests\Entity\Prime)
+ [x] Prime can be created
+ [x] Constructor initializes taches collection
+ [x] Set and get montant
+ [x] Set and get date attribution
+ [x] Set and get description
+ [x] Description can be null
+ [x] Set and get contract
+ [x] Fluent interface
+ [x] Add tache
+ [x] Add tache does not add duplicate
+ [x] Remove tache
+ [x] Remove tache when not in collection
+ [x] Validation fails when montant is blank
+ [x] Validation fails when montant is negative
+ [x] Validation fails when date attribution is blank
+ [x] Validation fails when contract is null
+ [x] Validation fails when description is too long
+ [x] Validation passes with valid data
+ [x] Validation passes without description
+ [x] Validation passes with max length description
+ [x] Montant with different formats
+ [x] Multiple taches can be added
+
+Prime Repository (App\Tests\Repository\PrimeRepository)
+ [x] Repository is instance of prime repository
+ [ ] Can persist and find prime
+ [ ] Can find all primes
+ [ ] Can find prime by montant
+ [ ] Can find prime by date attribution
+ [ ] Can find one prime by multiple criteria
+ [ ] Can update prime
+ [ ] Can delete prime
+ [ ] Can persist prime without description
+ [ ] Find returns null for non existent id
+ [ ] Find one by returns null when no match
+ [ ] Can find primes ordered by date attribution
+ [ ] Can find primes ordered by montant
+
+Rh Prime Controller (App\Tests\Controller\RhPrimeController)
+ [x] Index page requires authentication
+ [x] New page requires authentication
+ [x] Get taches api endpoint exists
+
+Rh Salaire Controller (App\Tests\Controller\RhSalaireController)
+ [x] Index page requires authentication
+ [x] New page requires authentication
+ [x] Export endpoint requires authentication
+
+Salaire (App\Tests\Entity\Salaire)
+ [x] Salaire can be created
+ [x] Set and get mois
+ [x] Set and get annee
+ [x] Set and get montant
+ [x] Set and get date paiement
+ [x] Date paiement can be null
+ [x] Set and get statut
+ [x] Set and get contract
+ [x] Contract can be null
+ [x] Fluent interface
+ [x] Validation fails when mois is blank
+ [x] Validation fails when annee is blank
+ [x] Validation fails when annee is invalid
+ [x] Validation fails when montant is blank
+ [x] Validation fails when montant is negative
+ [x] Validation fails when statut is blank
+ [x] Validation passes with valid data
+ [x] Validation passes without date paiement
+ [x] Different statut values
+ [x] Different mois values
+ [x] Montant with decimal values
+
+Salaire Repository (App\Tests\Repository\SalaireRepository)
+ [x] Repository is instance of salaire repository
+ [ ] Can persist and find salaire
+ [ ] Can find all salaires
+ [ ] Can find salaire by mois
+ [ ] Can find salaire by annee
+ [ ] Can find salaire by statut
+ [ ] Can find one salaire by multiple criteria
+ [ ] Can update salaire
+ [ ] Can delete salaire
+ [ ] Find returns null for non existent id
+ [ ] Find one by returns null when no match
+

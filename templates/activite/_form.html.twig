@@ -1,0 +1,69 @@
+<style>
+  .act-form-wrap { background:#fff; border-radius:16px; border:1px solid #e5e7eb; padding:28px; box-shadow:0 2px 10px rgba(0,0,0,0.05); }
+  .act-form-group { margin-bottom:18px; }
+  .act-form-group label { display:block; font-size:13px; font-weight:600; color:#374151; margin-bottom:6px; }
+  .act-form-group label .req { color:#ef4444; margin-left:2px; }
+  .act-form-group input, .act-form-group textarea, .act-form-group select {
+    width:100%; padding:11px 14px; border:1.5px solid #e5e7eb; border-radius:10px;
+    font-size:14px; font-family:'Inter',sans-serif; color:#111827; background:#fafafa;
+    box-sizing:border-box; outline:none; transition:border-color 0.2s, box-shadow 0.2s;
+  }
+  .act-form-group input:focus, .act-form-group textarea:focus, .act-form-group select:focus {
+    border-color:#7c3aed; box-shadow:0 0 0 3px rgba(124,58,237,0.12);
+  }
+  .act-form-group input.is-invalid, .act-form-group textarea.is-invalid, .act-form-group select.is-invalid {
+    border-color:#ef4444; background:#fff5f5;
+  }
+  .act-form-group textarea { resize:vertical; }
+  .field-error { display:flex; align-items:center; gap:5px; margin-top:6px; font-size:12px; color:#ef4444; font-weight:500; }
+  .form-alert { background:#fee2e2; border:1px solid #fca5a5; border-radius:10px; padding:14px 16px; margin-bottom:20px; display:flex; align-items:flex-start; gap:10px; font-size:13px; color:#991b1b; }
+  .act-form-actions { display:flex; gap:10px; margin-top:24px; }
+  .btn-save { display:inline-flex; align-items:center; gap:7px; padding:11px 22px; border-radius:10px; font-size:13px; font-weight:600; cursor:pointer; border:none; font-family:'Inter',sans-serif; background:#7c3aed; color:#fff; transition:transform 0.15s, background 0.2s; }
+  .btn-save:hover { transform:translateY(-1px); background:#6d28d9; }
+  .btn-cancel-link { display:inline-flex; align-items:center; gap:6px; padding:11px 18px; border-radius:10px; font-size:13px; font-weight:500; text-decoration:none; background:#f3f4f6; color:#6b7280; border:1px solid #e5e7eb; transition:background 0.2s; }
+  .btn-cancel-link:hover { background:#ede9fe; color:#6d28d9; text-decoration:none; }
+</style>
+
+{% if form.vars.submitted and not form.vars.valid %}
+<div class="form-alert">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg>
+  <div>Veuillez corriger les erreurs ci-dessous avant de valider.</div>
+</div>
+{% endif %}
+
+{{ form_start(form, {'attr': {'novalidate': 'novalidate', 'id': 'act-form-' ~ form.vars.id}}) }}
+<div class="act-form-wrap">
+  {% for field in form %}
+    {% if field.vars.name != '_token' %}
+    <div class="act-form-group">
+      {{ form_label(field) }}
+      {{ form_widget(field, {'attr': {'class': field.vars.errors|length > 0 ? 'is-invalid' : ''}}) }}
+      {% for error in field.vars.errors %}
+        <div class="field-error">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg>
+          {{ error.message }}
+        </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  {% endfor %}
+  <div class="act-form-actions">
+    <button type="button" class="btn-save"
+      onclick="rhConfirm({
+        title: '{{ isEdit is defined and isEdit ? 'Confirmer la modification' : 'Confirmer l\'ajout' }}',
+        text: '{{ isEdit is defined and isEdit ? 'Enregistrer les modifications de cette activité ?' : 'Ajouter cette activité ?' }}',
+        type: '{{ isEdit is defined and isEdit ? 'warn' : 'ok' }}',
+        confirmLabel: '{{ button_label|default('Enregistrer') }}',
+        callback: function(){ document.getElementById('act-form-{{ form.vars.id }}').submit(); }
+      })">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+      {{ button_label|default('Enregistrer') }}
+    </button>
+    {% if back_url is defined %}
+      <a href="{{ back_url }}" class="btn-cancel-link">Annuler</a>
+    {% else %}
+      <a href="{{ path('app_activite_index') }}" class="btn-cancel-link">Annuler</a>
+    {% endif %}
+  </div>
+</div>
+{{ form_end(form) }}

@@ -1,0 +1,1170 @@
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --purple:       #5b2b82;
+    --purple-dark:  #3d1a5c;
+    --purple-light: #7c3dac;
+    --gold:         #b39ddb;
+    --gold-light:   #d1c4e9;
+    --white:        #ffffff;
+    --off-white:    #f7f4f0;
+    --text-dark:    #1a1020;
+    --text-muted:   #8a7a9a;
+    --glass:        rgba(255,255,255,0.07);
+    --glass-border: rgba(255,255,255,0.15);
+  }
+
+  /* ── NAVBAR SHELL ── */
+  .rh-navbar {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    font-family: 'DM Sans', sans-serif;
+    background: rgba(26, 10, 46, 0.97);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    box-shadow: 0 4px 32px rgba(0,0,0,0.3);
+  }
+
+  /* Gold top line */
+  .rh-navbar::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold) 30%, var(--gold-light) 50%, var(--gold) 70%, transparent);
+    opacity: 0.6;
+  }
+
+  .rh-navbar .container {
+    display: flex;
+    align-items: center;
+    height: 68px;
+    gap: 0;
+  }
+
+  /* ── BRAND ── */
+  .nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    flex-shrink: 0;
+    margin-right: 36px;
+  }
+
+  .nav-brand-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--gold);
+    box-shadow: 0 0 8px rgba(201,168,76,0.7);
+    flex-shrink: 0;
+  }
+
+  .nav-brand-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--white);
+    letter-spacing: -0.01em;
+  }
+
+  /* ── MAIN LINKS ── */
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex: 1;
+    list-style: none;
+    margin: 0; padding: 0;
+  }
+
+  .nav-links .nav-item { position: relative; }
+
+  .nav-links .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 13px;
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.6);
+    text-decoration: none;
+    border-radius: 9px;
+    transition: color 0.2s, background 0.2s;
+    white-space: nowrap;
+  }
+
+  .nav-links .nav-link svg { opacity: 0.6; transition: opacity 0.2s; flex-shrink: 0; }
+
+  .nav-links .nav-link:hover,
+  .nav-links .nav-link.active {
+    color: var(--white);
+    background: rgba(255,255,255,0.07);
+  }
+
+  .nav-links .nav-link:hover svg,
+  .nav-links .nav-link.active svg { opacity: 1; }
+
+  /* Gold underline on active */
+  .nav-links .nav-link.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px; left: 13px; right: 13px;
+    height: 2px;
+    background: var(--gold);
+    border-radius: 1px;
+  }
+
+  /* ── DROPDOWN ── */
+  .nav-dropdown { position: relative; }
+
+  .nav-dropdown-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 13px;
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.6);
+    background: none;
+    border: none;
+    border-radius: 9px;
+    cursor: pointer;
+    transition: color 0.2s, background 0.2s;
+    white-space: nowrap;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .nav-dropdown-toggle svg { opacity: 0.6; transition: opacity 0.2s, transform 0.2s; flex-shrink: 0; }
+  .nav-dropdown-toggle .chevron { transition: transform 0.2s; }
+
+  .nav-dropdown:hover .nav-dropdown-toggle,
+  .nav-dropdown.open .nav-dropdown-toggle {
+    color: var(--white);
+    background: rgba(255,255,255,0.07);
+  }
+
+  .nav-dropdown:hover .nav-dropdown-toggle svg,
+  .nav-dropdown.open .nav-dropdown-toggle svg { opacity: 1; }
+
+  .nav-dropdown:hover .chevron,
+  .nav-dropdown.open .chevron { transform: rotate(180deg); }
+
+  /* Dropdown menu */
+  .nav-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 50%;
+    transform: translateX(-50%) translateY(-6px);
+    min-width: 210px;
+    background: #1e0d35;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 14px;
+    padding: 8px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.18s, transform 0.18s;
+    z-index: 100;
+    /* invisible bridge fills the gap between trigger and menu */
+  }
+
+  /* Invisible hover bridge so mouse can travel from trigger to menu */
+  .nav-dropdown-menu::after {
+    content: '';
+    position: absolute;
+    top: -12px;
+    left: 0; right: 0;
+    height: 12px;
+  }
+
+  .nav-dropdown:hover .nav-dropdown-menu,
+  .nav-dropdown.open .nav-dropdown-menu {
+    opacity: 1;
+    pointer-events: all;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* Tiny arrow */
+  .nav-dropdown-menu::before {
+    content: '';
+    position: absolute;
+    top: -5px; left: 50%;
+    width: 10px; height: 10px;
+    background: #1e0d35;
+    border-left: 1px solid rgba(255,255,255,0.1);
+    border-top: 1px solid rgba(255,255,255,0.1);
+    transform: translateX(-50%) rotate(45deg);
+  }
+
+  .dropdown-item-rh {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 9px;
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.6);
+    text-decoration: none;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .dropdown-item-rh:hover {
+    background: rgba(255,255,255,0.07);
+    color: var(--white);
+  }
+
+  .dropdown-item-rh .di-icon {
+    width: 28px; height: 28px;
+    border-radius: 7px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gold-light);
+    flex-shrink: 0;
+    transition: background 0.15s;
+  }
+
+  .dropdown-item-rh:hover .di-icon {
+    background: rgba(201,168,76,0.12);
+    border-color: rgba(201,168,76,0.25);
+  }
+
+  .dropdown-item-rh.danger { color: #f87171; }
+  .dropdown-item-rh.danger .di-icon { color: #f87171; }
+  .dropdown-item-rh.danger:hover { background: rgba(248,113,113,0.08); }
+
+  .dropdown-sep {
+    height: 1px;
+    background: rgba(255,255,255,0.07);
+    margin: 6px 4px;
+  }
+
+  /* ── RIGHT ACTIONS ── */
+  .nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+    margin-left: 16px;
+  }
+
+  .btn-nav-outline {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 18px;
+    background: transparent;
+    color: rgba(255,255,255,0.75);
+    border: 1.5px solid rgba(255,255,255,0.18);
+    border-radius: 9px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+    white-space: nowrap;
+  }
+
+  .btn-nav-outline:hover {
+    background: rgba(255,255,255,0.08);
+    border-color: rgba(255,255,255,0.3);
+    color: var(--white);
+  }
+
+  .btn-nav-gold {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 18px;
+    background: linear-gradient(135deg, var(--gold) 0%, #b39ddb 100%);
+    color: #1a0a2e;
+    border: none;
+    border-radius: 9px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: transform 0.15s, box-shadow 0.2s;
+    box-shadow: 0 4px 14px rgba(143, 76, 201, 0.4);
+    white-space: nowrap;
+  }
+
+  .btn-nav-gold:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px rgba(143, 76, 201, 0.4);
+    color: #1a0a2e;
+  }
+
+  /* Inscription dropdown button */
+  .btn-nav-gold-dropdown {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 16px;
+    background: linear-gradient(135deg, var(--gold) 0%, #802aa8 100%);
+    color: #1a0a2e;
+    border: none;
+    border-radius: 9px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.2s;
+    box-shadow: 0 4px 14px rgba(143, 76, 201, 0.4);
+    white-space: nowrap;
+  }
+
+  .btn-nav-gold-dropdown:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px rgba(143, 76, 201, 0.4);
+  }
+
+  /* User avatar pill */
+  .user-pill {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 5px 14px 5px 5px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 100px;
+    cursor: pointer;
+    transition: background 0.2s;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.8);
+  }
+
+  .user-pill:hover { background: rgba(255,255,255,0.1); }
+
+  /* ── NOTIFICATION BELL ── */
+  .notification-bell {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: rgba(255,255,255,0.75);
+  }
+
+  .notification-bell:hover {
+    background: rgba(255,255,255,0.12);
+    border-color: rgba(255,255,255,0.2);
+    color: var(--white);
+  }
+
+  .notification-bell svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .notification-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background: #ef4444;
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 10px;
+    min-width: 18px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+    animation: pulse-badge 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-badge {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+  }
+
+  /* Notification dropdown */
+  .notification-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 360px;
+    max-height: 480px;
+    background: #1e0d35;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 14px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-6px);
+    transition: opacity 0.18s, transform 0.18s;
+    z-index: 100;
+    overflow: hidden;
+  }
+
+  .notification-bell-wrapper:hover .notification-dropdown,
+  .notification-bell-wrapper.open .notification-dropdown {
+    opacity: 1;
+    pointer-events: all;
+    transform: translateY(0);
+  }
+
+  .notification-header {
+    padding: 16px 18px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .notification-header h3 {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--white);
+    margin: 0;
+  }
+
+  .notification-view-all {
+    font-size: 12px;
+    color: var(--gold-light);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.2s;
+  }
+
+  .notification-view-all:hover {
+    color: var(--gold);
+  }
+
+  .notification-list {
+    max-height: 380px;
+    overflow-y: auto;
+  }
+
+  .notification-list::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .notification-list::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.2);
+    border-radius: 2px;
+  }
+
+  .notification-item {
+    padding: 14px 18px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    transition: background 0.15s;
+    cursor: pointer;
+    text-decoration: none;
+    display: block;
+    color: inherit;
+  }
+
+  .notification-item:hover {
+    background: rgba(255,255,255,0.05);
+  }
+
+  .notification-item-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--white);
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .notification-item-meta {
+    font-size: 11px;
+    color: rgba(255,255,255,0.5);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .notification-item-meta span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .notification-empty {
+    padding: 40px 20px;
+    text-align: center;
+    color: rgba(255,255,255,0.4);
+  }
+
+  .notification-empty svg {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 12px;
+    opacity: 0.3;
+  }
+
+  .user-avatar {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(201,168,76,0.4);
+  }
+
+  .user-avatar-initials {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--purple), var(--purple-light));
+    border: 2px solid rgba(147, 57, 196, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--white);
+    flex-shrink: 0;
+  }
+
+  .user-pill .chevron { opacity: 0.5; transition: transform 0.2s; }
+  .nav-dropdown:hover .user-pill .chevron { transform: rotate(180deg); }
+
+  /* ── MOBILE TOGGLE ── */
+  .nav-toggle {
+    display: none;
+    background: none;
+    border: 1.5px solid rgba(255,255,255,0.15);
+    border-radius: 8px;
+    padding: 6px 10px;
+    cursor: pointer;
+    color: rgba(255,255,255,0.7);
+    margin-left: auto;
+    transition: background 0.2s;
+  }
+
+  .nav-toggle:hover { background: rgba(255,255,255,0.07); }
+
+  /* ── MOBILE DRAWER ── */
+  .nav-mobile {
+    display: none;
+    flex-direction: column;
+    padding: 12px 16px 20px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    gap: 2px;
+  }
+
+  .nav-mobile .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.6);
+    text-decoration: none;
+    border-radius: 9px;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .nav-mobile .nav-link:hover { background: rgba(255,255,255,0.07); color: var(--white); }
+
+  .nav-mobile-section {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.25);
+    padding: 14px 12px 6px;
+  }
+
+  .nav-mobile-sep { height: 1px; background: rgba(255,255,255,0.07); margin: 8px 0; }
+
+  .nav-mobile-btns {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-top: 8px;
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 1024px) {
+    .nav-links { display: none; }
+    .nav-actions { display: none; }
+    .nav-toggle { display: flex; align-items: center; }
+    .rh-navbar .container { flex-wrap: wrap; height: auto; padding-top: 0; padding-bottom: 0; min-height: 62px; }
+  }
+
+  @media (max-width: 1024px) {
+    .nav-mobile.open { display: flex; }
+  }
+</style>
+
+<!-- ════════════════════════
+     NAVBAR
+════════════════════════ -->
+<nav class="rh-navbar">
+  <div class="container">
+
+    <!-- Brand -->
+    <a class="nav-brand" href="{{ path('app_landing') }}">
+      <span class="nav-brand-dot"></span>
+      <span class="nav-brand-name">RH Pro</span>
+    </a>
+
+    <!-- Desktop links -->
+    <ul class="nav-links">
+
+      <!-- Accueil -->
+      <li class="nav-item">
+        <a class="nav-link" href="{{ path('app_landing') }}">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          Accueil
+        </a>
+      </li>
+
+      {% if app.user %}
+      <!-- Dashboard -->
+      <li class="nav-item">
+        <a class="nav-link" href="{{ path('app_home') }}">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          Dashboard
+        </a>
+      </li>
+
+      <!-- Congé -->
+<li class="nav-item">
+  <a class="nav-link" href="{{ path('app_conge_tt_index') }}">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="2"
+         stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="4" width="18" height="18" rx="2"/>
+      <line x1="16" y1="2" x2="16" y2="6"/>
+      <line x1="8" y1="2" x2="8" y2="6"/>
+      <line x1="3" y1="10" x2="21" y2="10"/>
+    </svg>
+    Congé
+  </a>
+</li>
+
+<!-- Services dropdown -->
+<li class="nav-item nav-dropdown">
+  <button class="nav-dropdown-toggle">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="2"
+         stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="3"/>
+      <path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/>
+    </svg>
+    Services
+    <svg class="chevron" width="12" height="12">
+      <polyline points="6 9 12 15 18 9"/>
+    </svg>
+  </button>
+
+  <div class="nav-dropdown-menu">
+
+    {% if app.user.isRH() %}
+
+      <a href="{{ path('app_demande_service_index') }}" class="dropdown-item-rh">
+        Toutes les demandes
+      </a>
+
+      <div class="dropdown-sep"></div>
+
+      <a href="{{ path('app_type_service_index') }}" class="dropdown-item-rh">
+        Gérer les types
+      </a>
+
+      <a href="{{ path('app_type_service_new') }}" class="dropdown-item-rh">
+        Nouveau service
+      </a>
+
+    {% elseif app.user.isEmploye() %}
+
+      <a href="{{ path('app_demande_service_new') }}" class="dropdown-item-rh">
+        Nouvelle demande
+      </a>
+
+      <a href="{{ path('app_demande_service_index') }}" class="dropdown-item-rh">
+        Mes demandes
+      </a>
+
+    {% endif %}
+
+  </div>
+</li>
+
+      <li class="nav-item nav-dropdown">
+  <button class="nav-dropdown-toggle">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="2"
+         stroke-linecap="round" stroke-linejoin="round">
+      <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+      <polyline points="2 17 12 22 22 17"/>
+      <polyline points="2 12 12 17 22 12"/>
+    </svg>
+    Projets
+    <svg class="chevron" width="12" height="12">
+      <polyline points="6 9 12 15 18 9"/>
+    </svg>
+  </button>
+
+  <div class="nav-dropdown-menu">
+
+    {% if app.user and app.user.isRH() %}
+
+      <a href="{{ path('app_projet_index') }}" class="dropdown-item-rh">
+        Tous les projets
+      </a>
+
+      <a href="{{ path('app_projet_new') }}" class="dropdown-item-rh">
+        Créer un projet
+      </a>
+
+      <div class="dropdown-sep"></div>
+
+    {% elseif app.user and app.user.isEmploye() %}
+
+      <a href="{{ path('app_projet_employe_index') }}" class="dropdown-item-rh">
+        Mes projets
+      </a>
+
+
+
+    {% endif %}
+
+  </div>
+</li>
+     <li class="nav-item nav-dropdown">
+  <a class="nav-link nav-dropdown-toggle" href="#">
+    Événements
+    <svg class="chevron" width="12" height="12">
+      <polyline points="6 9 12 15 18 9"/>
+    </svg>
+  </a>
+
+  <div class="nav-dropdown-menu" style="min-width:245px;">
+
+    {% if app.user.isRH() %}
+      <a href="{{ path('app_evenement_index') }}" class="dropdown-item-rh">
+        Gérer les événements
+      </a>
+
+      <a href="{{ path('app_evenement_new') }}" class="dropdown-item-rh">
+        Créer un événement
+      </a>
+
+      <div class="dropdown-sep"></div>
+
+      <a href="{{ path('app_event_participation_index') }}" class="dropdown-item-rh">
+        Gestion participations
+      </a>
+
+    {% elseif app.user.isEmploye() %}
+
+      <a href="{{ path('app_employe_evenements') }}" class="dropdown-item-rh">
+        Voir les événements
+      </a>
+
+      <a href="{{ path('app_employe_mes_participations') }}" class="dropdown-item-rh">
+        Mes participations
+      </a>
+
+    {% else %}
+
+      <a href="{{ path('app_employe_evenements') }}" class="dropdown-item-rh">
+        Événements
+      </a>
+
+    {% endif %}
+
+  </div>
+</li>
+
+      <!-- Paiements -->
+      <li class="nav-item">
+    <a class="nav-link"
+       href="
+       {% if app.user and app.user.isRH() %}
+            {{ path('app_rh_paiement_index') }}
+       {% elseif app.user and app.user.isEmploye() %}
+            {{ path('app_employee_paiement_index') }}
+       {% else %}
+            #
+       {% endif %}
+       ">
+
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+            <rect x="1" y="4" width="22" height="16" rx="2"/>
+            <line x1="1" y1="10" x2="23" y2="10"/>
+        </svg>
+
+        Paiements
+    </a>
+</li>
+
+      <!-- Contrat -->
+      <li class="nav-item">
+
+    <a class="nav-link"
+       href="
+       {% if app.user and app.user.isRH() %}
+            {{ path('app_rh_contract_index') }}
+       {% elseif app.user and app.user.isEmploye() %}
+            {{ path('app_employee_contract_index') }}
+       {% else %}
+            #
+       {% endif %}
+       ">
+
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+            <polyline points="10 9 9 9 8 9"/>
+        </svg>
+
+        Contrat
+    </a>
+
+</li>
+
+
+{% if app.user.isRH() %}
+
+  <li class="nav-item">
+    <a class="nav-link" href="{{ path('app_candidature_index') }}">
+      Candidatures
+    </a>
+  </li>
+
+  <li class="nav-item">
+    <a class="nav-link" href="{{ path('app_offre_emploi_index') }}">
+      Offres
+    </a>
+  </li>
+
+{% elseif app.user.isCandidat() %}
+
+  <li class="nav-item">
+    <a class="nav-link" href="{{ path('candidat_candidatures') }}">
+      Mes candidatures
+    </a>
+  </li>
+
+  <li class="nav-item">
+    <a class="nav-link" href="{{ path('candidat_offres') }}">
+      Offres
+    </a>
+  </li>
+
+{% elseif app.user.isEmploye() %}
+
+  <li class="nav-item">
+    <a class="nav-link" href="{{ path('candidat_offres') }}">
+      Offres disponibles
+    </a>
+  </li>
+
+{% endif %}
+
+
+      {% endif %}
+
+    </ul>
+
+    <!-- Desktop right actions -->
+    <div class="nav-actions">
+      {% if app.user %}
+
+        <!-- Notification Bell (only for employees) -->
+        {% if app.user.isEmploye() %}
+        <div class="notification-bell-wrapper nav-dropdown">
+          <div class="notification-bell" id="notificationBell">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+            </svg>
+            <span class="notification-badge" id="notificationBadge" style="display: none;">0</span>
+          </div>
+          
+          <div class="notification-dropdown">
+            <div class="notification-header">
+              <h3>🔔 Rappels d'événements</h3>
+              <a href="{{ path('app_rappel_index') }}" class="notification-view-all">Voir tout</a>
+            </div>
+            <div class="notification-list" id="notificationList">
+              <div class="notification-empty">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                  <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                </svg>
+                <p>Aucun rappel pour le moment</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- User dropdown -->
+        <div class="nav-dropdown">
+          <div class="user-pill">
+            {% if app.user.avatarPath %}
+              <img src="{{ asset(app.user.avatarPath) }}" class="user-avatar" alt="Avatar">
+            {% else %}
+              <div class="user-avatar-initials">{{ app.user.prenom|first|upper }}</div>
+            {% endif %}
+            <span>{{ app.user.prenom }}</span>
+            <svg class="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <div class="nav-dropdown-menu" style="min-width:230px;">
+            {% if app.user.isRH() %}
+              <a class="dropdown-item-rh" href="{{ path('app_rh_dashboard') }}">
+                <div class="di-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div>
+                Dashboard RH
+              </a>
+            {% elseif app.user.isCandidat() %}
+              <a class="dropdown-item-rh" href="{{ path('app_candidat_profile') }}">
+                <div class="di-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+                Mon Profil
+              </a>
+            {% elseif app.user.isEmploye() %}
+              <a class="dropdown-item-rh" href="{{ path('app_employe_profile') }}">
+                <div class="di-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+                Mon Profil
+              </a>
+            {% endif %}
+            <div class="dropdown-sep"></div>
+            <a class="dropdown-item-rh danger" href="{{ path('app_logout') }}">
+              <div class="di-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></div>
+              Déconnexion
+            </a>
+          </div>
+        </div>
+
+      {% else %}
+
+        <a href="{{ path('app_login') }}" class="btn-nav-outline">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+          Connexion
+        </a>
+
+        <div class="nav-dropdown">
+          <button class="btn-nav-gold-dropdown">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+            Inscription
+            <svg class="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="nav-dropdown-menu">
+            <a href="{{ path('app_register_candidat') }}" class="dropdown-item-rh">
+              <div class="di-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+              Inscription Candidat
+            </a>
+            <a href="{{ path('app_register_employe') }}" class="dropdown-item-rh">
+              <div class="di-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-4 0v2"/></svg></div>
+              Inscription Employé
+            </a>
+          </div>
+        </div>
+
+      {% endif %}
+    </div>
+
+    <!-- Mobile toggle -->
+    <button class="nav-toggle" id="navToggle" aria-label="Menu">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" id="hamburgerIcon">
+        <line x1="3" y1="6"  x2="21" y2="6"/>
+        <line x1="3" y1="12" x2="21" y2="12"/>
+        <line x1="3" y1="18" x2="21" y2="18"/>
+      </svg>
+    </button>
+
+  </div><!-- /container -->
+
+  <!-- ── MOBILE DRAWER ── -->
+  <div class="nav-mobile" id="navMobile">
+
+    <a class="nav-link" href="{{ path('app_landing') }}">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Accueil
+    </a>
+
+    {% if app.user %}
+    <a class="nav-link" href="{{ path('app_home') }}">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Dashboard
+    </a>
+
+    <div class="nav-mobile-section">Gestion</div>
+
+    <a class="nav-link" href="#">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Congé
+    </a>
+    <a class="nav-link" href="#">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+      Services
+    </a>
+    <a class="nav-link" href="#">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+      Projets
+    </a>
+    <a class="nav-link" href="#">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+      Événements
+    </a>
+    <a class="nav-link" href="#">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+      Paiements
+    </a>
+    <a class="nav-link" href="#">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      Contrat
+    </a>
+
+    <div class="nav-mobile-sep"></div>
+
+    {% if app.user.isRH() %}
+      <a class="nav-link" href="{{ path('app_rh_dashboard') }}">Dashboard RH</a>
+    {% elseif app.user.isCandidat() %}
+      <a class="nav-link" href="{{ path('app_candidat_profile') }}">Mon Profil</a>
+    {% elseif app.user.isEmploye() %}
+      <a class="nav-link" href="{{ path('app_employe_profile') }}">Mon Profil</a>
+    {% endif %}
+
+    <a class="nav-link" href="{{ path('app_logout') }}" style="color:#f87171;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Déconnexion
+    </a>
+
+    {% else %}
+    <div class="nav-mobile-btns">
+      <a href="{{ path('app_login') }}" class="btn-nav-outline" style="justify-content:center;">Connexion</a>
+      <a href="{{ path('app_register_candidat') }}" class="btn-nav-gold" style="justify-content:center;">Inscription Candidat</a>
+      <a href="{{ path('app_register_employe') }}" class="btn-nav-outline" style="justify-content:center;">Inscription Employé</a>
+    </div>
+    {% endif %}
+
+  </div><!-- /nav-mobile -->
+</nav>
+
+<script>
+  if (typeof window.__navToggleInit === 'undefined') {
+    window.__navToggleInit = true;
+
+    const navToggle  = document.getElementById('navToggle');
+    const navMobile  = document.getElementById('navMobile');
+    const hamburger  = document.getElementById('hamburgerIcon');
+
+    if (navToggle) {
+      navToggle.addEventListener('click', () => {
+        navMobile.classList.toggle('open');
+        const open = navMobile.classList.contains('open');
+        hamburger.innerHTML = open
+          ? '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>'
+          : '<line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>';
+      });
+    }
+
+    // Highlight active link
+    const currentPath = window.location.pathname;
+    document.querySelectorAll('.nav-links .nav-link').forEach(link => {
+      if (link.getAttribute('href') === currentPath) link.classList.add('active');
+    });
+  }
+</script>
+
+<script>
+  // ── NOTIFICATION BELL AJAX ──
+  {% if app.user and app.user.isEmploye() %}
+  (function() {
+    const bell = document.getElementById('notificationBell');
+    const badge = document.getElementById('notificationBadge');
+    const list = document.getElementById('notificationList');
+
+    async function loadNotifications() {
+      try {
+        const response = await fetch('{{ path('app_rappel_count') }}');
+        const data = await response.json();
+        
+        // Update badge
+        if (data.count > 0) {
+          badge.textContent = data.count;
+          badge.style.display = 'block';
+        } else {
+          badge.style.display = 'none';
+        }
+
+        // Update dropdown list
+        if (data.rappels && data.rappels.length > 0) {
+          list.innerHTML = data.rappels.map(r => {
+            const isCancelled = r.is_cancelled;
+            const icon = isCancelled ? '🚨' : '📅';
+            const dateObj = new Date(r.date_debut.date);
+            const dateStr = dateObj.toLocaleDateString('fr-FR', { 
+              day: '2-digit', 
+              month: 'short', 
+              hour: '2-digit', 
+              minute: '2-digit' 
+            });
+            
+            return `
+              <a href="${r.url}" class="notification-item">
+                <div class="notification-item-title">
+                  ${icon} ${r.titre}
+                </div>
+                <div class="notification-item-meta">
+                  <span><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> ${r.lieu}</span>
+                  <span><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> ${dateStr}</span>
+                </div>
+              </a>
+            `;
+          }).join('');
+        } else {
+          list.innerHTML = `
+            <div class="notification-empty">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+              </svg>
+              <p>Aucun rappel pour le moment</p>
+            </div>
+          `;
+        }
+      } catch (error) {
+        console.error('Erreur chargement notifications:', error);
+      }
+    }
+
+    // Load on page load
+    loadNotifications();
+
+    // Refresh every 2 minutes
+    setInterval(loadNotifications, 120000);
+
+    // Toggle dropdown on click
+    bell.addEventListener('click', (e) => {
+      e.stopPropagation();
+      bell.parentElement.classList.toggle('open');
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!bell.parentElement.contains(e.target)) {
+        bell.parentElement.classList.remove('open');
+      }
+    });
+  })();
+  {% endif %}
+</script>

@@ -1,0 +1,159 @@
+<style>
+.pt-wrap{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(107,45,139,.1);border:1px solid #ede9fe}
+.pt-tbl{width:100%;border-collapse:collapse}
+.pt-tbl thead tr{background:#6b2d8b}
+.pt-tbl thead th{
+    color:rgba(255,255,255,.9);font-size:.68rem;font-weight:700;
+    text-transform:uppercase;letter-spacing:.1em;
+    padding:12px 16px;border:none;white-space:nowrap
+}
+.pt-tbl tbody tr{border-bottom:1px solid #f5f3ff;transition:background .15s}
+.pt-tbl tbody tr:last-child{border-bottom:none}
+.pt-tbl tbody tr:hover{background:#faf8ff}
+.pt-tbl td{padding:0 16px;height:52px;vertical-align:middle}
+
+/* ID */
+.pt-id{font-weight:800;color:#6b2d8b;font-size:.88rem}
+
+/* Titre */
+.pt-name{font-weight:700;color:#1e293b;font-size:.92rem}
+
+/* Dates */
+.pt-date{display:flex;align-items:center;gap:7px;color:#64748b;font-size:.82rem;white-space:nowrap}
+.pt-date i{color:#a78bfa;font-size:.85rem}
+.pt-date-sep{color:#c4b5fd;font-weight:600;font-size:.8rem;margin:0 2px}
+
+/* Badges */
+.pt-badge{display:inline-flex;align-items:center;gap:5px;padding:5px 13px;border-radius:20px;font-size:.72rem;font-weight:700;white-space:nowrap}
+.pt-doing {background:#fef3c7;color:#b45309}
+.pt-todo  {background:#ede9fe;color:#6b2d8b}
+.pt-done  {background:#d1fae5;color:#065f46}
+.pt-cancel{background:#fee2e2;color:#b91c1c}
+.pt-badge-dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0}
+
+/* Responsable */
+.pt-resp{display:flex;align-items:center;gap:8px;white-space:nowrap}
+.pt-av-wrap{position:relative;flex-shrink:0}
+.pt-av{width:30px;height:30px;border-radius:8px;object-fit:cover;display:block}
+.pt-av-init{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#6b2d8b,#9333ea);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700}
+.pt-av-star{position:absolute;top:-7px;right:-7px;font-size:1.1rem;line-height:1;filter:drop-shadow(0 2px 4px rgba(255,193,7,.8));animation:starPulse 2s ease-in-out infinite}
+@keyframes starPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+.pt-resp-name{font-weight:600;color:#1e293b;font-size:.8rem;line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px;display:flex;align-items:center;gap:4px}
+.pt-resp-sub{font-size:.68rem;color:#94a3b8;white-space:nowrap}
+
+/* Actions */
+.pt-acts{display:flex;align-items:center;gap:4px;justify-content:flex-end;flex-wrap:nowrap}
+.pt-btn{width:28px;height:28px;border-radius:7px;border:1.5px solid #e5e7eb;background:#fff;display:flex;align-items:center;justify-content:center;font-size:.72rem;cursor:pointer;transition:all .15s;color:#64748b;text-decoration:none;flex-shrink:0;padding:0}
+.pt-btn:hover{transform:translateY(-1px);box-shadow:0 3px 8px rgba(0,0,0,.1)}
+.pt-btn-view {color:#6b2d8b;border-color:#ddd6fe}.pt-btn-view:hover{background:#f3f0ff}
+.pt-btn-task {color:#6b2d8b;border-color:#ddd6fe}.pt-btn-task:hover{background:#f3f0ff}
+.pt-btn-qr   {color:#6366f1;border-color:#c7d2fe}.pt-btn-qr:hover{background:#eef2ff}
+.pt-btn-meet {color:#10b981;border-color:#a7f3d0}.pt-btn-meet:hover{background:#ecfdf5}
+.pt-btn-edit {background:#6b2d8b;color:#fff;border-color:transparent}.pt-btn-edit:hover{background:#5a2474}
+.pt-btn-del  {color:#ef4444;border-color:#fecaca}.pt-btn-del:hover{background:#fff1f2}
+
+/* Empty */
+.pt-empty{text-align:center;padding:60px 20px;color:#94a3b8}
+.pt-empty i{font-size:2.5rem;display:block;margin-bottom:12px;color:#ddd6fe}
+</style>
+
+<div class="pt-wrap">
+<table class="pt-tbl">
+    <thead>
+        <tr>
+            <th style="width:50px">#</th>
+            <th style="width:150px">Projet</th>
+            <th style="width:190px">Dates</th>
+            <th style="width:105px">Statut</th>
+            <th style="width:190px">Responsable</th>
+            <th class="text-end" style="width:175px">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for projet in projets %}
+        {% set emp = projet.responsableEmploye %}
+        <tr>
+            <td><span class="pt-id">#{{ projet.id }}</span></td>
+
+            <td><span class="pt-name">{{ projet.titre }}</span></td>
+
+            <td>
+                <div class="pt-date">
+                    <i class="bi bi-calendar3"></i>
+                    {{ projet.dateDebut|date('d/m/Y') }}
+                    <span class="pt-date-sep">→</span>
+                    {{ projet.dateFin|date('d/m/Y') }}
+                </div>
+            </td>
+
+            <td>
+                {% if projet.statut == 'termine' %}
+                    <span class="pt-badge pt-done"><span class="pt-badge-dot"></span>Terminé</span>
+                {% elseif projet.statut == 'en_cours' %}
+                    <span class="pt-badge pt-doing"><span class="pt-badge-dot"></span>En cours</span>
+                {% elseif projet.statut == 'en_attente' %}
+                    <span class="pt-badge pt-todo"><span class="pt-badge-dot"></span>À faire</span>
+                {% else %}
+                    <span class="pt-badge pt-cancel"><span class="pt-badge-dot"></span>Annulé</span>
+                {% endif %}
+            </td>
+
+            <td>
+                {% if emp and emp.user %}
+                    <div class="pt-resp">
+                        <div class="pt-av-wrap">
+                            {% if emp.user.avatarPath %}
+                                <img src="{{ asset(emp.user.avatarPath) }}" class="pt-av" alt="">
+                            {% else %}
+                                <div class="pt-av-init">{{ emp.user.prenom|first|upper }}</div>
+                            {% endif %}
+                            {% if emp.userId == meilleurEmployeId %}
+                                <span class="pt-av-star" title="⭐ Meilleur responsable">⭐</span>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <div class="pt-resp-name">{{ emp.user.fullName }}</div>
+                            <div class="pt-resp-sub">Employé référent</div>
+                        </div>
+                    </div>
+                {% else %}
+                    <span style="color:#cbd5e1;font-size:.82rem;font-style:italic">Non assigné</span>
+                {% endif %}
+            </td>
+
+            <td>
+                <div class="pt-acts">
+                    <a href="{{ path('app_projet_show', {'id': projet.id}) }}" class="pt-btn pt-btn-view" title="Voir"><i class="bi bi-eye"></i></a>
+                    <a href="{{ path('app_projet_taches_view', {'id': projet.id}) }}" class="pt-btn pt-btn-task" title="Tâches"><i class="bi bi-list-check"></i></a>
+                    <a href="{{ path('app_projet_qr_code', {'id': projet.id}) }}" target="_blank" class="pt-btn pt-btn-qr" title="QR Code"><i class="bi bi-qr-code-scan"></i></a>
+                    {% if projet.isMeetingRequested %}
+                        <a href="{{ path('app_projet_meeting', {'id': projet.id}) }}" class="pt-btn pt-btn-meet" title="Rejoindre"><i class="bi bi-camera-video-fill"></i></a>
+                        <form method="post" action="{{ path('app_projet_toggle_meeting', {'id': projet.id}) }}" style="display:inline-block">
+                            <input type="hidden" name="_token" value="{{ csrf_token('toggle_meeting'~projet.id) }}">
+                            <button class="pt-btn pt-btn-del" title="Clôturer Meet"><i class="bi bi-box-arrow-right"></i></button>
+                        </form>
+                    {% else %}
+                        <form method="post" action="{{ path('app_projet_toggle_meeting', {'id': projet.id}) }}" style="display:inline-block">
+                            <input type="hidden" name="_token" value="{{ csrf_token('toggle_meeting'~projet.id) }}">
+                            <button class="pt-btn pt-btn-meet" title="Demander Meet"><i class="bi bi-camera-video"></i></button>
+                        </form>
+                    {% endif %}
+                    <a href="{{ path('app_projet_edit', {'id': projet.id}) }}" class="pt-btn pt-btn-edit" title="Modifier"><i class="bi bi-pencil-fill"></i></a>
+                    <form method="post" action="{{ path('app_projet_delete', {'id': projet.id}) }}" style="display:inline-block" onsubmit="return confirm('Supprimer ce projet ?')">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete'~projet.id) }}">
+                        <button class="pt-btn pt-btn-del" title="Supprimer"><i class="bi bi-trash-fill"></i></button>
+                    </form>
+                </div>
+            </td>
+        </tr>
+    {% else %}
+        <tr><td colspan="6">
+            <div class="pt-empty">
+                <i class="bi bi-inbox"></i>
+                <p>Aucun projet trouvé.</p>
+            </div>
+        </td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>

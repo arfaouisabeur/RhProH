@@ -1,0 +1,113 @@
+{% extends 'rh/admin_base.html.twig' %}
+
+{% block title %}Gestion Candidats - RH{% endblock %}
+
+{% block page_title %}Gestion des Candidats{% endblock %}
+{% block page_subtitle %}Consultez et gérez les profils des candidats inscrits{% endblock %}
+
+{% block admin_content %}
+<div class="d-flex justify-content-end mb-4 gap-2">
+    <a href="{{ path('app_rh_export_pdf', {'type': 'candidats'}) }}" class="btn-light-purple d-inline-flex align-items-center gap-2">
+        <i class="bi bi-file-earmark-pdf"></i> Exporter PDF
+    </a>
+    <a href="{{ path('app_rh_export_csv', {'type': 'candidats'}) }}" class="btn-light-purple d-inline-flex align-items-center gap-2">
+        <i class="bi bi-file-earmark-excel"></i> Exporter Excel
+    </a>
+</div>
+
+<!-- Search & Filters Card -->
+<div class="admin-card mb-4" style="padding: 1.5rem 2rem;">
+    <div class="row g-3 align-items-center">
+        <div class="col-md-6">
+            <div class="input-group" style="background: #f0f0f0; border-radius: 50px; padding: 2px 5px;">
+                <span class="input-group-text border-0 bg-transparent text-muted"><i class="bi bi-search"></i></span>
+                <input type="text" id="searchInput" class="form-control border-0 bg-transparent" placeholder="Rechercher par nom, email..." value="{{ search }}" style="box-shadow: none;">
+                <span class="input-group-text border-0 bg-transparent" id="loadingSpinner" style="display:none;">
+                    <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                </span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <select id="sortSelect" class="form-select border-0" style="background: #f0f0f0; border-radius: 50px;">
+                <option value="id" {{ sort == 'id' ? 'selected' : '' }}>Trier par ID</option>
+                <option value="nom" {{ sort == 'nom' ? 'selected' : '' }}>Trier par Nom</option>
+                <option value="prenom" {{ sort == 'prenom' ? 'selected' : '' }}>Trier par Prénom</option>
+                <option value="email" {{ sort == 'email' ? 'selected' : '' }}>Trier par Email</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <select id="orderSelect" class="form-select border-0" style="background: #f0f0f0; border-radius: 50px;">
+                <option value="ASC" {{ order == 'ASC' ? 'selected' : '' }}>Croissant ↑</option>
+                <option value="DESC" {{ order == 'DESC' ? 'selected' : '' }}>Décroissant ↓</option>
+            </select>
+        </div>
+    </div>
+</div>
+
+<!-- Table Card -->
+<div class="admin-card" style="padding: 0;">
+    <div class="d-flex justify-content-between align-items-center p-4">
+        <div class="admin-card-title mb-0">
+            <div class="admin-card-title-icon"><i class="bi bi-people-fill"></i></div>
+            Historique des candidats
+        </div>
+        <button class="btn-light-purple btn-sm" onclick="location.reload();">
+            <i class="bi bi-arrow-clockwise me-1"></i> Rafraîchir
+        </button>
+    </div>
+    
+    <div class="admin-table-container mx-4 mb-4">
+        <div id="tableContainer">
+            {% include 'rh/_candidats_table.html.twig' with {'candidats': candidats} %}
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const sortSelect = document.getElementById('sortSelect');
+    const orderSelect = document.getElementById('orderSelect');
+    const tableContainer = document.getElementById('tableContainer');
+    const loadingSpinner = document.getElementById('loadingSpinner');
+    
+    let searchTimeout;
+    
+    function updateTable() {
+        const search = searchInput.value;
+        const sort = sortSelect ? sortSelect.value : 'id';
+        const order = orderSelect ? orderSelect.value : 'DESC';
+        
+        if (loadingSpinner) loadingSpinner.style.display = 'block';
+        
+        const url = `{{ path('app_rh_candidats') }}?search=${encodeURIComponent(search)}&sort=${sort}&order=${order}`;
+        
+        fetch(url, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Network response was not ok');
+            return response.text();
+        })
+        .then(html => {
+            tableContainer.innerHTML = html;
+            if (loadingSpinner) loadingSpinner.style.display = 'none';
+        })
+        .catch(error => {
+            console.error('Error updating table:', error);
+            if (loadingSpinner) loadingSpinner.style.display = 'none';
+        });
+    }
+    
+    searchInput.addEventListener('input', function(e) {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(updateTable, 300);
+    });
+    
+    if (sortSelect) sortSelect.addEventListener('change', updateTable);
+    if (orderSelect) orderSelect.addEventListener('change', updateTable);
+});
+</script>
+{% endblock %}

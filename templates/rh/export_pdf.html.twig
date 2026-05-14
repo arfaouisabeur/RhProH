@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #7532cd;
+        }
+
+        .header h1 {
+            color:  #b39ddb;
+            margin: 0;
+            font-size: 24px;
+        }
+        .header p {
+            color: #666;
+            margin: 5px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th {
+            background-color: #520a81;
+            color: white;
+            padding: 10px;
+            text-align: left;
+            font-weight: bold;
+        }
+        td {
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .role-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+        .role-candidat {
+            background-color: #28a745;
+            color: white;
+        }
+        .role-employe {
+            background-color: #8800ff;
+            color: white;
+        }
+        .role-rh {
+            background-color: #6f42c1;
+            color: white;
+        }
+        .section-title {
+            background-color: #f8f9fa;
+            padding: 10px;
+            margin-top: 20px;
+            font-weight: bold;
+            color: #333;
+            border-left: 4px solid #a466ea;
+        }
+        .footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 10px;
+            color: #666;
+            padding-top: 10px;
+            border-top: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>{{ title }}</h1>
+        <p>JobConnect - Gestion des Utilisateurs</p>
+        <p>Exporté le {{ date|date('d/m/Y à H:i') }}</p>
+    </div>
+
+    {% set currentRole = '' %}
+    {% for user in users %}
+        {% if user.role != currentRole %}
+            {% if currentRole != '' %}
+                </tbody>
+                </table>
+            {% endif %}
+            {% set currentRole = user.role %}
+            <div class="section-title">
+                {% if user.isCandidat() %}CANDIDATS{% elseif user.isEmploye() %}EMPLOYÉS{% elseif user.isRH() %}RESSOURCES HUMAINES{% endif %}
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nom complet</th>
+                        <th>Email</th>
+                        <th>Téléphone</th>
+                        <th>Adresse</th>
+                        {% if user.isCandidat() %}
+                            <th>Niveau d'études</th>
+                            <th>Expérience</th>
+                        {% elseif user.isEmploye() %}
+                            <th>Matricule</th>
+                            <th>Poste</th>
+                            <th>Date d'embauche</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+        {% endif %}
+        <tr>
+            <td>{{ user.id }}</td>
+            <td>{{ user.prenom }} {{ user.nom }}</td>
+            <td>{{ user.email }}</td>
+            <td>{{ user.telephone }}</td>
+            <td>{{ user.adresse }}</td>
+            {% if user.isCandidat() %}
+                <td>{{ user.candidat ? user.candidat.niveauEtude : 'Non renseigné' }}</td>
+                <td>{{ user.candidat ? user.candidat.experience : 0 }} an(s)</td>
+            {% elseif user.isEmploye() %}
+                <td>{{ user.employe ? user.employe.matricule : '-' }}</td>
+                <td>{{ user.employe ? user.employe.position : '-' }}</td>
+                <td>{{ user.employe and user.employe.dateEmbauche ? user.employe.dateEmbauche|date('d/m/Y') : '-' }}</td>
+            {% endif %}
+        </tr>
+    {% endfor %}
+    {% if users|length > 0 %}
+        </tbody>
+        </table>
+    {% endif %}
+
+    <div class="footer">
+        <p>Document généré automatiquement par JobConnect - Page 1/1</p>
+    </div>
+</body>
+</html>

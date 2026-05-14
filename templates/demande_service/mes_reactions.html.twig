@@ -1,0 +1,360 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes Réactions — Services{% endblock %}
+
+{% block stylesheets %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+:root {
+  --mv-950:#2e0d52; --mv-800:#5b2b82; --mv-700:#7c3dac;
+  --mv-600:#8f4cc9; --mv-500:#b39ddb; --mv-200:#e9d5ff;
+  --mv-100:#f3e8ff; --mv-50:#faf5ff;
+  --mv-glow:rgba(143,76,201,0.4);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+
+.page-shell {
+  font-family:'Inter',sans-serif;
+  background:radial-gradient(ellipse at 20% 0%,#f3e8ff 0%,#ffffff 50%,#faf5ff 100%);
+  min-height:90vh; padding:44px 20px; color:#0f172a;
+  position:relative; overflow:hidden;
+}
+.page-shell::before {
+  content:''; position:fixed; top:-180px; right:-180px;
+  width:520px; height:520px; border-radius:50%;
+  background:radial-gradient(circle,rgba(143,76,201,.16),transparent 68%);
+  pointer-events:none; z-index:0; animation:orbFloat 9s ease-in-out infinite;
+}
+.page-wrap { max-width:1100px; margin:0 auto; position:relative; z-index:1; }
+
+/* ── Header ── */
+.page-head {
+  display:flex; justify-content:space-between; align-items:center;
+  gap:16px; flex-wrap:wrap; margin-bottom:32px;
+  animation:slideDown .6s cubic-bezier(.16,1,.3,1) both;
+}
+.page-head h1 {
+  font-family:'Outfit'; font-weight:900; font-size:2.2rem; margin:0;
+  background:linear-gradient(135deg,var(--mv-950),var(--mv-600));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  display:flex; align-items:center; gap:14px;
+}
+.page-head h1 i { -webkit-text-fill-color:var(--mv-600); }
+.page-head p { color:#64748b; font-size:1rem; margin-top:6px; font-weight:500; }
+
+/* ── Glass ── */
+.glass {
+  background:rgba(255,255,255,.88); backdrop-filter:blur(22px);
+  border:1.5px solid rgba(179,157,219,.28); border-radius:24px;
+  box-shadow:0 10px 40px rgba(143,76,201,.10);
+}
+
+/* ── Section header ── */
+.section-hd {
+  padding:18px 26px 14px; display:flex; align-items:center; gap:12px;
+  border-bottom:1px solid rgba(143,76,201,.1);
+  background:linear-gradient(135deg,rgba(143,76,201,.07),rgba(179,157,219,.04));
+  position:relative;
+}
+.section-hd::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:3px;
+  border-radius:24px 24px 0 0;
+}
+.section-hd.likes-hd::before   { background:linear-gradient(90deg,#10b981,#059669); }
+.section-hd.dislike-hd::before { background:linear-gradient(90deg,#f43f5e,#e11d48); }
+.section-hd h2 {
+  margin:0; font-family:'Outfit'; font-weight:900; font-size:1.25rem;
+  color:#0f172a; display:flex; align-items:center; gap:10px;
+}
+
+/* ── Cards grid ── */
+.react-grid {
+  padding:22px 24px;
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+  gap:16px;
+}
+.react-card {
+  border-radius:18px; padding:18px 20px;
+  display:flex; flex-direction:column; gap:12px;
+  transition:transform .2s, box-shadow .2s;
+  position:relative; overflow:hidden;
+}
+.react-card::after {
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,.25),transparent);
+  opacity:0; transition:opacity .18s; pointer-events:none;
+}
+.react-card:hover { transform:translateY(-4px); }
+.react-card:hover::after { opacity:1; }
+
+.card-liked    { background:linear-gradient(135deg,rgba(16,185,129,.09),rgba(5,150,105,.04)); border:1.5px solid rgba(16,185,129,.28); }
+.card-liked:hover { box-shadow:0 12px 30px rgba(16,185,129,.16); }
+.card-disliked { background:linear-gradient(135deg,rgba(244,63,94,.08),rgba(225,29,72,.04)); border:1.5px solid rgba(244,63,94,.25); }
+.card-disliked:hover { box-shadow:0 12px 30px rgba(244,63,94,.14); }
+
+.card-emoji {
+  width:46px; height:46px; border-radius:14px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:20px; flex-shrink:0;
+}
+.card-liked   .card-emoji { background:rgba(16,185,129,.15); color:#059669; }
+.card-disliked .card-emoji { background:rgba(244,63,94,.12); color:#e11d48; }
+
+.card-nom { font-family:'Outfit'; font-weight:800; color:#0f172a; font-size:1rem; line-height:1.3; }
+.card-cat { font-size:.75rem; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:var(--mv-600); }
+
+.card-meta {
+  display:flex; gap:10px; margin-top:2px;
+}
+.meta-pill {
+  display:inline-flex; align-items:center; gap:5px;
+  padding:4px 10px; border-radius:999px; font-size:.78rem; font-weight:800;
+}
+.meta-likes    { background:rgba(16,185,129,.12); color:#059669; }
+.meta-dislikes { background:rgba(244,63,94,.10);  color:#e11d48; }
+
+.card-date { font-size:.78rem; color:#94a3b8; font-weight:600; }
+
+/* Bouton annuler réaction */
+.btn-cancel-react {
+  display:inline-flex; align-items:center; gap:6px;
+  padding:7px 14px; border-radius:999px; border:none; cursor:pointer;
+  font-size:.78rem; font-weight:800; transition:all .2s; font-family:inherit;
+}
+.liked-cancel   { background:rgba(16,185,129,.12); color:#059669; }
+.liked-cancel:hover   { background:#ecfdf5; box-shadow:0 4px 12px rgba(16,185,129,.2); }
+.disliked-cancel { background:rgba(244,63,94,.10); color:#e11d48; }
+.disliked-cancel:hover { background:#fff1f2; box-shadow:0 4px 12px rgba(244,63,94,.16); }
+.btn-cancel-react.loading { opacity:.5; pointer-events:none; }
+
+/* ── Empty state ── */
+.empty-react {
+  text-align:center; padding:56px 20px;
+}
+.empty-react i { font-size:3rem; opacity:.4; display:block; margin-bottom:12px; animation:float 3s ease-in-out infinite; }
+.empty-react h4 { font-family:'Outfit'; font-weight:900; font-size:1.4rem; color:#475569; margin-bottom:8px; }
+.empty-react p  { color:#64748b; font-size:.98rem; }
+
+/* ── Back button ── */
+.btn-back {
+  display:inline-flex; align-items:center; gap:8px;
+  padding:11px 22px; border-radius:999px;
+  border:1.5px solid rgba(179,157,219,.35); background:rgba(255,255,255,.88);
+  color:var(--mv-700); font-weight:800; font-size:.93rem; text-decoration:none;
+  transition:all .2s; backdrop-filter:blur(10px);
+}
+.btn-back:hover { background:#fff; border-color:var(--mv-500); transform:translateY(-2px); box-shadow:0 8px 20px rgba(143,76,201,.16); }
+
+/* ── Stats banner ── */
+.stats-banner {
+  display:flex; gap:14px; flex-wrap:wrap; margin-bottom:28px;
+  animation:slideUp .5s cubic-bezier(.16,1,.3,1) .1s both;
+}
+.stat-box {
+  flex:1; min-width:150px; padding:18px 22px;
+  display:flex; align-items:center; gap:14px;
+}
+.stat-ic { width:48px; height:48px; border-radius:16px; display:flex; align-items:center; justify-content:center; font-size:19px; color:#fff; flex-shrink:0; }
+.si-like { background:linear-gradient(135deg,#10b981,#059669); box-shadow:0 8px 20px rgba(16,185,129,.24); }
+.si-dis  { background:linear-gradient(135deg,#f43f5e,#e11d48); box-shadow:0 8px 20px rgba(244,63,94,.22); }
+.stat-txt h3 { font-family:'Outfit'; font-weight:900; font-size:2rem; line-height:1; }
+.stat-txt p  { color:#64748b; font-weight:800; font-size:.72rem; text-transform:uppercase; letter-spacing:.08em; margin-top:4px; }
+
+/* ── Animations ── */
+@keyframes slideDown { from{opacity:0;transform:translateY(-18px);}to{opacity:1;transform:translateY(0);} }
+@keyframes slideUp   { from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);} }
+@keyframes float     { 0%,100%{transform:translateY(0);}50%{transform:translateY(-10px);} }
+@keyframes orbFloat  { 0%,100%{transform:translate(0,0);}50%{transform:translate(-24px,18px);} }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="page-shell">
+  <div class="page-wrap">
+
+    {# ── Header ── #}
+    <div class="page-head">
+      <div>
+        <h1><i class="fas fa-heart"></i> Mes Réactions</h1>
+        <p>Les types de service que vous avez évalués — vos likes et dislikes enregistrés.</p>
+      </div>
+      <a href="{{ path('app_demande_service_index') }}" class="btn-back">
+        <i class="fas fa-arrow-left"></i> Retour aux services
+      </a>
+    </div>
+
+    {# ── Statistiques rapides ── #}
+    <div class="stats-banner">
+      <div class="glass stat-box">
+        <div class="stat-ic si-like"><i class="fas fa-thumbs-up"></i></div>
+        <div class="stat-txt">
+          <h3>{{ likes|length }}</h3>
+          <p>Services likés</p>
+        </div>
+      </div>
+      <div class="glass stat-box">
+        <div class="stat-ic si-dis"><i class="fas fa-thumbs-down"></i></div>
+        <div class="stat-txt">
+          <h3>{{ dislikes|length }}</h3>
+          <p>Services dislikés</p>
+        </div>
+      </div>
+    </div>
+
+    {# ══════ SECTION LIKES ══════ #}
+    <div class="glass" style="margin-bottom:24px;overflow:hidden;animation:slideUp .6s cubic-bezier(.16,1,.3,1) .2s both;">
+      <div class="section-hd likes-hd">
+        <h2><i class="fas fa-thumbs-up" style="color:#10b981;"></i> Services que j'aime
+          <span style="font-family:'Inter';font-weight:700;font-size:.82rem;color:#64748b;text-transform:none;">
+            ({{ likes|length }})
+          </span>
+        </h2>
+      </div>
+
+      {% if likes|length > 0 %}
+        <div class="react-grid">
+          {% for reaction in likes %}
+            {% set ts = reaction.typeService %}
+            {% set c  = countsMap[ts.id] ?? {'likes': 0, 'dislikes': 0} %}
+            <div class="react-card card-liked" id="react-card-{{ ts.id }}">
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div class="card-emoji"><i class="fas fa-thumbs-up"></i></div>
+                <div>
+                  <div class="card-nom">{{ ts.nom }}</div>
+                  <div class="card-cat">{{ ts.categorie }}</div>
+                </div>
+              </div>
+              <div class="card-meta">
+                <span class="meta-pill meta-likes"><i class="fas fa-thumbs-up"></i> {{ c.likes }}</span>
+                <span class="meta-pill meta-dislikes"><i class="fas fa-thumbs-down"></i> {{ c.dislikes }}</span>
+              </div>
+              <div class="card-date">
+                <i class="fas fa-clock"></i> Réagi le {{ reaction.createdAt|date('d/m/Y à H:i') }}
+              </div>
+              <button type="button"
+                      class="btn-cancel-react liked-cancel"
+                      data-type-id="{{ ts.id }}"
+                      data-reaction="like"
+                      title="Annuler mon like">
+                <i class="fas fa-times-circle"></i> Annuler le like
+              </button>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty-react">
+          <i class="fas fa-thumbs-up" style="color:#10b981;"></i>
+          <h4>Aucun like pour l'instant</h4>
+          <p>Retournez sur la liste des services et cliquez sur 👍 pour liker un type.</p>
+        </div>
+      {% endif %}
+    </div>
+
+    {# ══════ SECTION DISLIKES ══════ #}
+    <div class="glass" style="overflow:hidden;animation:slideUp .6s cubic-bezier(.16,1,.3,1) .35s both;">
+      <div class="section-hd dislike-hd">
+        <h2><i class="fas fa-thumbs-down" style="color:#f43f5e;"></i> Services que je n'aime pas
+          <span style="font-family:'Inter';font-weight:700;font-size:.82rem;color:#64748b;text-transform:none;">
+            ({{ dislikes|length }})
+          </span>
+        </h2>
+      </div>
+
+      {% if dislikes|length > 0 %}
+        <div class="react-grid">
+          {% for reaction in dislikes %}
+            {% set ts = reaction.typeService %}
+            {% set c  = countsMap[ts.id] ?? {'likes': 0, 'dislikes': 0} %}
+            <div class="react-card card-disliked" id="react-card-{{ ts.id }}">
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div class="card-emoji"><i class="fas fa-thumbs-down"></i></div>
+                <div>
+                  <div class="card-nom">{{ ts.nom }}</div>
+                  <div class="card-cat">{{ ts.categorie }}</div>
+                </div>
+              </div>
+              <div class="card-meta">
+                <span class="meta-pill meta-likes"><i class="fas fa-thumbs-up"></i> {{ c.likes }}</span>
+                <span class="meta-pill meta-dislikes"><i class="fas fa-thumbs-down"></i> {{ c.dislikes }}</span>
+              </div>
+              <div class="card-date">
+                <i class="fas fa-clock"></i> Réagi le {{ reaction.createdAt|date('d/m/Y à H:i') }}
+              </div>
+              <button type="button"
+                      class="btn-cancel-react disliked-cancel"
+                      data-type-id="{{ ts.id }}"
+                      data-reaction="dislike"
+                      title="Annuler mon dislike">
+                <i class="fas fa-times-circle"></i> Annuler le dislike
+              </button>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty-react">
+          <i class="fas fa-thumbs-down" style="color:#f43f5e;"></i>
+          <h4>Aucun dislike pour l'instant</h4>
+          <p>Vous n'avez disliké aucun type de service.</p>
+        </div>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+(function () {
+  var reactBase = '{{ path("app_demande_service_react", {"typeId": 0, "reaction": "like"}) }}';
+
+  function reactUrl(typeId, reaction) {
+    return reactBase.replace('/0/', '/' + typeId + '/').replace('/like', '/' + reaction);
+  }
+
+  document.querySelectorAll('.btn-cancel-react').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var typeId   = btn.getAttribute('data-type-id');
+      var reaction = btn.getAttribute('data-reaction');
+      btn.classList.add('loading');
+
+      fetch(reactUrl(typeId, reaction), {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json' }
+      })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (data.reaction === null) {
+          // Réaction annulée → retirer la carte avec animation
+          var card = document.getElementById('react-card-' + typeId);
+          if (card) {
+            card.style.transition = 'all .4s cubic-bezier(.16,1,.3,1)';
+            card.style.opacity    = '0';
+            card.style.transform  = 'scale(.88) translateY(-10px)';
+            setTimeout(function () {
+              card.remove();
+              // Recharger si toutes les cartes d'une section sont retirées
+              updateCounts();
+            }, 400);
+          }
+        }
+      })
+      .catch(function (err) { console.error('[MesReactions]', err); })
+      .finally(function () { btn.classList.remove('loading'); });
+    });
+  });
+
+  function updateCounts() {
+    // Mettre à jour les compteurs dans la bannière stats
+    var likeCards    = document.querySelectorAll('.card-liked').length;
+    var dislikeCards = document.querySelectorAll('.card-disliked').length;
+    var statBoxes    = document.querySelectorAll('.stat-txt h3');
+    if (statBoxes[0]) statBoxes[0].textContent = likeCards;
+    if (statBoxes[1]) statBoxes[1].textContent = dislikeCards;
+  }
+})();
+</script>
+{% endblock %}

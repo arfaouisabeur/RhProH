@@ -1,0 +1,3 @@
+# Turbo configuration
+# Le CSRF des formulaires est géré par le token de session Symfony (champ _token)
+# Ne pas activer check_header ici car ça entre en conflit avec les formulaires POST classiques

@@ -1,0 +1,82 @@
+{{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+
+<div class="field">
+  <div class="lbl">Catégorie (famille)</div>
+  {{ form_widget(form.categorie, {'attr': {'class': 'ctl', 'placeholder': 'Ex: Matériel Informatique, Transport, Accès…'}}) }}
+  <div style="color:#be123c;font-weight:700;">{{ form_errors(form.categorie) }}</div>
+  <div style="color:#64748b;font-size:.82rem;font-weight:600;">La catégorie regroupe plusieurs types (ex. « Matériel » → PC, Souris, Écran…)</div>
+</div>
+
+<div class="field">
+  <div class="lbl">Nom du type</div>
+  {{ form_widget(form.nom, {'attr': {'class': 'ctl', 'placeholder': 'Ex: PC portable, Souris, Clavier…'}}) }}
+  <div style="color:#be123c;font-weight:700;">{{ form_errors(form.nom) }}</div>
+</div>
+
+<div class="field">
+  <div class="lbl">Description (optionnel)</div>
+  {{ form_widget(form.description, {'attr': {'class': 'ctl', 'placeholder': 'Décrivez brièvement ce type de service…'}}) }}
+  <div style="color:#be123c;font-weight:700;">{{ form_errors(form.description) }}</div>
+</div>
+
+{{ form_rest(form) }}
+
+<div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;">
+  <button type="submit" class="btn-submit">
+    <i class="fas fa-save"></i> {{ button_label|default('Enregistrer') }}
+  </button>
+</div>
+
+{{ form_end(form) }}
+
+<script>
+(function () {
+  function showErr(field, msg) {
+    clearErr(field);
+    field.style.borderColor = '#f43f5e';
+    field.style.boxShadow   = '0 0 0 4px rgba(244,63,94,.12)';
+    var el = document.createElement('div');
+    el.className = '__val-err';
+    el.style.cssText = 'color:#be123c;font-size:.83rem;font-weight:700;margin-top:5px;display:flex;align-items:center;gap:6px;';
+    el.innerHTML = '<i class="fas fa-exclamation-circle"></i> ' + msg;
+    field.parentNode.appendChild(el);
+  }
+  function clearErr(field) {
+    field.style.borderColor = '';
+    field.style.boxShadow   = '';
+    var e = field.parentNode.querySelector('.__val-err');
+    if (e) e.remove();
+  }
+
+  document.querySelectorAll('.ctl').forEach(function(f) {
+    f.addEventListener('focus', function() { clearErr(f); });
+  });
+
+  var form = document.querySelector('form');
+  if (!form) return;
+
+  form.addEventListener('submit', function(e) {
+    var ok = true;
+
+    /* Catégorie obligatoire */
+    var cat = form.querySelector('[name$="[categorie]"]');
+    if (cat && !cat.value.trim()) {
+      showErr(cat, 'La catégorie est obligatoire.');
+      ok = false;
+    }
+
+    /* Nom obligatoire */
+    var nom = form.querySelector('[name$="[nom]"]');
+    if (nom && !nom.value.trim()) {
+      showErr(nom, 'Le nom du type est obligatoire.');
+      ok = false;
+    }
+
+    if (!ok) {
+      e.preventDefault();
+      var first = form.querySelector('.__val-err');
+      if (first) first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  });
+})();
+</script>

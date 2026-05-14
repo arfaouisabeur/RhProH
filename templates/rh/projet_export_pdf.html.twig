@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 11px;
+            color: #333;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #662283;
+        }
+        .header h1 {
+            color: #662283;
+            margin: 0;
+            font-size: 22px;
+        }
+        .header p {
+            color: #666;
+            margin: 5px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th {
+            background-color: #662283;
+            color: white;
+            padding: 10px;
+            text-align: left;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 10px;
+        }
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        tr:nth-child(even) {
+            background-color: #fcfaff;
+        }
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 9px;
+            font-weight: bold;
+            display: inline-block;
+        }
+        .status-en_attente { background-color: #fef3c7; color: #92400e; }
+        .status-en_cours { background-color: #e0e7ff; color: #3730a3; }
+        .status-termine { background-color: #dcfce7; color: #166534; }
+        .status-annule { background-color: #fee2e2; color: #991b1b; }
+        
+        .footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 9px;
+            color: #999;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+        }
+        .info-row {
+            margin-bottom: 20px;
+            font-size: 10px;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>RAPPORT DES PROJETS</h1>
+        <p>RH Pro - Système de Gestion Intégré</p>
+    </div>
+
+    <div class="info-row">
+        <strong>Date d'export :</strong> {{ date|date('d/m/Y H:i') }}<br>
+        <strong>Nombre de projets :</strong> {{ projets|length }}
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 40px;">ID</th>
+                <th>Titre du Projet</th>
+                <th style="width: 80px;">Début</th>
+                <th style="width: 80px;">Fin</th>
+                <th style="width: 100px;">Statut</th>
+                <th>Responsable</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for projet in projets %}
+                <tr>
+                    <td>#{{ projet.id }}</td>
+                    <td style="font-weight: bold;">{{ projet.titre }}</td>
+                    <td>{{ projet.dateDebut|date('d/m/Y') }}</td>
+                    <td>{{ projet.dateFin|date('d/m/Y') }}</td>
+                    <td>
+                        <span class="status-badge status-{{ projet.statut }}">
+                            {{ projet.statut|upper|replace({'_': ' '}) }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if projet.responsableEmploye and projet.responsableEmploye.user %}
+                            {{ projet.responsableEmploye.user.fullName }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="6" style="text-align: center;">Aucun projet trouvé.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="footer">
+        <p>Document confidentiel généré par RH Pro - &copy; {{ "now"|date("Y") }}</p>
+    </div>
+</body>
+</html>

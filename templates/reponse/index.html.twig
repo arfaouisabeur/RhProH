@@ -1,0 +1,261 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Espace RH - Gestion des Demandes{% endblock %}
+
+{% block stylesheets %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+    .hr-container {
+        font-family: 'Inter', sans-serif;
+        background: radial-gradient(circle at top right, #eef2ff 0%, #ffffff 50%, #f5f3ff 100%);
+        min-height: 90vh; padding: 40px 20px; color: #0f172a;
+    }
+    .hr-container * { box-sizing: border-box; }
+    
+    .glass-card {
+        background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.8); border-radius: 24px;
+        box-shadow: 0 10px 40px rgba(79, 70, 229, 0.08);
+    }
+
+    .header-box {
+        display: flex; justify-content: space-between; align-items: center;
+        max-width: 1200px; margin: 0 auto 40px auto; animation: fadeDown 0.6s ease-out;
+    }
+
+    .header-box h1 {
+        font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 2.5rem;
+        margin: 0; line-height: 1.2;
+        background: linear-gradient(135deg, #312e81, #4f46e5);
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .header-box p { color: #64748b; margin-top: 5px; font-size: 1.1rem; }
+
+    .btn-create {
+        display: inline-flex; align-items: center; gap: 8px;
+        background: linear-gradient(135deg, #4f46e5, #4338ca); color: white !important; font-weight: 600; padding: 14px 28px;
+        border-radius: 50px; text-decoration: none; box-shadow: 0 8px 20px rgba(79, 70, 229, 0.3);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); font-family: 'Outfit', sans-serif; font-size: 1.1rem;
+    }
+    .btn-create:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 12px 25px rgba(79, 70, 229, 0.4); }
+
+    .kpi-wrapper {
+        display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
+        max-width: 1200px; margin: 0 auto 30px auto; animation: fadeUp 0.6s ease-out;
+    }
+    .kpi-card { padding: 24px; display: flex; align-items: center; gap: 20px; transition: transform 0.3s; cursor: default; }
+    .kpi-card:hover { transform: translateY(-5px); }
+    .kpi-icon { width: 60px; height: 60px; border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 24px; color: white; }
+    
+    .ic-total { background: linear-gradient(135deg, #6366f1, #4f46e5); box-shadow: 0 4px 15px rgba(99,102,241,0.3); }
+    .ic-accepted { background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 4px 15px rgba(16,185,129,0.3); }
+    .ic-rejected { background: linear-gradient(135deg, #f43f5e, #e11d48); box-shadow: 0 4px 15px rgba(244,63,94,0.3); }
+
+    .kpi-content h3 { margin: 0; font-size: 2.2rem; font-family: 'Outfit', sans-serif; font-weight: 800; color: #0f172a; line-height: 1; }
+    .kpi-content p { margin: 4px 0 0 0; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; font-size: 0.8rem; }
+    
+    .table-container { max-width: 1200px; margin: 0 auto; padding: 24px 0; overflow: hidden; animation: fadeUp 0.8s ease-out; }
+    .table-header { padding: 0 30px 20px 30px; display: flex; justify-content: space-between; align-items: center; }
+    .table-header h2 { font-family: 'Outfit', sans-serif; font-size: 1.5rem; margin: 0; color: #0f172a; display: flex; align-items: center; gap: 10px; }
+    
+    .search-box {
+        display: flex; align-items: center; gap: 10px; background: #f8fafc;
+        border: 1px solid #e2e8f0; border-radius: 50px; padding: 10px 20px; width: 300px;
+    }
+    .search-box input { border: none; background: transparent; outline: none; width: 100%; font-family: 'Inter', sans-serif; color: #0f172a; }
+    .search-box i { color: #94a3b8; }
+
+    table { width: 100%; border-collapse: collapse; }
+    th { text-align: left; padding: 16px 30px; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1.5px; color: #4f46e5; border-bottom: 1px solid rgba(79,70,229,0.1); }
+    td { padding: 20px 30px; border-bottom: 1px solid rgba(0,0,0,0.03); vertical-align: middle; }
+    tr { transition: background 0.2s; }
+    tr:hover { background: rgba(99,102,241,0.04); }
+
+    .person-box { display: flex; align-items: center; gap: 12px; }
+    .avatar { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-family: 'Outfit'; font-size: 1rem; }
+    .av-employe { background: linear-gradient(135deg, #a855f7, #9333ea); }
+    .av-rh { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+    .person-name { font-weight: 600; color: #0f172a; }
+    
+    .decision-badge { padding: 6px 14px; border-radius: 30px; font-size: 0.85rem; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
+    .decision-badge::before { content: ''; width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+    .bdg-approuve { background: #ecfdf5; color: #047857; border: 1px solid #10b981; }
+    .bdg-approuve::before { background: #10b981; }
+    .bdg-refuse { background: #fff1f2; color: #be123c; border: 1px solid #f43f5e; }
+    .bdg-refuse::before { background: #f43f5e; }
+
+    .action-btns { display: flex; gap: 8px; }
+    .btn-act { width: 38px; height: 38px; border-radius: 12px; display: flex; align-items: center; justify-content: center; text-decoration: none; transition: all 0.2s; font-size: 16px; }
+    .btn-view { background: #e0e7ff; color: #4f46e5; }
+    .btn-edit { background: #f3e8ff; color: #9333ea; }
+    .btn-act:hover { transform: scale(1.1); color: white; }
+    .btn-view:hover { background: #4f46e5; box-shadow: 0 4px 12px rgba(79,70,229,0.3); }
+    .btn-edit:hover { background: #9333ea; box-shadow: 0 4px 12px rgba(147,51,234,0.3); }
+
+    .empty-state { text-align: center; padding: 60px 20px; }
+    .empty-icon { font-size: 4rem; opacity: 0.5; margin-bottom: 20px; display: inline-block; animation: float 3s ease-in-out infinite; color: #4f46e5; }
+    .empty-text { font-family: 'Outfit'; font-size: 1.5rem; color: #475569; margin-bottom: 5px; }
+
+    @keyframes fadeDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+    @media (max-width: 900px) {
+        .kpi-wrapper { grid-template-columns: 1fr; }
+        .header-box { flex-direction: column; align-items: flex-start; gap: 20px; }
+        .table-header { flex-direction: column; align-items: flex-start; gap: 15px; }
+        .search-box { width: 100%; }
+        table { display: block; overflow-x: auto; white-space: nowrap; }
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="hr-container">
+    <div class="header-box">
+        <div>
+            <h1>Dashboard RH</h1>
+            <p>Historique et gestion des décisions sur les congés des collaborateurs.</p>
+        </div>
+        <a href="{{ path('app_reponse_new') }}" class="btn-create">
+            <i class="fas fa-plus-circle"></i> Créer une nouvelle décision
+        </a>
+    </div>
+
+    {% set total = reponses|length %}
+    {% set approuve = reponses|filter(r => r.decision == 'approuvé' or r.decision == 'approuve')|length %}
+    {% set refuse = reponses|filter(r => r.decision != 'approuvé' and r.decision != 'approuve')|length %}
+
+    <div class="kpi-wrapper">
+        <div class="glass-card kpi-card">
+            <div class="kpi-icon ic-total"><i class="fas fa-layer-group"></i></div>
+            <div class="kpi-content">
+                <h3>{{ total }}</h3>
+                <p>Décisions Totales</p>
+            </div>
+        </div>
+        <div class="glass-card kpi-card">
+            <div class="kpi-icon ic-accepted"><i class="fas fa-check-double"></i></div>
+            <div class="kpi-content">
+                <h3>{{ approuve }}</h3>
+                <p>Approuvées</p>
+            </div>
+        </div>
+        <div class="glass-card kpi-card">
+            <div class="kpi-icon ic-rejected"><i class="fas fa-ban"></i></div>
+            <div class="kpi-content">
+                <h3>{{ refuse }}</h3>
+                <p>Refusées</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="glass-card table-container">
+        <div class="table-header">
+            <h2><i class="fas fa-list-alt" style="color: #4f46e5;"></i> Registre des réponses</h2>
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Rechercher (ex: nom, statut)..." onkeyup="filterTable()">
+            </div>
+        </div>
+        
+        {% if reponses|length > 0 %}
+        <div>
+            <table id="rhTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Décision</th>
+                        <th>Employé concerné</th>
+                        <th>Responsable RH</th>
+                        <th>Congé lié</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for reponse in reponses %}
+                    {% set isApprouve = (reponse.decision == 'approuvé' or reponse.decision == 'approuve') %}
+                    <tr>
+                        <td style="font-weight: 700; color: #4f46e5;">#{{ reponse.id }}</td>
+                        <td>
+                            {% if isApprouve %}
+                                <span class="decision-badge bdg-approuve">Approuvé</span>
+                            {% else %}
+                                <span class="decision-badge bdg-refuse">Refusé</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if reponse.employe and reponse.employe.user %}
+                            <div class="person-box">
+                                <div class="avatar av-employe">{{ reponse.employe.user.prenom|slice(0,1)|upper }}{{ reponse.employe.user.nom|slice(0,1)|upper }}</div>
+                                <span class="person-name">{{ reponse.employe.user.prenom }} {{ reponse.employe.user.nom }}</span>
+                            </div>
+                            {% else %}<span style="color: #94a3b8;">Non défini</span>{% endif %}
+                        </td>
+                        <td>
+                            {% if reponse.rh and reponse.rh.user %}
+                            <div class="person-box">
+                                <div class="avatar av-rh">{{ reponse.rh.user.prenom|slice(0,1)|upper }}{{ reponse.rh.user.nom|slice(0,1)|upper }}</div>
+                                <span class="person-name">{{ reponse.rh.user.prenom }} {{ reponse.rh.user.nom }}</span>
+                            </div>
+                            {% else %}<span style="color: #94a3b8;">Non défini</span>{% endif %}
+                        </td>
+                        <td>
+                            {% if reponse.congeTt %}
+                                <a href="{{ path('app_conge_tt_show', {'id': reponse.congeTt.id}) }}" style="color: #4f46e5; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 5px; background: #e0e7ff; padding: 4px 10px; border-radius: 8px;">
+                                    <i class="fas fa-link" style="font-size: 0.8rem;"></i> Voir #{{ reponse.congeTt.id }}
+                                </a>
+                            {% else %}<span style="color: #94a3b8;">Non défini</span>{% endif %}
+                        </td>
+                        <td>
+                            <div class="action-btns">
+                                <a href="{{ path('app_reponse_show', {'id': reponse.id}) }}" class="btn-act btn-view" title="Afficher les détails">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{{ path('app_reponse_edit', {'id': reponse.id}) }}" class="btn-act btn-edit" title="Modifier la décision">
+                                    <i class="fas fa-pen"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <span class="empty-icon"><i class="fas fa-inbox"></i></span>
+            <div class="empty-text">Aucune réponse enregistrée</div>
+            <p style="color: #64748b;">Démarrez en ajoutant votre première décision RH.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function filterTable() {
+    var input, filter, table, tr, td, i, j, txtValue;
+    input = document.getElementById("searchInput");
+    filter = input.value.toUpperCase();
+    table = document.getElementById("rhTable");
+    if (!table) return;
+    tr = table.getElementsByTagName("tr");
+    for (i = 1; i < tr.length; i++) {
+        tr[i].style.display = "none";
+        td = tr[i].getElementsByTagName("td");
+        for (j = 0; j < td.length; j++) {
+            if (td[j]) {
+                txtValue = td[j].textContent || td[j].innerText;
+                if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                    tr[i].style.display = "";
+                    break;
+                }
+            }
+        }
+    }
+}
+</script>
+{% endblock %}

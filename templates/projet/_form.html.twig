@@ -1,0 +1,260 @@
+<style>
+    .projet-form-card {
+        background: #ffffff;
+        border-radius: 24px;
+        padding: 3rem;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.04), 0 2px 10px rgba(102, 34, 131, 0.05);
+        border: 1px solid rgba(102, 34, 131, 0.05);
+    }
+    
+    .projet-form-card .form-label {
+        color: #475569;
+        font-weight: 700;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .projet-form-card .form-label i {
+        color: var(--purple-mid);
+        font-size: 1rem;
+    }
+
+    .projet-form-card .form-control, 
+    .projet-form-card .form-select {
+        background-color: #f8fafc !important;
+        border: 2px solid transparent !important;
+        border-radius: 14px !important;
+        padding: 0.85rem 1.15rem !important;
+        font-size: 0.95rem;
+        color: #1e293b;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .projet-form-card .form-control:focus, 
+    .projet-form-card .form-select:focus {
+        background-color: #ffffff !important;
+        border-color: var(--purple-mid) !important;
+        box-shadow: 0 0 0 4px rgba(126, 43, 156, 0.12) !important;
+        transform: translateY(-1px);
+    }
+
+    .projet-form-card .form-control.is-invalid, 
+    .projet-form-card .form-select.is-invalid {
+        border-color: #ef4444 !important;
+        background-color: #fffafb !important;
+    }
+
+    .form-error-list {
+        list-style: none;
+        padding: 0;
+        margin: 0.6rem 0 0 0.5rem;
+        color: #ef4444;
+        font-size: 0.8rem;
+        font-weight: 600;
+        animation: fadeInError 0.3s ease;
+    }
+
+    @keyframes fadeInError {
+        from { opacity: 0; transform: translateY(-5px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .form-error-list li {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .form-error-list li::before {
+        content: "\F333";
+        font-family: "bootstrap-icons";
+    }
+
+    .btn-submit-premium {
+        background: linear-gradient(135deg, #7e2b9c, #a855f7);
+        color: white !important;
+        border: none;
+        border-radius: 14px;
+        padding: 1rem 3rem;
+        font-weight: 700;
+        font-size: 1rem;
+        letter-spacing: 0.02em;
+        box-shadow: 0 4px 15px rgba(126, 43, 156, 0.35);
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-submit-premium:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(126, 43, 156, 0.45);
+        background: linear-gradient(135deg, #9333ea, #c084fc);
+        color: white !important;
+    }
+
+    .btn-submit-premium:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 10px rgba(126, 43, 156, 0.3);
+    }
+
+    .btn-cancel-premium {
+        background: #f1f5f9;
+        color: #64748b !important;
+        border: 2px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 1rem 2rem;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-cancel-premium:hover {
+        background: #e2e8f0;
+        color: #475569 !important;
+        border-color: #cbd5e1;
+        transform: translateY(-1px);
+    }
+    
+    .section-divider {
+        height: 1px;
+        background: linear-gradient(to right, rgba(102, 34, 131, 0.1), transparent);
+        margin: 1.5rem 0;
+    }
+</style>
+
+<div class="projet-form-card">
+    {{ form_start(form, {'attr': {'class': 'row g-4', 'novalidate': 'novalidate'}}) }}
+
+    <!-- Row 1: Title & Status -->
+    <div class="col-md-8">
+        <div class="form-group">
+            <label class="form-label fw-bold small text-uppercase" for="{{ form.titre.vars.id }}">
+                <i class="bi bi-pencil-square"></i> Titre du projet
+            </label>
+            {{ form_widget(form.titre, {'attr': {
+                'class': 'form-control ' ~ (form.titre.vars.valid ? '' : 'is-invalid'),
+                'placeholder': 'Entrez le titre du projet...'
+            }}) }}
+            <div class="form-error-list">
+                {{ form_errors(form.titre) }}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="form-group">
+            <label class="form-label fw-bold small text-uppercase" for="{{ form.statut.vars.id }}">
+                <i class="bi bi-activity"></i> Statut actuel
+            </label>
+            {{ form_widget(form.statut, {'attr': {
+                'class': 'form-select ' ~ (form.statut.vars.valid ? '' : 'is-invalid')
+            }}) }}
+            <div class="form-error-list">
+                {{ form_errors(form.statut) }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Row 2: Description -->
+    <div class="col-12">
+        <div class="form-group">
+            <label class="form-label fw-bold small text-uppercase" for="{{ form.description.vars.id }}">
+                <i class="bi bi-text-paragraph"></i> Description détaillée
+            </label>
+            {{ form_widget(form.description, {'attr': {
+                'class': 'form-control ' ~ (form.description.vars.valid ? '' : 'is-invalid'),
+                'rows': 4,
+                'placeholder': 'Objectifs, ressources, périmètre...'
+            }}) }}
+            <div class="form-error-list">
+                {{ form_errors(form.description) }}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 section-divider"></div>
+
+    <!-- Row 3: Dates -->
+    <div class="col-md-6">
+        <div class="form-group">
+            <label class="form-label fw-bold small text-uppercase" for="{{ form.date_debut.vars.id }}">
+                <i class="bi bi-calendar-check"></i> Date de lancement
+            </label>
+            {{ form_widget(form.date_debut, {'attr': {
+                'class': 'form-control ' ~ (form.date_debut.vars.valid ? '' : 'is-invalid')
+            }}) }}
+            <div class="form-error-list">
+                {{ form_errors(form.date_debut) }}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="form-group">
+            <label class="form-label fw-bold small text-uppercase" for="{{ form.date_fin.vars.id }}">
+                <i class="bi bi-calendar-x"></i> Date de clôture estimée
+            </label>
+            {{ form_widget(form.date_fin, {'attr': {
+                'class': 'form-control ' ~ (form.date_fin.vars.valid ? '' : 'is-invalid')
+            }}) }}
+            <div class="form-error-list">
+                {{ form_errors(form.date_fin) }}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 section-divider"></div>
+
+    <!-- Row 4: Responsibility -->
+    <div class="col-md-6">
+        <div class="form-group">
+            <label class="form-label fw-bold small text-uppercase" for="{{ form.rh.vars.id }}">
+                <i class="bi bi-shield-lock"></i> Responsable RH
+            </label>
+            {{ form_widget(form.rh, {'attr': {
+                'class': 'form-select ' ~ (form.rh.vars.valid ? '' : 'is-invalid')
+            }}) }}
+            <div class="form-error-list">
+                {{ form_errors(form.rh) }}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="form-group">
+            <label class="form-label fw-bold small text-uppercase" for="{{ form.responsable_employe.vars.id }}">
+                <i class="bi bi-person-badge"></i> Employé référent
+            </label>
+            {{ form_widget(form.responsable_employe, {'attr': {
+                'class': 'form-select ' ~ (form.responsable_employe.vars.valid ? '' : 'is-invalid')
+            }}) }}
+            <div class="form-error-list">
+                {{ form_errors(form.responsable_employe) }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="col-12 mt-5">
+        <div class="d-flex align-items-center gap-3">
+            <button type="submit" class="btn btn-submit-premium">
+                <i class="bi bi-check2-circle me-2"></i> {{ button_label|default('Enregistrer le projet') }}
+            </button>
+            <a href="{{ path('app_projet_index') }}" class="btn btn-cancel-premium">
+                Annuler
+            </a>
+        </div>
+    </div>
+
+    {{ form_end(form) }}
+</div>
+</div>

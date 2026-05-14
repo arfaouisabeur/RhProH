@@ -1,0 +1,518 @@
+{% extends 'base.html.twig' %}
+{% block title %}Nouvelle offre{% endblock %}
+
+{% block styles %}
+<style>
+    body { background:#F7F4FB !important; }
+    .pg { max-width:860px; margin:0 auto; padding:36px 24px 60px; }
+    .btn-op {
+        display:inline-flex; align-items:center; gap:7px;
+        padding:9px 18px; border-radius:99px;
+        background:transparent; color:#6D2269; border:1.5px solid #6D2269;
+        font-size:13px; font-weight:600; text-decoration:none; transition:all .22s;
+    }
+    .btn-op:hover { background:#6D2269; color:#fff; }
+    .fc {
+        background:#fff; border-radius:18px;
+        box-shadow:0 2px 12px rgba(109,34,105,.08);
+        border:1px solid rgba(109,34,105,.07); overflow:hidden;
+    }
+    .fc-hd {
+        background:linear-gradient(135deg,#4E1A4B,#6D2269);
+        padding:26px 32px; color:#fff; display:flex; align-items:center; gap:14px;
+    }
+    .fc-hd-ico {
+        width:46px; height:46px; background:rgba(255,255,255,.15);
+        border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:20px;
+    }
+    .fc-hd h5 { font-size:19px; font-weight:700; margin:0; }
+    .fc-hd p  { font-size:13px; opacity:.75; margin:3px 0 0; }
+    .fc-bd { padding:30px 32px; }
+    .form-info-box {
+        display:flex; align-items:flex-start; gap:10px;
+        background:#e9f8f0; border-left:5px solid #20c997;
+        padding:14px 18px; border-radius:12px; margin-bottom:22px;
+        font-size:14px; color:#146c43; font-weight:500;
+    }
+    .form-info-box i { font-size:18px; margin-top:2px; }
+
+    /* ── CORRECTION BUG 1 ─────────────────────────────────────────────────────
+       Les statuts sont cachés par défaut via display:none.
+       L'ancien code avait class="geo-status loading" dans le HTML ce qui activait
+       immédiatement la règle CSS .geo-status.loading { display:flex }
+       → les 3 statuts s'affichaient tous en même temps.
+       Correction : plus aucune classe "loading/success/error" dans le HTML.
+       Le JS contrôle uniquement via .style.display. ─────────────────────────── */
+    .geo-status {
+        display: none;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        margin-top: 6px;
+        font-weight: 500;
+    }
+
+    .geo-preview {
+        display:none;
+        background:#F7F4FB;
+        border:1px solid rgba(109,34,105,.15);
+        border-radius:10px;
+        padding:10px 14px;
+        margin-top:8px;
+        font-size:12px;
+        color:#4E1A4B;
+        gap:10px;
+        align-items:center;
+    }
+    .geo-preview.visible { display:flex; }
+    .geo-preview i { color:#6D2269; font-size:16px; }
+
+    #map-preview {
+        display:none; width:100%; height:160px;
+        border-radius:10px; margin-top:10px;
+        border:1px solid rgba(109,34,105,.15); z-index:1;
+    }
+    #map-preview.visible { display:block; }
+
+    .fg { margin-bottom:20px; }
+    .fg label { display:block; font-size:13px; font-weight:600; color:#4E1A4B; margin-bottom:6px; }
+    .fg input, .fg select, .fg textarea {
+        width:100%; padding:11px 14px; border-radius:12px;
+        border:1.5px solid rgba(109,34,105,.15); background:#F7F4FB;
+        font-size:14px; transition:all .22s;
+    }
+    .fg input:focus, .fg select:focus, .fg textarea:focus {
+        outline:none; border-color:#6D2269; background:#fff;
+        box-shadow:0 0 0 3px rgba(109,34,105,.09);
+    }
+    .fg textarea { resize:vertical; min-height:120px; }
+    .fg.has-error input, .fg.has-error select, .fg.has-error textarea,
+    .fg input.is-invalid, .fg select.is-invalid, .fg textarea.is-invalid {
+        border-color:#ff4d6d !important;
+        box-shadow:0 0 0 4px rgba(255,77,109,0.12) !important; background:#fff;
+    }
+    .fg input.is-valid, .fg select.is-valid, .fg textarea.is-valid {
+        border-color:#28a745 !important;
+        box-shadow:0 0 0 3px rgba(40,167,69,.08) !important;
+    }
+    .field-error { color:#ff4d6d; font-size:13px; font-weight:600; margin-top:6px; display:none; }
+    .field-error.visible { display:block; }
+    .fg ul { margin:5px 0 0; padding:0; list-style:none; }
+    .fg ul li { color:#ff4d6d; font-size:13px; font-weight:600; }
+    .btn-p {
+        display:inline-flex; align-items:center; gap:7px;
+        padding:11px 28px; border-radius:99px;
+        background:linear-gradient(135deg,#6D2269,#8B3A86);
+        color:#fff; font-size:14px; font-weight:600; border:none; cursor:pointer;
+        box-shadow:0 4px 14px rgba(109,34,105,.3); transition:all .22s;
+    }
+    .btn-p:hover { transform:translateY(-2px); box-shadow:0 8px 22px rgba(109,34,105,.4); color:#fff; }
+    .fc-ft {
+        padding:20px 32px; border-top:1px solid rgba(109,34,105,.07);
+        display:flex; gap:12px; align-items:center; flex-wrap:wrap;
+    }
+    .char-count { font-size:11px; color:#9c8ab0; margin-top:4px; text-align:right; }
+    .flash-list { list-style:none; padding:0; margin:0 0 18px; }
+    .flash-list li {
+        padding:12px 16px; border-radius:10px; font-size:14px; font-weight:600;
+        display:flex; align-items:center; gap:8px;
+    }
+    .flash-success { background:#eaf8f1; color:#1f9d63; border:1px solid #b7f0d4; }
+    .flash-error   { background:#ffe8ec; color:#c73a57; border:1px solid #f9bfca; }
+    @media (max-width: 768px) {
+        .fc-bd, .fc-ft, .fc-hd { padding-left:20px; padding-right:20px; }
+    }
+
+    /* ── Geoapify Autocomplete ── */
+    #geoapify-container { position: relative; width: 100%; }
+    .geoapify-autocomplete-items {
+        border-radius: 12px !important;
+        box-shadow: 0 8px 24px rgba(109,34,105,.15) !important;
+        border: 1.5px solid rgba(109,34,105,.15) !important;
+        z-index: 9999 !important; max-height: 230px !important;
+        overflow-y: auto !important; background: #fff !important;
+        position: absolute !important; top: 100% !important; left: 0 !important; right: 0 !important;
+        margin-top: 4px !important;
+    }
+    .geoapify-autocomplete-item {
+        padding: 9px 14px !important; font-size: 13px !important;
+        cursor: pointer !important; color: #4E1A4B !important;
+        display: flex !important; align-items: center !important; gap: 8px !important;
+    }
+    .geoapify-autocomplete-item:hover,
+    .geoapify-autocomplete-item.active { background: #F7F4FB !important; color: #6D2269 !important; }
+    .geoapify-autocomplete-input-wrapper { width: 100% !important; position: relative; }
+    .geoapify-autocomplete-input-wrapper input {
+        width: 100% !important; padding: 11px 14px !important;
+        border-radius: 12px !important; border: 1.5px solid rgba(109,34,105,.15) !important;
+        background: #F7F4FB !important; font-size: 14px !important;
+        font-family: inherit !important; box-sizing: border-box !important;
+        transition: all .22s !important; color: #333 !important;
+    }
+    .geoapify-autocomplete-input-wrapper input:focus {
+        outline: none !important; border-color: #6D2269 !important;
+        background: #fff !important; box-shadow: 0 0 0 3px rgba(109,34,105,.09) !important;
+    }
+</style>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="https://unpkg.com/@geoapify/geocoder-autocomplete@^1/styles/minimal.css"/>
+{% endblock %}
+
+{% block body %}
+<div class="pg">
+
+    {% for label, messages in app.flashes %}
+        <ul class="flash-list">
+            {% for msg in messages %}
+                <li class="flash-{{ label }}">
+                    <i class="bi bi-{{ label == 'success' ? 'check-circle-fill' : 'exclamation-triangle-fill' }}"></i>
+                    {{ msg }}
+                </li>
+            {% endfor %}
+        </ul>
+    {% endfor %}
+
+    <div style="margin-bottom:20px;">
+        <a href="{{ path('app_offre_emploi_index') }}" class="btn-op">
+            <i class="bi bi-arrow-left"></i> Retour aux offres
+        </a>
+    </div>
+
+    <div class="fc">
+        <div class="fc-hd">
+            <div class="fc-hd-ico"><i class="bi bi-plus-circle"></i></div>
+            <div>
+                <h5>Nouvelle offre d'emploi</h5>
+                <p>Remplissez les informations pour publier l'offre</p>
+            </div>
+        </div>
+
+        <div class="fc-bd">
+            <div class="form-info-box">
+                <i class="bi bi-info-circle-fill"></i>
+                <span>N'oubliez pas de vérifier les informations avant publication. Les offres doivent être complètes.</span>
+            </div>
+
+            {{ form_start(form, {'attr': {'id': 'offreForm', 'novalidate': 'novalidate'}}) }}
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:18px;">
+
+                <div class="fg {{ form.titre.vars.errors|length ? 'has-error' : '' }}">
+                    {{ form_label(form.titre, 'Titre du poste') }}
+                    {{ form_widget(form.titre, {'attr': {'id': 'f_titre', 'placeholder': 'Ex: Développeur Full Stack'}}) }}
+                    {{ form_errors(form.titre) }}
+                    <div class="field-error" id="err_titre">Le titre est obligatoire (min. 3 caractères).</div>
+                    <div class="char-count"><span id="cnt_titre">0</span> / 255</div>
+                </div>
+
+                {# ── Localisation avec Geoapify Autocomplete ── #}
+                <div class="fg {{ form.localisation.vars.errors|length ? 'has-error' : '' }}" id="fg_localisation">
+                    {{ form_label(form.localisation, 'Localisation') }}
+
+                    {# Champ caché Symfony — valeur soumise au formulaire #}
+                    <div id="real_loc_wrapper" style="display:none;">
+                        {{ form_widget(form.localisation) }}
+                    </div>
+                    {{ form_errors(form.localisation) }}
+                    <div class="field-error" id="err_localisation">La localisation est obligatoire.</div>
+
+                    {# Conteneur Geoapify — widget injecté par JS #}
+                    <div id="geoapify-container"></div>
+
+                    {# CORRECTION : PAS de classes "loading/success/error" dans le HTML
+                       Tout est contrôlé par JS via .style.display uniquement #}
+                    <div class="geo-status" id="geo-loading" style="color:#6D2269;">
+                        <i class="bi bi-arrow-repeat" style="animation:spin 1s linear infinite"></i>
+                        Recherche des coordonnées...
+                    </div>
+                    <div class="geo-status" id="geo-success" style="color:#1f9d63;">
+                        <i class="bi bi-check-circle-fill"></i>
+                        <span id="geo-success-text">Coordonnées trouvées !</span>
+                    </div>
+                    <div class="geo-status" id="geo-error" style="color:#dc3545;">
+                        <i class="bi bi-exclamation-circle-fill"></i>
+                        Ville non trouvée — vérifiez l'orthographe.
+                    </div>
+
+                    <div class="geo-preview" id="geo-preview">
+                        <i class="bi bi-geo-alt-fill"></i>
+                        <span id="geo-preview-text"></span>
+                    </div>
+
+                    <div id="map-preview"></div>
+                </div>
+
+                <div class="fg {{ form.typeContrat.vars.errors|length ? 'has-error' : '' }}">
+                    {{ form_label(form.typeContrat, 'Type de contrat') }}
+                    {{ form_widget(form.typeContrat, {'attr': {'id': 'f_typeContrat'}}) }}
+                    {{ form_errors(form.typeContrat) }}
+                    <div class="field-error" id="err_typeContrat">Veuillez choisir un type de contrat.</div>
+                </div>
+
+                <div class="fg {{ form.statut.vars.errors|length ? 'has-error' : '' }}">
+                    {{ form_label(form.statut, 'Statut') }}
+                    {{ form_widget(form.statut, {'attr': {'id': 'f_statut'}}) }}
+                    {{ form_errors(form.statut) }}
+                    <div class="field-error" id="err_statut">Veuillez choisir un statut.</div>
+                </div>
+
+                <div class="fg {{ form.datePublication.vars.errors|length ? 'has-error' : '' }}">
+                    {{ form_label(form.datePublication, 'Date de publication') }}
+                    {{ form_widget(form.datePublication, {'attr': {'id': 'f_datePub'}}) }}
+                    {{ form_errors(form.datePublication) }}
+                    <div class="field-error" id="err_datePub">La date de publication est obligatoire.</div>
+                </div>
+
+                <div class="fg {{ form.dateExpiration.vars.errors|length ? 'has-error' : '' }}">
+                    {{ form_label(form.dateExpiration, 'Date d\'expiration') }}
+                    {{ form_widget(form.dateExpiration, {'attr': {'id': 'f_dateExp'}}) }}
+                    {{ form_errors(form.dateExpiration) }}
+                    <div class="field-error" id="err_dateExp">La date d'expiration est obligatoire et doit être postérieure à la date de publication.</div>
+                </div>
+
+                {% if form.rh is defined %}
+                <div class="fg {{ form.rh.vars.errors|length ? 'has-error' : '' }}" style="grid-column:1/-1;">
+                    {{ form_label(form.rh, 'RH responsable') }}
+                    {{ form_widget(form.rh, {'attr': {'id': 'f_rh'}}) }}
+                    {{ form_errors(form.rh) }}
+                    <div class="field-error" id="err_rh">Veuillez sélectionner un RH responsable.</div>
+                </div>
+                {% endif %}
+
+                <div class="fg {{ form.description.vars.errors|length ? 'has-error' : '' }}" style="grid-column:1/-1;">
+                    {{ form_label(form.description, 'Description du poste') }}
+                    {{ form_widget(form.description, {
+                        'attr': {
+                            'id': 'f_description',
+                            'placeholder': 'Décrivez le poste, les missions, les compétences requises...'
+                        }
+                    }) }}
+                    {{ form_errors(form.description) }}
+                    <div class="field-error" id="err_description">La description est obligatoire (min. 10 caractères).</div>
+                    <div class="char-count"><span id="cnt_desc">0</span> caractères</div>
+                </div>
+
+                {% if form.latitude is defined %}
+                    <div id="real_lat_wrapper" style="display:none;">{{ form_widget(form.latitude) }}</div>
+                {% endif %}
+                {% if form.longitude is defined %}
+                    <div id="real_lng_wrapper" style="display:none;">{{ form_widget(form.longitude) }}</div>
+                {% endif %}
+
+            </div>
+
+            <div class="fc-ft">
+                <button type="submit" id="btnSubmit" class="btn-p">
+                    <i class="bi bi-check-lg"></i> Publier l'offre
+                </button>
+                <a href="{{ path('app_offre_emploi_index') }}" class="btn-op" style="padding:11px 22px;">
+                    Annuler
+                </a>
+                <span id="submitMsg" style="font-size:13px;color:#dc3545;display:none;">
+                    <i class="bi bi-exclamation-triangle-fill"></i> Corrigez les erreurs avant de soumettre.
+                </span>
+            </div>
+
+            {{ form_end(form) }}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<style>@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}</style>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/@geoapify/geocoder-autocomplete@^1/dist/index.min.js"></script>
+<script>
+/* ── Autocomplete Geoapify: initialise directement ── */
+(function() {
+    var _map = null, _marker = null;
+
+    function initGeoapify() {
+        var KEY = "{{ geoapify_key|default('') }}";
+        if (!KEY) { 
+            console.error('[RHPro] Clé Geoapify manquante dans la configuration Symfony'); 
+            var rw = document.getElementById('real_loc_wrapper');
+            if(rw) rw.style.display = 'block';
+            return; 
+        }
+
+        var container = document.getElementById('geoapify-container');
+        if (!container || container.hasAttribute('data-initialized')) return;
+        container.setAttribute('data-initialized', 'true');
+        container.innerHTML = ''; // Clear if anything is there
+
+        if (typeof autocomplete === 'undefined' || !autocomplete.GeocoderAutocomplete) {
+            console.error('[RHPro] GeocoderAutocomplete non chargé. window.autocomplete est manquant.');
+            var rw = document.getElementById('real_loc_wrapper');
+            if(rw) rw.style.display = 'block';
+            return;
+        }
+
+        var ac = new autocomplete.GeocoderAutocomplete(container, KEY, {
+            filter: { countrycode: ['tn'] },
+            bias:   { countrycode: ['tn'] },
+            lang:   'fr', limit: 7, type: 'city',
+            placeholder: 'Tapez une ville tunisienne...'
+        });
+
+        var realLoc = document.querySelector('input[name="offre_emploi[localisation]"]');
+        var realLat = document.querySelector('input[name="offre_emploi[latitude]"]');
+        var realLng = document.querySelector('input[name="offre_emploi[longitude]"]');
+
+        var gi = container.querySelector('input');
+        if (gi) { 
+            if (realLoc && realLoc.value) gi.value = realLoc.value; 
+            gi.addEventListener('input', function() {
+                if (realLoc) realLoc.value = this.value;
+            });
+        }
+
+        ac.on('select', function(loc) {
+            if (!loc) return;
+            var p = loc.properties;
+            var label = p.formatted || p.city || p.name || '';
+            if (realLoc) { 
+                realLoc.value = label;
+                realLoc.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+
+            var lat = loc.geometry.coordinates[1].toFixed(6);
+            var lng = loc.geometry.coordinates[0].toFixed(6);
+            if (realLat) realLat.value = lat;
+            if (realLng) realLng.value = lng;
+            document.getElementById('geo-loading').style.display = 'none';
+            document.getElementById('geo-error').style.display   = 'none';
+            document.getElementById('geo-success-text').textContent = label + ' (' + lat + ', ' + lng + ')';
+            document.getElementById('geo-success').style.display = 'flex';
+            document.getElementById('geo-preview-text').textContent = 'Lat: ' + lat + '  •  Lng: ' + lng;
+            document.getElementById('geo-preview').classList.add('visible');
+            var mapEl = document.getElementById('map-preview');
+            mapEl.classList.add('visible');
+            if (!_map) {
+                _map = L.map(mapEl, { center: [lat, lng], zoom: 12, zoomControl: true, scrollWheelZoom: false, attributionControl: false });
+                L.tileLayer('https://maps.geoapify.com/v1/tile/osm-carto/{z}/{x}/{y}.png?apiKey=' + KEY, { maxZoom: 20 }).addTo(_map);
+                var icon = L.divIcon({ html: '<div style="background:#6D2269;width:14px;height:14px;border-radius:50%;border:2px solid #fff;box-shadow:0 2px 6px rgba(109,34,105,0.5)"></div>', iconSize: [14,14], iconAnchor: [7,7], className: '' });
+                _marker = L.marker([lat, lng], { icon: icon }).addTo(_map);
+            } else { _map.setView([lat, lng], 12); _marker.setLatLng([lat, lng]); }
+        });
+
+        ac.on('input', function(v) {
+            // Dès que l'utilisateur tape, on efface les coordonnées car on n'est plus sûr du lieu précis
+            if (realLat) realLat.value = '';
+            if (realLng) realLng.value = '';
+            document.getElementById('geo-success').style.display = 'none';
+            document.getElementById('geo-error').style.display   = 'none';
+            document.getElementById('geo-preview').classList.remove('visible');
+
+            if (!v || v.length === 0) {
+                if (realLoc) realLoc.value = '';
+            }
+        });
+    }
+
+    function runSetup() {
+        if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', initGeoapify); }
+        else { initGeoapify(); }
+    }
+    
+    runSetup();
+    document.addEventListener('turbo:load', runSetup);
+
+})();
+</script>
+</script>
+
+<script>
+function setupFormValidation() {
+    function getId(id) { return document.getElementById(id); }
+
+    function markValid(el) {
+        el.classList.remove('is-invalid'); el.classList.add('is-valid');
+        var fg = el.closest('.fg'); if (fg) fg.classList.remove('has-error');
+    }
+    function markInvalid(el, errId) {
+        el.classList.add('is-invalid'); el.classList.remove('is-valid');
+        var fg = el.closest('.fg'); if (fg) fg.classList.add('has-error');
+        if (errId) { var e = getId(errId); if (e) e.classList.add('visible'); }
+    }
+    function clearError(el, errId) {
+        el.classList.remove('is-invalid', 'is-valid');
+        var fg = el.closest('.fg'); if (fg) fg.classList.remove('has-error');
+        if (errId) { var e = getId(errId); if (e) e.classList.remove('visible'); }
+    }
+
+    var titre = getId('f_titre'), desc = getId('f_description');
+    if (titre) { titre.addEventListener('input', function () { getId('cnt_titre').textContent = this.value.length; }); getId('cnt_titre').textContent = titre.value.length; }
+    if (desc)  { desc.addEventListener('input',  function () { getId('cnt_desc').textContent  = this.value.length; }); getId('cnt_desc').textContent  = desc.value.length;  }
+
+    function validateField(el, errId, fn) {
+        if (!el) return;
+        el.addEventListener('blur',   function () { if (!fn(this)) markValid(this); });
+        el.addEventListener('input',  function () { if (this.classList.contains('is-invalid')) { fn(this); } else { clearError(this, errId); } });
+        el.addEventListener('change', function () { if (this.classList.contains('is-invalid')) { fn(this); } else { clearError(this, errId); } });
+    }
+
+    validateField(titre,                   'err_titre',       function (el) { if (el.value.trim().length < 3) { markInvalid(el,'err_titre'); return true; }       clearError(el,'err_titre'); return false; });
+    validateField(getId('f_typeContrat'),  'err_typeContrat', function (el) { if (!el.value)                  { markInvalid(el,'err_typeContrat'); return true; }  clearError(el,'err_typeContrat'); return false; });
+    validateField(getId('f_statut'),       'err_statut',      function (el) { if (!el.value)                  { markInvalid(el,'err_statut'); return true; }       clearError(el,'err_statut'); return false; });
+    validateField(getId('f_datePub'),      'err_datePub',     function (el) { if (!el.value)                  { markInvalid(el,'err_datePub'); return true; }      clearError(el,'err_datePub'); return false; });
+    validateField(getId('f_dateExp'),      'err_dateExp',     function (el) {
+        var pub = getId('f_datePub');
+        if (!el.value) { markInvalid(el,'err_dateExp'); return true; }
+        if (pub && pub.value && el.value < pub.value) { markInvalid(el,'err_dateExp'); return true; }
+        clearError(el,'err_dateExp'); return false;
+    });
+    if (desc) { validateField(desc, 'err_description', function (el) { if (el.value.trim().length < 10) { markInvalid(el,'err_description'); return true; } clearError(el,'err_description'); return false; }); }
+    var rhField = getId('f_rh');
+    if (rhField) { validateField(rhField, 'err_rh', function (el) { if (!el.value) { markInvalid(el,'err_rh'); return true; } clearError(el,'err_rh'); return false; }); }
+
+    var form = getId('offreForm');
+    if (form) {
+        form.addEventListener('submit', function (e) {
+            var ok = true;
+            function check(id, fn) { var el = getId(id); if (!el) return; if (fn(el)) ok = false; }
+            check('f_titre',       function (el) { if (el.value.trim().length < 3) { markInvalid(el,'err_titre'); return true; }      markValid(el); return false; });
+            check('f_typeContrat', function (el) { if (!el.value)                  { markInvalid(el,'err_typeContrat'); return true; } markValid(el); return false; });
+            check('f_statut',      function (el) { if (!el.value)                  { markInvalid(el,'err_statut'); return true; }      markValid(el); return false; });
+            check('f_datePub',     function (el) { if (!el.value)                  { markInvalid(el,'err_datePub'); return true; }     markValid(el); return false; });
+            check('f_dateExp',     function (el) {
+                var pub = getId('f_datePub');
+                if (!el.value) { markInvalid(el,'err_dateExp'); return true; }
+                if (pub && pub.value && el.value < pub.value) { markInvalid(el,'err_dateExp'); return true; }
+                markValid(el); return false;
+            });
+            check('f_description', function (el) { if (el.value.trim().length < 10) { markInvalid(el,'err_description'); return true; } markValid(el); return false; });
+            if (rhField) { check('f_rh', function (el) { if (!el.value) { markInvalid(el,'err_rh'); return true; } markValid(el); return false; }); }
+            
+            var locEl = document.querySelector('input[name="offre_emploi[localisation]"]');
+            var latEl = document.querySelector('input[name="offre_emploi[latitude]"]');
+            
+            if (!locEl || !locEl.value.trim() || !latEl || !latEl.value.trim()) {
+                var fg = getId('fg_localisation'); if (fg) fg.classList.add('has-error');
+                var er = getId('err_localisation'); 
+                if (er) {
+                    er.textContent = "Veuillez sélectionner une ville valide depuis la liste des suggestions.";
+                    er.classList.add('visible');
+                }
+                ok = false;
+            } else {
+                var fg = getId('fg_localisation'); if (fg) fg.classList.remove('has-error');
+                var er = getId('err_localisation'); if (er) er.classList.remove('visible');
+            }
+
+            if (!ok) {
+                e.preventDefault();
+                var msg = getId('submitMsg');
+                if (msg) msg.style.display = 'inline-flex';
+                var first = form.querySelector('.is-invalid');
+                if (first) first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        });
+    }
+}
+document.addEventListener('DOMContentLoaded', setupFormValidation);
+document.addEventListener('turbo:load', setupFormValidation);
+</script>
+{% endblock %}

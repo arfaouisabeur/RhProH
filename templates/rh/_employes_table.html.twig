@@ -1,0 +1,86 @@
+<table class="admin-table table-hover mb-0">
+    <thead>
+        <tr>
+            <th><i class="bi bi-person me-2"></i>Collaborateur</th>
+            <th><i class="bi bi-hash me-2"></i>Matricule & Poste</th>
+            <th><i class="bi bi-envelope me-2"></i>Contact</th>
+            <th><i class="bi bi-calendar-event me-2"></i>Embauche</th>
+            <th>Statut</th>
+            <th class="text-end">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for employe in employes %}
+            <tr>
+                <td>
+                    <div class="d-flex align-items-center">
+                        {% if employe.avatarPath %}
+                            <img src="{{ asset(employe.avatarPath) }}" class="me-3" alt="" style="width:40px;height:40px;border-radius:10px;object-fit:cover;box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                        {% else %}
+                            <div class="me-3 d-flex align-items-center justify-content-center text-white fw-bold" style="width:40px;height:40px;border-radius:10px;background: var(--purple-mid);">
+                                {{ employe.prenom|first|upper }}
+                            </div>
+                        {% endif %}
+                        <div>
+                            <div class="fw-bold text-dark">{{ employe.fullName }}</div>
+                            <div class="text-muted small">Collaborateur ID #{{ employe.id }}</div>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <div class="d-flex flex-column">
+                        <span class="badge-soft badge-soft-purple text-center mb-1" style="width: fit-content; font-family: monospace;">{{ employe.employe ? employe.employe.matricule|default('-') : '-' }}</span>
+                        <span class="fw-medium text-dark">{{ employe.employe ? employe.employe.position|default('-') : '-' }}</span>
+                    </div>
+                </td>
+                <td>
+                    <div class="d-flex flex-column">
+                        <span class="small"><i class="bi bi-envelope-at me-1 text-muted"></i> {{ employe.email }}</span>
+                        <span class="small text-muted"><i class="bi bi-phone me-1"></i> {{ employe.telephone ?: '-' }}</span>
+                    </div>
+                </td>
+                <td>
+                    <span class="text-muted small">
+                        {% if employe.employe and employe.employe.dateEmbauche %}
+                            <i class="bi bi-calendar-check me-1"></i> {{ employe.employe.dateEmbauche|date('d/m/Y') }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </span>
+                </td>
+                <td>
+                    {% if employe.statut == 'actif' %}
+                        <span class="badge-soft badge-soft-success">✔ ACTIF</span>
+                    {% else %}
+                        <span class="badge-soft badge-soft-warning">⏳ INACTIF</span>
+                    {% endif %}
+                </td>
+                <td class="text-end">
+                    <a href="{{ path('app_rh_user_view', {'id': employe.id}) }}" class="btn-action-circle outline" title="Voir la fiche">
+                        <i class="bi bi-eye"></i>
+                    </a>
+                    <form method="post" action="{{ path('app_rh_user_toggle_statut', {'id': employe.id}) }}" class="d-inline" onsubmit="return confirm('Changer le statut de cet employé ?')">
+                        <input type="hidden" name="_token" value="{{ csrf_token('toggle' ~ employe.id) }}">
+                        <input type="hidden" name="redirect" value="employes">
+                        {% if employe.statut == 'actif' %}
+                            <button class="btn-action-circle solid" title="Désactiver">
+                                <i class="bi bi-lock-fill"></i>
+                            </button>
+                        {% else %}
+                            <button class="btn-action-circle outline" title="Activer">
+                                <i class="bi bi-unlock-fill"></i>
+                            </button>
+                        {% endif %}
+                    </form>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="6" class="text-center py-5 text-muted">
+                    <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+                    Aucun collaborateur trouvé dans la base.
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>

@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Décision Congé #{{ conge.id }}</title>
+    <style>
+        @page {
+            margin: 0;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'DejaVu Sans', Arial, sans-serif;
+            background: #ffffff;
+            padding: 0;
+            color: #1f2937;
+        }
+        .document {
+            max-width: 100%;
+            margin: 0;
+            border: 3px solid #8e4ec6;
+            overflow: hidden;
+        }
+        .header {
+            background: #8e4ec6;
+            color: white;
+            padding: 25px 40px;
+            position: relative;
+        }
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+        .logo-icon {
+            width: 60px;
+            height: 60px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+        }
+        .company-name {
+            font-size: 28px;
+            font-weight: 900;
+            letter-spacing: 2px;
+        }
+        .company-subtitle {
+            font-size: 12px;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+        .ticket-number {
+            position: absolute;
+            top: 30px;
+            right: 40px;
+            text-align: right;
+        }
+        .ticket-label {
+            font-size: 11px;
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .ticket-id {
+            font-size: 20px;
+            font-weight: 900;
+            margin-top: 3px;
+        }
+        .decision-banner {
+            padding: 20px 40px;
+            text-align: center;
+            font-size: 22px;
+            font-weight: 900;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+        .decision-acceptee {
+            background: #a7f3d0;
+            color: #065f46;
+        }
+        .decision-refusee {
+            background: #fecaca;
+            color: #991b1b;
+        }
+        .section {
+            padding: 30px 40px;
+        }
+        .section-title {
+            background: #8e4ec6;
+            color: white;
+            padding: 10px 20px;
+            font-size: 13px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 0 -40px 20px -40px;
+        }
+        .info-grid {
+            display: table;
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .info-row {
+            display: table-row;
+        }
+        .info-label {
+            display: table-cell;
+            padding: 12px 20px 12px 0;
+            font-weight: 700;
+            color: #8e4ec6;
+            width: 35%;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        .info-value {
+            display: table-cell;
+            padding: 12px 0;
+            color: #1f2937;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        .description-box {
+            background: #f9fafb;
+            border-left: 4px solid #8e4ec6;
+            padding: 20px;
+            margin-top: 15px;
+            border-radius: 8px;
+            line-height: 1.6;
+            color: #4b5563;
+        }
+        .recap-bar {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            padding: 20px 40px;
+            display: table;
+            width: 100%;
+        }
+        .recap-bar.refusee {
+            background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);
+        }
+        .recap-item {
+            display: table-cell;
+            text-align: center;
+            color: white;
+            padding: 10px;
+        }
+        .recap-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+        .recap-value {
+            font-size: 20px;
+            font-weight: 900;
+        }
+        .footer {
+            padding: 25px 40px;
+            background: #f9fafb;
+            border-top: 2px solid #e5e7eb;
+            text-align: center;
+        }
+        .footer-text {
+            font-size: 10px;
+            color: #6b7280;
+            line-height: 1.5;
+        }
+        .footer-confidential {
+            font-weight: 700;
+            color: #8e4ec6;
+            margin-top: 10px;
+        }
+        .stamp-section {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .stamp-img {
+            width: 120px;
+            height: 120px;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="document">
+        <!-- HEADER -->
+        <div class="header">
+            <div class="logo-section">
+                <div class="logo-icon">🏢</div>
+                <div>
+                    <div class="company-name">RH PRO</div>
+                    <div class="company-subtitle">Système de gestion des ressources humaines</div>
+                </div>
+            </div>
+            <div class="ticket-number">
+                <div class="ticket-label">Ticket</div>
+                <div class="ticket-id">#{{ conge.id }}</div>
+                <div class="ticket-label">Émis le {{ "now"|date('d/m/Y') }}</div>
+            </div>
+        </div>
+
+        <!-- DECISION BANNER -->
+        <div class="decision-banner {% if decision == 'approuvé' %}decision-acceptee{% else %}decision-refusee{% endif %}">
+            {% if decision == 'approuvé' %}
+                DEMANDE ACCEPTÉE
+            {% else %}
+                DEMANDE REFUSÉE
+            {% endif %}
+        </div>
+
+        <!-- INFORMATIONS DE LA DEMANDE -->
+        <div class="section">
+            <div class="section-title">📋 Informations de la demande</div>
+            <div class="info-grid">
+                <div class="info-row">
+                    <div class="info-label">Employé</div>
+                    <div class="info-value">
+                        {% if conge.employe and conge.employe.user %}
+                            {{ conge.employe.user.prenom }} {{ conge.employe.user.nom }}
+                        {% else %}
+                            Non défini
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Type de congé</div>
+                    <div class="info-value">{{ conge.typeConge }}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Date de début</div>
+                    <div class="info-value">{{ conge.dateDebut ? conge.dateDebut|date('d/m/Y') : '—' }}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Date de fin</div>
+                    <div class="info-value">{{ conge.dateFin ? conge.dateFin|date('d/m/Y') : '—' }}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Durée</div>
+                    <div class="info-value">
+                        {% if conge.dateDebut and conge.dateFin %}
+                            {% set d1 = conge.dateDebut|date('U') %}
+                            {% set d2 = conge.dateFin|date('U') %}
+                            {% set nbJours = ((d2 - d1) / 86400)|round(0, 'floor') + 1 %}
+                            {{ nbJours }} jour(s)
+                        {% else %}
+                            —
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Statut</div>
+                    <div class="info-value">{{ conge.statut }}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Date de demande</div>
+                    <div class="info-value">{{ "now"|date('d/m/Y à H:i') }}</div>
+                </div>
+            </div>
+
+            {% if conge.description %}
+                <div class="description-box">
+                    <strong>Description:</strong><br>
+                    {{ conge.description }}
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- DECISION RH -->
+        <div class="section" style="background: #faf5ff;">
+            <div class="section-title">👤 Décision RH</div>
+            <div class="info-grid">
+                <div class="info-row">
+                    <div class="info-label">Responsable RH</div>
+                    <div class="info-value">
+                        {% if reponse and reponse.rh and reponse.rh.user %}
+                            {{ reponse.rh.user.prenom }} {{ reponse.rh.user.nom }}
+                        {% else %}
+                            Système RH
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Décision</div>
+                    <div class="info-value" style="font-weight: 900; color: {% if decision == 'approuvé' %}#10b981{% else %}#f43f5e{% endif %};">
+                        {{ decision|upper }}
+                    </div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Date de décision</div>
+                    <div class="info-value">{{ "now"|date('d/m/Y à H:i') }}</div>
+                </div>
+            </div>
+
+            {% if commentaire %}
+                <div class="description-box">
+                    <strong>Commentaire RH:</strong><br>
+                    {{ commentaire }}
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- RECAPITULATIF -->
+        <div class="recap-bar {% if decision != 'approuvé' %}refusee{% endif %}">
+            <div class="recap-item">
+                <div class="recap-label">Statut</div>
+                <div class="recap-value">{{ decision == 'approuvé' ? 'ACCEPTÉE' : 'REFUSÉE' }}</div>
+            </div>
+            <div class="recap-item">
+                <div class="recap-label">Priorité</div>
+                <div class="recap-value">NORMALE</div>
+            </div>
+            <div class="recap-item">
+                <div class="recap-label">Étape</div>
+                <div class="recap-value">RÉSOLUE</div>
+            </div>
+        </div>
+
+        <!-- CACHET -->
+        {% if cachet_base64 %}
+        <div class="stamp-section">
+            <img src="{{ cachet_base64 }}" alt="Cachet" class="stamp-img">
+        </div>
+        {% endif %}
+
+        <!-- FOOTER -->
+        <div class="footer">
+            <div class="footer-text">
+                Document généré automatiquement par RH Pro — {{ "now"|date('d/m/Y à H:i') }}<br>
+                Ce document est confidentiel et destiné uniquement à l'usage interne de l'entreprise.
+            </div>
+            <div class="footer-confidential">
+                Ticket #{{ conge.id }} • Confidentiel
+            </div>
+        </div>
+    </div>
+</body>
+</html>

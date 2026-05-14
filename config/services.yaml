@@ -1,0 +1,69 @@
+# yaml-language-server: $schema=../vendor/symfony/dependency-injection/Loader/schema/services.schema.json
+
+parameters:
+    cv_directory: '%kernel.project_dir%/public/uploads/cv'
+
+    # 🔥 FROM FRIEND
+    twilio_account_sid: '%env(TWILIO_ACCOUNT_SID)%'
+    twilio_auth_token: '%env(TWILIO_AUTH_TOKEN)%'
+    twilio_from_number: '%env(TWILIO_FROM_NUMBER)%'
+    elevenlabs_api_key: '%env(ELEVENLABS_API_KEY)%'
+
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    App\:
+        resource: '../src/'
+
+    # ======================
+    # YOUR SERVICES
+    # ======================
+
+    App\Service\BlockchainService:
+        arguments:
+            $apiKey:  '%env(ALCHEMY_API_KEY)%'
+            $network: '%env(ALCHEMY_NETWORK)%'
+
+    App\Service\CertificatService:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+
+    App\Service\CvAnalysisService:
+        arguments:
+            $groqApiKey:  '%env(GROQ_API_KEY)%'
+            $cvDirectory: '%cv_directory%'
+            $nlpApiUrl:   '%env(NLP_API_URL)%'
+
+    App\Security\CertificatVoter:
+        tags: ['security.voter']
+
+    # ======================
+    # YOUR FRIEND SERVICES
+    # ======================
+
+    App\Service\SentimentService:
+        arguments:
+            $huggingFaceToken: '%env(HUGGINGFACE_TOKEN)%'
+
+    App\Service\RecommendationService:
+        arguments:
+            $huggingFaceToken: '%env(HUGGINGFACE_TOKEN)%'
+
+    App\Service\ReviewAnalysisService:
+        arguments:
+            $huggingFaceToken: '%env(HUGGINGFACE_TOKEN)%'
+
+    App\Service\WeatherService:
+        arguments:
+            $apiKey: '%env(OPENWEATHERMAP_API_KEY)%'
+
+    # 🔥 NEW SERVICE FROM FRIEND
+    App\Service\ElevenLabsService:
+        arguments:
+            $apiKey: '%elevenlabs_api_key%'
+
+    App\Service\OcrService:
+        arguments:
+            $ocrApiKey: '%env(default::OCR_SPACE_API_KEY)%'

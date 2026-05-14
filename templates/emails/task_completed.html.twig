@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tâche terminée - RHPro</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f6f9fc; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout: fixed;">
+        <tr>
+            <td align="center" style="padding: 40px 0;">
+                <table border="0" cellpadding="0" cellspacing="0" width="600" style="background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid #e6ebf1;">
+                    <!-- Header -->
+                    <tr>
+                        <td align="center" style="padding: 40px 40px 20px 40px; background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);">
+                            <div style="background: rgba(255,255,255,0.2); width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; text-align: center; line-height: 64px; font-size: 32px; margin-left: auto; margin-right: auto;">
+                                ✅
+                            </div>
+                            <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.5px;">Tâche Résolue</h1>
+                        </td>
+                    </tr>
+
+                    <!-- Body -->
+                    <tr>
+                        <td style="padding: 40px;">
+                            <p style="font-size: 16px; color: #4b5563; margin-top: 0;">Bonjour <strong>{{ rh.prenom }}</strong>,</p>
+                            <p style="font-size: 16px; color: #4b5563; line-height: 1.6;">Bonne nouvelle ! La tâche suivante a été finalisée avec succès par <strong>{{ employe.fullName }}</strong>.</p>
+                            
+                            <!-- Task Card -->
+                            <div style="background-color: #f8fafc; border-radius: 12px; padding: 24px; border: 1px solid #e2e8f0; margin: 30px 0;">
+                                <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                    <tr>
+                                        <td style="padding-bottom: 8px;">
+                                            <span style="font-size: 12px; font-weight: 600; color: #6366f1; text-transform: uppercase; letter-spacing: 1px;">Projet</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding-bottom: 20px;">
+                                            <span style="font-size: 18px; font-weight: 700; color: #1e293b;">{{ tache.projet.titre }}</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding-bottom: 8px;">
+                                            <span style="font-size: 12px; font-weight: 600; color: #6366f1; text-transform: uppercase; letter-spacing: 1px;">Tâche</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <span style="font-size: 16px; font-weight: 500; color: #334155;">{{ tache.titre }}</span>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <p style="font-size: 14px; color: #64748b; line-height: 1.6;">Vous pouvez maintenant consulter les détails et valider les livrables directement sur votre plateforme RHPro Admin.</p>
+                            
+                            <!-- Action Button -->
+                            <div style="text-align: center; margin-top: 40px;">
+                                <a href="http://127.0.0.1:8000/rh/projet/{{ tache.projet.id }}" style="background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); color: #ffffff; padding: 16px 32px; text-decoration: none; border-radius: 12px; font-weight: 600; display: inline-block; font-size: 16px; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);">Voir le projet</a>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td align="center" style="padding: 30px 40px; background-color: #f8fafc; border-top: 1px solid #e2e8f0;">
+                            <p style="margin: 0; font-size: 12px; color: #94a3b8; font-weight: 500;">
+                                RHPro - Excellence en Gestion de Ressources Humaines
+                            </p>
+                            <p style="margin: 5px 0 0 0; font-size: 11px; color: #cbd5e1;">
+                                Cet e-mail est généré automatiquement. Merci de ne pas répondre.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

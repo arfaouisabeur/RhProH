@@ -1,0 +1,262 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouveau Projet{% endblock %}
+
+{% block stylesheets %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+    .app-container {
+        font-family: 'Inter', sans-serif;
+        background: radial-gradient(ellipse at 20% 0%, #f3e8ff 0%, #ffffff 50%, #faf5ff 100%);
+        min-height: 90vh; padding: 40px 20px; color: #0f172a;
+        position: relative; overflow: hidden;
+    }
+    .app-container::before {
+        content: ''; position: fixed; top: -180px; right: -180px;
+        width: 560px; height: 560px; border-radius: 50%;
+        background: radial-gradient(circle, rgba(143,76,201,.17), transparent 68%);
+        pointer-events: none; z-index: 0;
+        animation: orbFloat1 9s ease-in-out infinite;
+    }
+    .app-container::after {
+        content: ''; position: fixed; bottom: -120px; left: -120px;
+        width: 420px; height: 420px; border-radius: 50%;
+        background: radial-gradient(circle, rgba(179,157,219,.14), transparent 68%);
+        pointer-events: none; z-index: 0;
+        animation: orbFloat2 11s ease-in-out infinite;
+    }
+    .app-container > * { position: relative; z-index: 1; }
+    .app-container * { box-sizing: border-box; }
+    
+    .view-wrapper { max-width: 900px; margin: 0 auto; animation: fadeUp 0.6s ease-out; }
+
+    .header-box { display: flex; align-items: center; gap: 15px; margin-bottom: 30px; }
+    .header-icon {
+        width: 60px; height: 60px; border-radius: 18px;
+        background: linear-gradient(135deg, #7c3dac, #8f4cc9);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 24px; color: white; box-shadow: 0 12px 28px rgba(143,76,201,.4);
+        animation: iconPop .6s cubic-bezier(.175,.885,.32,1.275) .2s both;
+    }
+    .header-box h1 {
+        font-family: 'Outfit', sans-serif; font-weight: 900; font-size: 2.4rem;
+        margin: 0;
+        background: linear-gradient(135deg, #2e0d52, #8f4cc9);
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .header-box p { color: #64748b; margin: 7px 0 0 0; font-size: 1.02rem; font-weight: 500; }
+
+    .glass-card {
+        background: rgba(255,255,255,.87);
+        backdrop-filter: blur(22px); -webkit-backdrop-filter: blur(22px);
+        border: 1.5px solid rgba(179,157,219,.28);
+        border-radius: 24px;
+        box-shadow: 0 10px 40px rgba(143,76,201,.10);
+        padding: 40px;
+    }
+
+    .info-banner {
+        background: linear-gradient(135deg, rgba(143,76,201,.08), rgba(179,157,219,.05));
+        border-left: 4px solid #7c3dac;
+        padding: 16px 20px; border-radius: 14px; margin-bottom: 30px;
+        display: flex; gap: 15px; align-items: flex-start;
+        color: #5b2b82; font-size: 0.95rem; line-height: 1.6;
+    }
+    .info-banner i { color: #7c3dac; font-size: 1.2rem; margin-top: 2px; }
+
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+    .form-group { display: flex; flex-direction: column; gap: 8px; }
+    .form-group.full { grid-column: 1 / -1; }
+    
+    .form-label {
+        font-size: 0.79rem; font-weight: 800; text-transform: uppercase;
+        letter-spacing: .13em; color: #7c3dac; margin-left: 5px;
+        display: flex; align-items: center; gap: 8px;
+    }
+    .form-label i { font-size: 1rem; }
+    
+    .form-control, .form-select {
+        width: 100%; padding: 14px 20px;
+        background: #faf5ff; border: 1.5px solid rgba(147,57,196,.20);
+        border-radius: 14px; font-family: 'Inter', sans-serif; font-size: 1rem;
+        color: #0f172a; transition: all 0.3s;
+    }
+    .form-control:focus, .form-select:focus {
+        outline: none; border-color: #7c3dac; background: #fff;
+        box-shadow: 0 0 0 4px rgba(124,58,237,0.12);
+    }
+    textarea.form-control { resize: vertical; min-height: 120px; }
+    
+    .form-select {
+        appearance: none; -webkit-appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%239333ea' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+        background-repeat: no-repeat; background-position: right 15px center; background-size: 14px;
+        padding-right: 45px; cursor: pointer;
+    }
+
+    .form-error { color: #e11d48; font-size: 0.85rem; margin-left: 5px; font-weight: 600; }
+
+    .section-divider {
+        grid-column: 1 / -1;
+        height: 1px;
+        background: linear-gradient(90deg, rgba(143,76,201,.2), transparent);
+        margin: 10px 0;
+    }
+
+    .actions {
+        display: flex; justify-content: space-between; align-items: center;
+        margin-top: 40px; padding-top: 30px;
+        border-top: 2px solid rgba(143,76,201,.1);
+    }
+    
+    .btn-back {
+        display: inline-flex; align-items: center; gap: 9px;
+        color: #64748b; text-decoration: none; font-weight: 700;
+        padding: 13px 22px; border-radius: 999px;
+        transition: all .2s; font-size: .95rem;
+        border: 1.5px solid rgba(179,157,219,.35);
+        background: rgba(255,255,255,.88);
+    }
+    .btn-back:hover {
+        background: #fff; border-color: #b39ddb;
+        transform: translateY(-2px); box-shadow: 0 8px 20px rgba(143,76,201,.16);
+        color: #7c3dac;
+    }
+    
+    .btn-submit {
+        display: inline-flex; align-items: center; gap: 9px;
+        background: linear-gradient(135deg, #7c3dac, #8f4cc9);
+        border: none; cursor: pointer;
+        color: white !important; font-weight: 900; padding: 14px 34px;
+        border-radius: 999px;
+        box-shadow: 0 12px 28px rgba(143,76,201,.4);
+        transition: all 0.3s;
+        font-family: 'Outfit', sans-serif; font-size: 1.05rem;
+    }
+    .btn-submit:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 18px 38px rgba(143,76,201,.42);
+    }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes orbFloat1 { 0%,100%{transform:translate(0,0) scale(1);}50%{transform:translate(-28px,20px) scale(1.05);} }
+    @keyframes orbFloat2 { 0%,100%{transform:translate(0,0) scale(1);}50%{transform:translate(20px,-26px) scale(1.07);} }
+    @keyframes iconPop { from{opacity:0;transform:scale(.5);}to{opacity:1;transform:scale(1);} }
+
+    @media (max-width: 768px) {
+        .form-grid { grid-template-columns: 1fr; }
+        .actions { flex-direction: column-reverse; gap: 15px; }
+        .btn-submit { width: 100%; justify-content: center; }
+        .glass-card { padding: 25px; }
+        .header-box h1 { font-size: 1.8rem; }
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="app-container">
+    <div class="view-wrapper">
+        <div class="header-box">
+            <div class="header-icon"><i class="fas fa-diagram-project"></i></div>
+            <div>
+                <h1>Nouveau Projet</h1>
+                <p>Créez un nouveau projet et assignez les responsables</p>
+            </div>
+        </div>
+
+        <div class="glass-card">
+            <div class="info-banner">
+                <i class="fas fa-lightbulb"></i>
+                <div>Définissez clairement les objectifs et le périmètre du projet. Assignez un responsable RH et un employé référent pour assurer le suivi.</div>
+            </div>
+
+            {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+            
+            <div class="form-grid">
+                {# Titre #}
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.titre.vars.id }}">
+                        <i class="fas fa-heading"></i> Titre du projet
+                    </label>
+                    {{ form_widget(form.titre, {'attr': {'class': 'form-control', 'placeholder': 'Ex: Refonte du système RH'}}) }}
+                    <div class="form-error">{{ form_errors(form.titre) }}</div>
+                </div>
+
+                {# Statut #}
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.statut.vars.id }}">
+                        <i class="fas fa-flag"></i> Statut
+                    </label>
+                    {{ form_widget(form.statut, {'attr': {'class': 'form-select'}}) }}
+                    <div class="form-error">{{ form_errors(form.statut) }}</div>
+                </div>
+
+                {# Description #}
+                <div class="form-group full">
+                    <label class="form-label" for="{{ form.description.vars.id }}">
+                        <i class="fas fa-align-left"></i> Description
+                    </label>
+                    {{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': 4, 'placeholder': 'Décrivez les objectifs, le périmètre et les livrables attendus...'}}) }}
+                    <div class="form-error">{{ form_errors(form.description) }}</div>
+                </div>
+
+                <div class="section-divider"></div>
+
+                {# Date début #}
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.date_debut.vars.id }}">
+                        <i class="fas fa-calendar-plus"></i> Date de début
+                    </label>
+                    {{ form_widget(form.date_debut, {'attr': {'class': 'form-control'}}) }}
+                    <div class="form-error">{{ form_errors(form.date_debut) }}</div>
+                </div>
+
+                {# Date fin #}
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.date_fin.vars.id }}">
+                        <i class="fas fa-calendar-check"></i> Date de fin
+                    </label>
+                    {{ form_widget(form.date_fin, {'attr': {'class': 'form-control'}}) }}
+                    <div class="form-error">{{ form_errors(form.date_fin) }}</div>
+                </div>
+
+                <div class="section-divider"></div>
+
+                {# Responsable RH #}
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.rh.vars.id }}">
+                        <i class="fas fa-user-shield"></i> Responsable RH
+                    </label>
+                    {{ form_widget(form.rh, {'attr': {'class': 'form-select'}}) }}
+                    <div class="form-error">{{ form_errors(form.rh) }}</div>
+                </div>
+
+                {# Employé référent #}
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.responsable_employe.vars.id }}">
+                        <i class="fas fa-user-tie"></i> Employé référent
+                    </label>
+                    {{ form_widget(form.responsable_employe, {'attr': {'class': 'form-select'}}) }}
+                    <div class="form-error">{{ form_errors(form.responsable_employe) }}</div>
+                </div>
+            </div>
+
+            {{ form_rest(form) }}
+
+            <div class="actions">
+                <a href="{{ path('app_projet_index') }}" class="btn-back">
+                    <i class="fas fa-arrow-left"></i> Retour
+                </a>
+                <button type="submit" class="btn-submit">
+                    <i class="fas fa-check-circle"></i> Créer le projet
+                </button>
+            </div>
+            
+            {{ form_end(form) }}
+        </div>
+    </div>
+</div>
+{% endblock %}

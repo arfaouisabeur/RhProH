@@ -1,0 +1,598 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des Types de Service{% endblock %}
+
+{% block stylesheets %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+:root {
+  --mv-950:#2e0d52; --mv-800:#5b2b82; --mv-700:#7c3dac;
+  --mv-600:#8f4cc9; --mv-500:#b39ddb; --mv-400:#c4b0e4;
+  --mv-200:#e9d5ff; --mv-100:#f3e8ff; --mv-50:#faf5ff;
+  --mv-glow: rgba(143,76,201,0.4);
+  --mv-glass: rgba(179,157,219,0.13);
+}
+*, *::before, *::after { box-sizing: border-box; margin:0; padding:0; }
+
+/* ── Shell & Orbs ── */
+.shell {
+  font-family:'Inter',sans-serif;
+  background: radial-gradient(ellipse at 20% 0%, #f3e8ff 0%, #ffffff 45%, #faf5ff 100%);
+  min-height:90vh; padding:44px 20px; color:#0f172a;
+  position:relative; overflow:hidden;
+}
+/* Animated orbs */
+.shell::before {
+  content:''; position:fixed; top:-180px; right:-180px;
+  width:560px; height:560px; border-radius:50%;
+  background: radial-gradient(circle, rgba(143,76,201,0.18) 0%, transparent 68%);
+  pointer-events:none; z-index:0;
+  animation: orbFloat1 8s ease-in-out infinite;
+}
+.shell::after {
+  content:''; position:fixed; bottom:-120px; left:-120px;
+  width:420px; height:420px; border-radius:50%;
+  background: radial-gradient(circle, rgba(179,157,219,0.16) 0%, transparent 68%);
+  pointer-events:none; z-index:0;
+  animation: orbFloat2 10s ease-in-out infinite;
+}
+/* Third orb */
+.orb3 {
+  position:fixed; top:50%; left:-80px;
+  width:300px; height:300px; border-radius:50%;
+  background: radial-gradient(circle, rgba(143,76,201,0.08) 0%, transparent 70%);
+  pointer-events:none; z-index:0;
+  animation: orbFloat3 12s ease-in-out infinite;
+}
+
+.wrap { max-width:1120px; margin:0 auto; position:relative; z-index:1; }
+
+/* ── Page Header ── */
+.page-head {
+  display:flex; justify-content:space-between; align-items:flex-end;
+  gap:18px; flex-wrap:wrap; margin-bottom:32px;
+  animation: slideDown .7s cubic-bezier(.16,1,.3,1) both;
+}
+.page-head-left { display:flex; align-items:center; gap:18px; }
+.page-icon {
+  width:64px; height:64px; border-radius:20px;
+  background: linear-gradient(135deg, var(--mv-700), var(--mv-600));
+  display:flex; align-items:center; justify-content:center;
+  color:#fff; font-size:26px; flex-shrink:0;
+  box-shadow: 0 12px 32px var(--mv-glow);
+  animation: iconPop .6s cubic-bezier(.175,.885,.32,1.275) .2s both;
+}
+.page-head h1 {
+  font-family:'Outfit'; font-weight:900; font-size:2.4rem;
+  background: linear-gradient(135deg, var(--mv-950) 0%, var(--mv-600) 100%);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  line-height:1.1;
+}
+.page-head p { margin:6px 0 0; color:#64748b; font-size:1.02rem; font-weight:500; }
+
+.btn-create {
+  display:inline-flex; align-items:center; gap:9px;
+  background: linear-gradient(135deg, var(--mv-700), var(--mv-600));
+  color:#fff !important; font-weight:900; padding:14px 26px;
+  border-radius:999px; text-decoration:none;
+  box-shadow: 0 12px 28px var(--mv-glow);
+  font-family:'Outfit'; font-size:1rem;
+  transition: transform .2s, box-shadow .2s;
+  position:relative; overflow:hidden;
+}
+.btn-create::before {
+  content:''; position:absolute; inset:0;
+  background: linear-gradient(135deg, rgba(255,255,255,.15), transparent);
+  opacity:0; transition: opacity .2s;
+}
+.btn-create:hover { transform:translateY(-3px); box-shadow: 0 18px 38px var(--mv-glow); }
+.btn-create:hover::before { opacity:1; }
+
+/* ── KPIs ── */
+.kpis {
+  display:grid; grid-template-columns:repeat(3,1fr);
+  gap:16px; margin-bottom:26px;
+}
+.kpi {
+  background: rgba(255,255,255,.85);
+  backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+  border:1px solid rgba(179,157,219,.28);
+  border-radius:22px;
+  box-shadow: 0 8px 28px rgba(143,76,201,.09);
+  padding:20px 22px;
+  display:flex; align-items:center; gap:16px;
+  transition: transform .25s, box-shadow .25s;
+  cursor:default; position:relative; overflow:hidden;
+}
+.kpi::after {
+  content:''; position:absolute; inset:0;
+  background: linear-gradient(135deg, rgba(179,157,219,.08), transparent);
+  opacity:0; transition: opacity .25s;
+}
+.kpi:hover { transform:translateY(-5px); box-shadow: 0 18px 42px rgba(143,76,201,.16); }
+.kpi:hover::after { opacity:1; }
+.kpi:nth-child(1) { animation: slideUp .6s cubic-bezier(.16,1,.3,1) .1s both; }
+.kpi:nth-child(2) { animation: slideUp .6s cubic-bezier(.16,1,.3,1) .2s both; }
+.kpi:nth-child(3) { animation: slideUp .6s cubic-bezier(.16,1,.3,1) .3s both; }
+
+.kpi-ic { width:52px; height:52px; border-radius:18px; display:flex; align-items:center; justify-content:center; color:#fff; font-size:20px; flex-shrink:0; }
+.ic-cats { background:linear-gradient(135deg,var(--mv-700),var(--mv-600)); box-shadow:0 8px 18px var(--mv-glow); }
+.ic-items{ background:linear-gradient(135deg,#10b981,#059669); box-shadow:0 8px 18px rgba(16,185,129,.28); }
+.ic-new  { background:linear-gradient(135deg,#f59e0b,#d97706); box-shadow:0 8px 18px rgba(245,158,11,.28); }
+.kpi-txt h3 { font-family:'Outfit'; font-weight:900; font-size:2rem; color:#0f172a; line-height:1; }
+.kpi-txt p  { margin:5px 0 0; color:#64748b; font-weight:700; text-transform:uppercase; letter-spacing:.08em; font-size:.73rem; }
+
+/* KPI shimmer */
+.kpi-shimmer {
+  position:absolute; top:0; left:-100%; width:60%; height:100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.4), transparent);
+  animation: shimmer 3.5s ease-in-out infinite;
+  pointer-events:none;
+}
+
+/* ── Filter bar ── */
+.filter-wrap {
+  margin-bottom:26px;
+  animation: slideDown .6s cubic-bezier(.16,1,.3,1) .35s both;
+}
+.filter-label-main {
+  font-size:.7rem; font-weight:900; text-transform:uppercase; letter-spacing:.12em;
+  color:var(--mv-600); margin-bottom:8px; display:flex; align-items:center; gap:6px;
+}
+.filter-bar {
+  display:flex; flex-wrap:wrap; gap:10px; align-items:flex-end;
+  padding:18px 22px 16px;
+  background: rgba(255,255,255,.75);
+  border:1px solid rgba(179,157,219,.28);
+  border-radius:22px;
+  box-shadow: 0 8px 28px rgba(143,76,201,.08);
+  position:relative; overflow:hidden;
+}
+.filter-bar::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:3px;
+  background: linear-gradient(90deg, var(--mv-700), var(--mv-600), var(--mv-400));
+  border-radius:22px 22px 0 0;
+}
+.filter-group { display:flex; flex-direction:column; gap:5px; }
+.filter-label { font-size:.72rem; font-weight:800; text-transform:uppercase; letter-spacing:.09em; color:#64748b; }
+.filter-select, .filter-input {
+  padding:10px 14px; border-radius:14px;
+  border:1.5px solid rgba(143,76,201,.22); background:#faf5ff;
+  font-family:inherit; font-size:.9rem; color:#0f172a;
+  outline:none; appearance:none;
+  transition:border-color .2s, box-shadow .2s, background .2s;
+}
+.filter-select {
+  cursor:pointer; padding-right:38px;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238f4cc9' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat; background-position:right 12px center;
+}
+.filter-select:focus, .filter-input:focus {
+  border-color:var(--mv-600); box-shadow:0 0 0 4px rgba(143,76,201,.14);
+  background:#fff;
+}
+.filter-divider { width:1px; background: linear-gradient(to bottom, transparent, rgba(143,76,201,.25), transparent); align-self:stretch; margin:0 4px; }
+.btn-filter {
+  display:inline-flex; align-items:center; gap:7px; padding:10px 20px;
+  border-radius:14px; border:none; cursor:pointer;
+  font-family:inherit; font-size:.9rem; font-weight:800;
+  transition:transform .18s, box-shadow .18s, filter .18s;
+}
+.btn-filter:hover { transform:translateY(-2px); }
+.btn-search {
+  background: linear-gradient(135deg,var(--mv-700),var(--mv-600));
+  color:#fff; box-shadow:0 8px 18px var(--mv-glow);
+}
+.btn-search:hover { box-shadow:0 12px 26px var(--mv-glow); }
+.btn-dir { background:#fff; color:var(--mv-700); border:1.5px solid var(--mv-500); }
+.btn-dir:hover { background:var(--mv-100); }
+.btn-reset { background:#fff1f2; color:#be123c; border:1.5px solid #fecdd3; text-decoration:none; }
+.btn-reset:hover { background:#f43f5e; color:#fff; border-color:#f43f5e; }
+.filter-input { flex:1; min-width:200px; }
+
+/* ── Search result badge ── */
+.search-badge {
+  display:inline-flex; align-items:center; gap:8px;
+  background: linear-gradient(135deg, rgba(143,76,201,.12), rgba(179,157,219,.1));
+  color:var(--mv-800); padding:7px 16px; border-radius:999px;
+  font-size:.85rem; font-weight:800;
+  border:1px solid rgba(143,76,201,.2);
+  margin-bottom:18px;
+  animation: fadeIn .4s ease-out;
+}
+
+/* ── Category Grid ── */
+.cats-grid {
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr));
+  gap:22px;
+}
+.cat-block {
+  background: rgba(255,255,255,.85);
+  backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+  border:1px solid rgba(179,157,219,.25);
+  border-radius:24px;
+  box-shadow: 0 8px 32px rgba(143,76,201,.09);
+  overflow:hidden;
+  transition: transform .25s, box-shadow .25s, border-color .25s;
+  animation: cardAppear .5s cubic-bezier(.16,1,.3,1) both;
+}
+.cat-block:nth-child(1) { animation-delay:.1s; }
+.cat-block:nth-child(2) { animation-delay:.18s; }
+.cat-block:nth-child(3) { animation-delay:.26s; }
+.cat-block:nth-child(4) { animation-delay:.34s; }
+.cat-block:nth-child(5) { animation-delay:.42s; }
+.cat-block:nth-child(6) { animation-delay:.5s; }
+
+.cat-block:hover { transform:translateY(-6px); box-shadow: 0 20px 50px rgba(143,76,201,.18); border-color:rgba(143,76,201,.35); }
+
+.cat-header {
+  padding:20px 24px; display:flex; align-items:center; gap:16px;
+  background: linear-gradient(135deg, rgba(143,76,201,.11), rgba(179,157,219,.06));
+  border-bottom:1px solid rgba(143,76,201,.1);
+  position:relative; overflow:hidden;
+}
+.cat-header::after {
+  content:''; position:absolute; top:-20px; right:-20px;
+  width:100px; height:100px; border-radius:50%;
+  background: radial-gradient(circle, rgba(143,76,201,.1), transparent);
+  pointer-events:none;
+}
+.cat-icon {
+  width:48px; height:48px; border-radius:16px;
+  background: linear-gradient(135deg, var(--mv-700), var(--mv-600));
+  display:flex; align-items:center; justify-content:center;
+  color:#fff; font-size:20px;
+  box-shadow: 0 8px 18px var(--mv-glow);
+  flex-shrink:0;
+  transition: transform .2s, box-shadow .2s;
+}
+.cat-block:hover .cat-icon { transform:scale(1.1) rotate(-3deg); }
+
+.cat-title { font-family:'Outfit'; font-weight:900; font-size:1.18rem; color:var(--mv-800); }
+.cat-count {
+  font-size:.82rem; color:var(--mv-600); font-weight:700; margin-top:3px;
+  display:inline-flex; align-items:center; gap:5px;
+}
+.cat-count::before {
+  content:''; width:6px; height:6px; border-radius:50%;
+  background:var(--mv-600); display:inline-block; animation: pulse 2s infinite;
+}
+
+/* ── Item list ── */
+.item-list { padding:14px 22px 18px; }
+.item-row {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:11px 14px; border-radius:16px; gap:10px;
+  transition: background .18s, transform .15s;
+  border-bottom:1px solid rgba(143,76,201,.07);
+}
+.item-row:last-child { border-bottom:none; }
+.item-row:hover { background:rgba(143,76,201,.06); transform:translateX(3px); }
+
+.item-name { font-weight:700; color:#0f172a; flex:1; font-size:.97rem; }
+.item-desc { font-size:.82rem; color:#64748b; margin-top:2px; }
+
+.item-acts { display:flex; gap:7px; flex-shrink:0; }
+.btn-sm {
+  width:36px; height:36px; border-radius:12px;
+  display:flex; align-items:center; justify-content:center;
+  text-decoration:none; border:1.5px solid rgba(143,76,201,.2);
+  background:#faf5ff; font-size:14px;
+  transition: all .18s;
+}
+.btn-view { color:var(--mv-700); }
+.btn-edit { color:var(--mv-600); }
+.btn-del  { color:#f43f5e; cursor:pointer; }
+.btn-sm:hover { transform:translateY(-3px) scale(1.08); box-shadow:0 8px 18px rgba(0,0,0,.12); color:#fff; border-color:transparent; }
+.btn-view:hover { background: linear-gradient(135deg,var(--mv-700),var(--mv-600)); }
+.btn-edit:hover { background: linear-gradient(135deg,var(--mv-600),var(--mv-500)); }
+.btn-del:hover  { background: linear-gradient(135deg,#f43f5e,#e11d48); }
+
+.del-form { display:inline; }
+.del-form button {
+  width:36px; height:36px; border-radius:12px;
+  display:flex; align-items:center; justify-content:center;
+  border:1.5px solid rgba(143,76,201,.2);
+  background:#faf5ff; font-size:14px; cursor:pointer;
+  color:#f43f5e; transition: all .18s;
+}
+.del-form button:hover { transform:translateY(-3px) scale(1.08); box-shadow:0 8px 18px rgba(244,63,94,.2); background:#f43f5e; color:#fff; border-color:#f43f5e; }
+
+/* ── Empty state ── */
+.empty { text-align:center; padding:80px 20px; animation:slideUp .7s ease-out; }
+.empty-icon {
+  font-size:5rem; opacity:.35; color:var(--mv-500);
+  margin-bottom:18px; display:inline-block;
+  animation: float 3s ease-in-out infinite;
+}
+.empty-txt { font-family:'Outfit'; font-size:1.7rem; font-weight:900; color:#475569; }
+.empty p   { color:#64748b; margin:10px 0 0; font-size:1.05rem; }
+
+/* ── Delete Modal ── */
+.modal-overlay {
+  display:none; position:fixed; inset:0;
+  background:rgba(46,13,82,.5); backdrop-filter:blur(8px);
+  z-index:9999; align-items:center; justify-content:center;
+}
+.modal-overlay.active { display:flex; }
+.modal-box {
+  background:#fff; border-radius:26px; padding:36px;
+  max-width:440px; width:92%;
+  box-shadow: 0 28px 70px rgba(46,13,82,.22);
+  animation: modalPop .3s cubic-bezier(.175,.885,.32,1.275);
+  border-top:4px solid var(--mv-600);
+  position:relative; overflow:hidden;
+}
+.modal-box::before {
+  content:''; position:absolute; top:-40px; right:-40px;
+  width:160px; height:160px; border-radius:50%;
+  background: radial-gradient(circle, rgba(143,76,201,.08), transparent);
+}
+.modal-box h3 { font-family:'Outfit'; font-weight:900; font-size:1.45rem; margin:0 0 12px; color:#0f172a; }
+.modal-box p  { color:#64748b; line-height:1.65; margin:0 0 26px; }
+.modal-btns   { display:flex; gap:10px; justify-content:flex-end; }
+.btn-cancel { padding:11px 20px; border-radius:999px; border:1.5px solid rgba(143,76,201,.25); background:#faf5ff; font-weight:800; cursor:pointer; color:var(--mv-700); font-family:inherit; transition:all .18s; }
+.btn-cancel:hover { background:var(--mv-100); }
+.btn-confirm-del { padding:11px 22px; border-radius:999px; border:0; background:linear-gradient(135deg,#f43f5e,#e11d48); color:#fff; font-weight:900; cursor:pointer; font-family:inherit; box-shadow:0 8px 20px rgba(244,63,94,.24); transition:all .2s; }
+.btn-confirm-del:hover { transform:translateY(-2px); box-shadow:0 12px 28px rgba(244,63,94,.32); }
+
+/* ── Animations ── */
+@keyframes slideDown   { from{opacity:0;transform:translateY(-20px);}to{opacity:1;transform:translateY(0);} }
+@keyframes slideUp     { from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);} }
+@keyframes cardAppear  { from{opacity:0;transform:translateY(24px) scale(.97);}to{opacity:1;transform:translateY(0) scale(1);} }
+@keyframes iconPop     { from{opacity:0;transform:scale(.5);}to{opacity:1;transform:scale(1);} }
+@keyframes modalPop    { from{opacity:0;transform:scale(.88);}to{opacity:1;transform:scale(1);} }
+@keyframes shimmer     { 0%{left:-100%;}50%{left:120%;}100%{left:120%;} }
+@keyframes fadeIn      { from{opacity:0;}to{opacity:1;} }
+@keyframes float       { 0%,100%{transform:translateY(0);}50%{transform:translateY(-12px);} }
+@keyframes pulse       { 0%,100%{opacity:1;transform:scale(1);}50%{opacity:.6;transform:scale(.8);} }
+@keyframes orbFloat1   { 0%,100%{transform:translate(0,0) scale(1);}50%{transform:translate(-30px,20px) scale(1.05);} }
+@keyframes orbFloat2   { 0%,100%{transform:translate(0,0) scale(1);}50%{transform:translate(20px,-25px) scale(1.08);} }
+@keyframes orbFloat3   { 0%,100%{transform:translateY(0);}50%{transform:translateY(-40px);} }
+
+.search-active .cat-block { opacity:.4; transition:opacity .2s; }
+.search-active .cat-block.visible { opacity:1; }
+
+@media(max-width:900px){
+  .kpis{grid-template-columns:1fr 1fr;}
+  .cats-grid{grid-template-columns:1fr;}
+  .page-head{flex-direction:column;align-items:flex-start;gap:14px;}
+}
+@media(max-width:600px){
+  .kpis{grid-template-columns:1fr;}
+  .filter-input{min-width:100px;}
+  .page-head h1{font-size:1.9rem;}
+}
+</style>
+{% endblock %}
+
+{% block body %}
+
+{# ── Grouper les types par catégorie ── #}
+{% set categories = {} %}
+{% for ts in type_services %}
+  {% set cat = ts.categorie %}
+  {% if categories[cat] is not defined %}
+    {% set categories = categories|merge({(cat): []}) %}
+  {% endif %}
+  {% set categories = categories|merge({(cat): categories[cat]|merge([ts])}) %}
+{% endfor %}
+
+{% set total_items = type_services|length %}
+{% set total_cats  = categories|length %}
+
+<div class="shell">
+  <div class="orb3"></div>
+  <div class="wrap">
+
+    {# ── En-tête ── #}
+    <div class="page-head">
+      <div class="page-head-left">
+        <div class="page-icon"><i class="fas fa-layer-group"></i></div>
+        <div>
+          <h1>Types de Service</h1>
+          <p>Gérez les catégories et items de service disponibles pour les employés.</p>
+        </div>
+      </div>
+      <a href="{{ path('app_type_service_new') }}" class="btn-create">
+        <i class="fas fa-plus-circle"></i> Nouveau type
+      </a>
+    </div>
+
+    {# ── KPIs ── #}
+    <div class="kpis">
+      <div class="kpi">
+        <div class="kpi-shimmer"></div>
+        <div class="kpi-ic ic-cats"><i class="fas fa-folder-open"></i></div>
+        <div class="kpi-txt"><h3>{{ total_cats }}</h3><p>Catégories</p></div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-shimmer" style="animation-delay:.8s"></div>
+        <div class="kpi-ic ic-items"><i class="fas fa-tags"></i></div>
+        <div class="kpi-txt"><h3>{{ total_items }}</h3><p>Types au total</p></div>
+      </div>
+      <div class="kpi" style="cursor:pointer;" onclick="window.location='{{ path('app_type_service_new') }}'">
+        <div class="kpi-shimmer" style="animation-delay:1.6s"></div>
+        <div class="kpi-ic ic-new"><i class="fas fa-plus"></i></div>
+        <div class="kpi-txt"><h3>+</h3><p>Créer un type</p></div>
+      </div>
+    </div>
+
+    {# ── Barre de recherche / tri ── #}
+    <div class="filter-wrap">
+      <form method="get" action="" class="filter-bar" id="ts-form">
+
+        <div class="filter-group">
+          <span class="filter-label"><i class="fas fa-filter"></i> Rechercher par</span>
+          <select name="searchBy" class="filter-select" style="min-width:175px;">
+            <option value="all"      {% if searchBy == 'all'       or searchBy is null %}selected{% endif %}>🔍 Tous les champs</option>
+            <option value="nom"      {% if searchBy == 'nom'       %}selected{% endif %}>🏷️ Nom du type</option>
+            <option value="categorie"{% if searchBy == 'categorie' %}selected{% endif %}>📂 Catégorie</option>
+          </select>
+        </div>
+
+        <div class="filter-group" style="flex:1;">
+          <span class="filter-label"><i class="fas fa-keyboard"></i> Mot-clé</span>
+          <input type="text" name="search" value="{{ search }}" placeholder="Saisir un terme…"
+                 class="filter-input" id="ts-search-input">
+        </div>
+
+        <button type="submit" class="btn-filter btn-search">
+          <i class="fas fa-search"></i> Rechercher
+        </button>
+
+        <div class="filter-divider"></div>
+
+        <div class="filter-group">
+          <span class="filter-label"><i class="fas fa-sort"></i> Trier par</span>
+          <select name="sortBy" class="filter-select" style="min-width:155px;">
+            <option value="nom"      {% if sortBy == 'nom'       %}selected{% endif %}>🏷️ Nom du type</option>
+            <option value="categorie"{% if sortBy == 'categorie' %}selected{% endif %}>📂 Catégorie</option>
+          </select>
+        </div>
+
+        <input type="hidden" name="sortDir" id="ts-sort-dir" value="{{ sortDir }}">
+        <div class="filter-group">
+          <span class="filter-label" style="visibility:hidden;">Ordre</span>
+          <button type="button" class="btn-filter btn-dir"
+            onclick="var d=document.getElementById('ts-sort-dir');d.value=(d.value==='asc'?'desc':'asc');document.getElementById('ts-form').submit();">
+            {% if sortDir == 'asc' %}
+              <i class="fas fa-arrow-up-a-z"></i> Croissant
+            {% else %}
+              <i class="fas fa-arrow-down-z-a"></i> Décroissant
+            {% endif %}
+          </button>
+        </div>
+
+        {% if search %}
+          <div class="filter-group">
+            <span class="filter-label" style="visibility:hidden;">Reset</span>
+            <a href="{{ path('app_type_service_index') }}" class="btn-filter btn-reset">
+              <i class="fas fa-xmark"></i> Réinitialiser
+            </a>
+          </div>
+        {% endif %}
+      </form>
+    </div>
+
+    {# Résumé si recherche active #}
+    {% if search %}
+      <div>
+        <span class="search-badge">
+          <i class="fas fa-filter"></i>
+          Résultats pour « {{ search }} » — {{ total_items }} type{{ total_items > 1 ? 's' : '' }} trouvé{{ total_items > 1 ? 's' : '' }}
+        </span>
+      </div>
+    {% endif %}
+
+    {# ── Grille par catégorie ── #}
+    {% if type_services|length > 0 %}
+    <div class="cats-grid" id="js-grid">
+      {% for cat, items in categories %}
+      <div class="cat-block" data-cat="{{ cat|lower }}">
+        <div class="cat-header">
+          <div class="cat-icon"><i class="fas fa-box-open"></i></div>
+          <div>
+            <div class="cat-title">{{ cat }}</div>
+            <div class="cat-count">{{ items|length }} type{{ items|length > 1 ? 's' : '' }}</div>
+          </div>
+        </div>
+        <div class="item-list">
+          {% for ts in items %}
+          <div class="item-row" data-name="{{ ts.nom|lower }}">
+            <div>
+              <div class="item-name">{{ ts.nom }}</div>
+              {% if ts.description %}
+              <div class="item-desc">{{ ts.description|length > 58 ? ts.description|slice(0,58) ~ '…' : ts.description }}</div>
+              {% endif %}
+            </div>
+            <div class="item-acts">
+              <a class="btn-sm btn-view" href="{{ path('app_type_service_show', {'id': ts.id}) }}" title="Voir"><i class="fas fa-eye"></i></a>
+              <a class="btn-sm btn-edit" href="{{ path('app_type_service_edit', {'id': ts.id}) }}" title="Modifier"><i class="fas fa-pen"></i></a>
+              <button type="button" class="btn-sm btn-del" title="Supprimer (cascade)"
+                      onclick="openDelModal({{ ts.id }}, '{{ ts.nom|e('html_attr') }}', '{{ path('app_type_service_delete', {'id': ts.id}) }}')">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty">
+      <div class="empty-icon"><i class="fas fa-box-open"></i></div>
+      <div class="empty-txt">Aucun type de service</div>
+      <p>{% if search %}Aucun résultat pour « {{ search }} ». {% endif %}Créez un nouveau type de service.</p>
+    </div>
+    {% endif %}
+
+  </div>{# /wrap #}
+</div>
+
+{# ── Modal confirmation suppression CASCADE ── #}
+<div class="modal-overlay" id="delModal">
+  <div class="modal-box">
+    <h3><i class="fas fa-exclamation-triangle" style="color:#f59e0b;margin-right:8px;"></i> Confirmer la suppression</h3>
+    <p id="delModalText">
+      Vous allez supprimer ce type de service ainsi que <strong>toutes les demandes associées</strong> (suppression en cascade). Cette action est <strong>irréversible</strong>.
+    </p>
+    <div class="modal-btns">
+      <button type="button" class="btn-cancel" onclick="closeDelModal()">Annuler</button>
+      <form id="delForm" method="post" action="#" style="display:inline;">
+        <input type="hidden" name="_token" id="delToken" value="">
+        <button type="submit" class="btn-confirm-del"><i class="fas fa-trash"></i> Oui, supprimer</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+{# CSRF tokens pré-générés #}
+{% for ts in type_services %}
+<span id="csrf_{{ ts.id }}" style="display:none;">{{ csrf_token('delete' ~ ts.id) }}</span>
+{% endfor %}
+
+<script>
+  /* ── Recherche live côté client ── */
+  const searchInput = document.getElementById('ts-search-input');
+  const grid        = document.getElementById('js-grid');
+  if (searchInput && grid) {
+    searchInput.addEventListener('input', function () {
+      const q = this.value.toLowerCase().trim();
+      const blocks = grid.querySelectorAll('.cat-block');
+      blocks.forEach(block => {
+        const catName = (block.getAttribute('data-cat') || '');
+        const rows    = block.querySelectorAll('.item-row');
+        let blockVisible = false;
+        rows.forEach(row => {
+          const name    = row.getAttribute('data-name') || '';
+          const visible = !q || name.includes(q) || catName.includes(q);
+          row.style.display = visible ? '' : 'none';
+          if (visible) blockVisible = true;
+        });
+        block.style.display = blockVisible ? '' : 'none';
+      });
+    });
+  }
+
+  /* ── Delete modal ── */
+  function openDelModal(id, name, action) {
+    document.getElementById('delModalText').innerHTML =
+      'Vous allez supprimer le type <strong>"' + name + '"</strong> ainsi que <strong>toutes les demandes de service liées</strong> (suppression en cascade). Cette action est <strong>irréversible</strong>.';
+    const csrfEl = document.getElementById('csrf_' + id);
+    document.getElementById('delToken').value  = csrfEl ? csrfEl.textContent : '';
+    document.getElementById('delForm').action  = action;
+    document.getElementById('delModal').classList.add('active');
+  }
+  function closeDelModal() {
+    document.getElementById('delModal').classList.remove('active');
+  }
+  document.getElementById('delModal').addEventListener('click', function(e) {
+    if (e.target === this) closeDelModal();
+  });
+</script>
+{% endblock %}

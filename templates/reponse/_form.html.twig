@@ -1,0 +1,62 @@
+{# Partial form reponse — used as fallback if needed #}
+<style>
+.rp-field{margin-bottom:18px;}
+.rp-field label{
+  display:block;font-size:12px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.07em;color:#7b6b96;margin-bottom:8px;transition:color .2s;
+  font-family:'DM Sans',sans-serif;
+}
+.rp-field:focus-within label{color:#8b47e8;}
+.rp-field select,
+.rp-field textarea,
+.rp-field input[type="text"]{
+  width:100%;padding:13px 16px;
+  background:rgba(255,255,255,.9);border:1.5px solid rgba(139,103,200,.2);
+  border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14.5px;color:#0d0a1a;
+  transition:border-color .22s,box-shadow .22s;outline:none;
+  -webkit-appearance:none;appearance:none;box-sizing:border-box;
+}
+.rp-field select:focus,.rp-field textarea:focus,.rp-field input:focus{
+  border-color:#8b47e8;background:#fff;
+  box-shadow:0 0 0 4px rgba(139,71,232,.1);
+}
+.rp-field select{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238b47e8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 14px center;padding-right:42px;cursor:pointer;
+}
+.rp-field textarea{resize:vertical;min-height:110px;}
+</style>
+
+{{ form_start(form) }}
+
+<div class="rp-field">
+  {{ form_label(form.decision) }}
+  {{ form_widget(form.decision) }}
+  {{ form_errors(form.decision) }}
+</div>
+
+<div class="rp-field">
+  {{ form_label(form.commentaire) }}
+  {{ form_widget(form.commentaire, {'attr':{'placeholder':'Motif ou commentaire pour l\'employé…','rows':4}}) }}
+  {{ form_errors(form.commentaire) }}
+</div>
+
+{{ form_rest(form) }}
+
+<div style="display:flex;gap:12px;margin-top:24px;flex-wrap:wrap;">
+  <button type="submit"
+    style="display:inline-flex;align-items:center;gap:9px;padding:13px 28px;border-radius:50px;border:none;
+           background:linear-gradient(135deg,#8b47e8,#6633cc);color:#fff;
+           font-family:'DM Sans',sans-serif;font-size:14.5px;font-weight:700;cursor:pointer;
+           box-shadow:0 6px 22px rgba(102,51,204,.38);transition:all .2s;">
+    <i class="fas fa-paper-plane"></i> {{ button_label|default('Enregistrer') }}
+  </button>
+  <a href="{{ path('app_reponse_index') }}"
+    style="display:inline-flex;align-items:center;gap:8px;padding:12px 22px;border-radius:50px;
+           color:#7b6b96;border:1.5px solid rgba(139,103,200,.2);text-decoration:none;
+           font-size:14px;font-weight:500;background:transparent;transition:all .18s;">
+    <i class="fas fa-arrow-left"></i> Retour
+  </a>
+</div>
+
+{{ form_end(form) }}

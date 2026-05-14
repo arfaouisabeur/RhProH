@@ -1,0 +1,96 @@
+<?php
+
+namespace App\Controller;
+
+use App\Entity\Activite;
+use App\Form\ActiviteType;
+use App\Repository\ActiviteRepository;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
+
+#[Route('/rh/activite')]
+#[IsGranted('ROLE_RH')]
+final class ActiviteController extends AbstractController
+{
+    #[Route('', name: 'app_activite_index', methods: ['GET'])]
+    public function index(ActiviteRepository $activiteRepository): Response
+    {
+        return $this->render('activite/index.html.twig', [
+            'activites' => $activiteRepository->findAll(),
+        ]);
+    }
+
+    #[Route('/new', name: 'app_activite_new', methods: ['GET', 'POST'])]
+    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $activite = new Activite();
+        $form = $this->createForm(ActiviteType::class, $activite);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $entityManager->persist($activite);
+            $entityManager->flush();
+            $this->addFlash('success', 'Activité créée avec succès.');
+            return $this->redirectToRoute('app_evenement_show', [
+                'id' => $activite->getEvenement()?->getId()
+            ], Response::HTTP_SEE_OTHER);
+        }
+
+        return $this->render('activite/new.html.twig', [
+            'activite' => $activite,
+            'form' => $form,
+        ]);
+    }
+
+    #[Route('/{id}', name: 'app_activite_show', methods: ['GET'])]
+    public function show(Activite $activite): Response
+    {
+        return $this->render('activite/show.html.twig', [
+            'activite' => $activite,
+        ]);
+    }
+
+#[Route('/{id}/edit', name: 'app_activite_edit', methods: ['GET', 'POST'])]
+public function edit(Request $request, Activite $activite, EntityManagerInterface $entityManager): Response
+{
+    $form = $this->createForm(ActiviteType::class, $activite, [
+        'show_evenement_field' => false,
+        'validation_groups'   => false,
+        'csrf_protection'     => false,  // ✅ test temporaire
+    ]);
+    $form->handleRequest($request);
+
+    if ($form->isSubmitted() && $form->isValid()) {
+        $entityManager->flush();
+        $this->addFlash('success', 'Activité modifiée.');
+        return $this->redirectToRoute('app_evenement_show', [
+            'id' => $activite->getEvenement()?->getId()
+        ], Response::HTTP_SEE_OTHER);
+    }
+
+    return $this->render('activite/edit.html.twig', [
+        'activite' => $activite,
+        'form'     => $form,
+    ]);
+}
+    #[Route('/{id}/delete', name: 'app_activite_delete', methods: ['POST'])]
+    public function delete(Request $request, Activite $activite, EntityManagerInterface $entityManager): Response
+    {
+        $evenementId = $activite->getEvenement()?->getId();
+
+        if ($this->isCsrfTokenValid('delete' . $activite->getId(), $request->getPayload()->getString('_token'))) {
+            $entityManager->remove($activite);
+            $entityManager->flush();
+            $this->addFlash('success', 'Activité supprimée.');
+        }
+
+        if ($evenementId) {
+            return $this->redirectToRoute('app_evenement_show', ['id' => $evenementId], Response::HTTP_SEE_OTHER);
+        }
+        return $this->redirectToRoute('app_activite_index', [], Response::HTTP_SEE_OTHER);
+    }
+}

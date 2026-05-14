@@ -1,0 +1,51 @@
+titre,lieu,mois,jour_semaine,type_evenement,participants
+Team Building Outdoor,marsa,4,1,team_building,1
+Formation Leadership & Management,Hôtel Laico Tunis,4,5,formation,0
+Journée Portes Ouvertes RH,Siège social Tunis,4,6,conference,1
+Team Building Outdoor21,La Marsa Tunis,4,6,team_building,1
+Team Building Outdoor21,La Marsa Tunis,4,4,team_building,1
+formation ai,Tunis,4,1,formation,0
+formation ai,Ariana,4,0,formation,0
+formation ml,manzeh 5,4,2,formation,0
+soft skills,Les Berges du Lac,4,4,formation,1
+karoke,CITÉ EL GHAZELA,4,3,loisir,1
+test,El Menzah Tunis,4,3,autre,0
+Team Building Plage,Hammamet,6,4,team_building,1
+Séminaire Annuel RH,Hôtel Africa Tunis,3,1,conference,1
+Formation Excel Avancé,Salle Ariana,2,2,formation,0
+Soirée Gala Entreprise,Hôtel El Mouradi,12,4,loisir,1
+Atelier Communication,Centre Tunis,5,1,formation,0
+Conférence Innovation,Cité des Sciences,9,3,conference,1
+Journée Sport,Stade El Menzah,10,5,sport,1
+Formation Python,Lac 2 Tunis,7,1,formation,1
+Pique-nique Equipe,Parc Ennahli,5,5,loisir,1
+Réunion Bilan Annuel,Siège Tunis,1,0,conference,0
+Team Building Indoor,Hôtel Novotel,11,4,team_building,1
+Formation Communication,Ariana,4,2,formation,0
+Journée Bien-être,Spa Gammarth,6,4,loisir,1
+Hackathon RH,Lac 1 Tunis,3,4,formation,1
+Formation Management,Hôtel Laico,2,1,formation,0
+Sortie Karting,Karting Tunis,7,5,sport,1
+Séminaire Stratégie,Hammamet,10,3,conference,1
+Atelier Mindfulness,Centre Lac,9,2,formation,0
+Fête de fin d'année,Hôtel El Mouradi,12,4,loisir,1
+Formation Soft Skills,Menzah 6,5,1,formation,1
+Team Building Nature,Ain Draham,4,5,team_building,1
+Conférence Digitale,Cité des Sciences,11,3,conference,1
+Journée Recrutement,Siège social,3,1,conference,0
+Formation Agile,Lac 2 Tunis,6,2,formation,1
+Tournoi Football,Stade Radès,5,5,sport,1
+Workshop Design,Tunis,2,3,formation,0
+Dîner d'équipe,Restaurant Gammarth,6,4,loisir,1
+Formation Leadership,Hôtel Africa,9,1,formation,1
+Journée Portes Ouvertes,Siège Ariana,10,3,conference,0
+Team Building Cuisine,Atelier Tunis,7,4,team_building,1
+Séminaire Marketing,Hôtel Laico,4,1,conference,0
+Formation RH,Lac 1 Tunis,3,2,formation,0
+Soirée Culturelle,Théâtre Municipal,12,5,loisir,1
+Atelier Innovation,Cité des Sciences,6,3,formation,1
+Formation Sécurité,Siège social,1,1,formation,0
+Team Building Aventure,Bulla Regia,5,5,team_building,1
+Conférence Bien-être,Hôtel Gammarth,9,4,conference,1
+Formation Git,Lac 2,7,2,formation,0
+Journée Famille,Parc Carthage,6,5,loisir,1

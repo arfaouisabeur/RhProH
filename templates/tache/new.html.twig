@@ -1,0 +1,245 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouvelle Tâche | RH Pro{% endblock %}
+
+{% block styles %}
+<style>
+    .form-page-container {
+        padding: 4rem 1.5rem;
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .form-header {
+        margin-bottom: 2.5rem;
+    }
+
+    .back-link {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--text-muted, #8a7a9a);
+        text-decoration: none;
+        font-size: 0.9rem;
+        font-weight: 500;
+        margin-bottom: 0.75rem;
+        transition: color 0.2s;
+    }
+
+    body, html, main {
+        background-color: #f8fafc !important;
+        color: var(--text-dark, #1e293b);
+    }
+
+    .form-header h1 {
+        font-family: 'Playfair Display', serif;
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #5b2b82;
+        margin: 0;
+    }
+
+    .form-header h1 span {
+        color: var(--purple-light, #7c3dac);
+        opacity: 0.8;
+    }
+
+    .premium-card {
+        background: #fff;
+        border-radius: 24px;
+        padding: 2.5rem;
+        border: 1px solid rgba(0,0,0,0.04);
+        box-shadow: 0 15px 40px rgba(91, 43, 130, 0.08);
+    }
+
+    .form-group {
+        margin-bottom: 1.75rem;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 0.6rem;
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: var(--text-dark, #1a1020);
+    }
+
+    .form-control, .form-select {
+        width: 100%;
+        padding: 0.85rem 1.1rem;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 12px;
+        font-size: 0.95rem;
+        transition: all 0.2s;
+        background-color: #f8fafc;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: var(--purple-light, #7c3dac);
+        background-color: #fff;
+        box-shadow: 0 0 0 4px rgba(124, 61, 172, 0.1);
+        outline: none;
+    }
+
+    .is-invalid {
+        border-color: #ef4444 !important;
+        background-color: #fef2f2 !important;
+    }
+
+    .invalid-feedback {
+        color: #ef4444;
+        font-size: 0.8rem;
+        margin-top: 0.4rem;
+        font-weight: 600;
+        display: block;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+    }
+
+    .btn-submit {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        padding: 1rem 2rem;
+        background: linear-gradient(135deg, var(--purple, #5b2b82) 0%, var(--purple-light, #7c3dac) 100%);
+        color: #fff;
+        border: none;
+        border-radius: 14px;
+        font-weight: 700;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        box-shadow: 0 8px 20px rgba(91, 43, 130, 0.25);
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 12px 25px rgba(91, 43, 130, 0.35);
+    }
+
+    .btn-cancel {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem 1.5rem;
+        color: var(--text-muted, #8a7a9a);
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.95rem;
+        border-radius: 14px;
+        transition: all 0.2s;
+    }
+
+    .btn-cancel:hover {
+        background: #f1f5f9;
+        color: var(--text-dark);
+    }
+
+    @media (max-width: 600px) {
+        .form-row {
+            grid-template-columns: 1fr;
+            gap: 0;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="form-page-container">
+
+    <div class="form-header">
+        {% set back_path = projet ? path('app_tache_par_projet', {'projetId': projet.id}) : path('app_tache_index') %}
+        <a href="{{ back_path }}" class="back-link">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            Retour
+        </a>
+        <h1><span>Nouveau</span> Chantier</h1>
+        {% if projet %}<p style="margin-top: 0.5rem; color: #8a7a9a;">Pour le projet: <strong>{{ projet.titre }}</strong></p>{% endif %}
+    </div>
+
+    <div class="premium-card">
+        {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+            <div class="form-group">
+                {{ form_label(form.titre, null, {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.titre, {'attr': {'class': 'form-control ' ~ (form.titre.vars.valid ? '' : 'is-invalid'), 'placeholder': 'De quoi s’agit-il ?'}}) }}
+                <div class="invalid-feedback">{{ form_errors(form.titre) }}</div>
+            </div>
+
+            <div class="form-group">
+                {{ form_label(form.description, null, {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.description, {'attr': {'class': 'form-control ' ~ (form.description.vars.valid ? '' : 'is-invalid'), 'rows': '4', 'placeholder': 'Détaillez la mission...'}}) }}
+                <div class="invalid-feedback">{{ form_errors(form.description) }}</div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    {{ form_label(form.statut, null, {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.statut, {'attr': {'class': 'form-select ' ~ (form.statut.vars.valid ? '' : 'is-invalid')}}) }}
+                    <div class="invalid-feedback">{{ form_errors(form.statut) }}</div>
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.level, null, {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.level, {'attr': {'class': 'form-select ' ~ (form.level.vars.valid ? '' : 'is-invalid')}}) }}
+                    <div class="invalid-feedback">{{ form_errors(form.level) }}</div>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    {{ form_label(form.date_debut, null, {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.date_debut, {'attr': {'class': 'form-control ' ~ (form.date_debut.vars.valid ? '' : 'is-invalid')}}) }}
+                    <div class="invalid-feedback">{{ form_errors(form.date_debut) }}</div>
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.date_fin, null, {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.date_fin, {'attr': {'class': 'form-control ' ~ (form.date_fin.vars.valid ? '' : 'is-invalid')}}) }}
+                    <div class="invalid-feedback">{{ form_errors(form.date_fin) }}</div>
+                </div>
+            </div>
+
+            {% if form.projet is defined %}
+                <div class="form-group">
+                    {{ form_label(form.projet, null, {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.projet, {'attr': {'class': 'form-select ' ~ (form.projet.vars.valid ? '' : 'is-invalid')}}) }}
+                    <div class="invalid-feedback">{{ form_errors(form.projet) }}</div>
+                </div>
+            {% endif %}
+
+            {% if form.employe is defined %}
+                <div class="form-row">
+                    <div class="form-group">
+                        {{ form_label(form.employe, null, {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.employe, {'attr': {'class': 'form-select ' ~ (form.employe.vars.valid ? '' : 'is-invalid')}}) }}
+                        <div class="invalid-feedback">{{ form_errors(form.employe) }}</div>
+                    </div>
+                    {% if form.prime is defined %}
+                    <div class="form-group">
+                        {{ form_label(form.prime, null, {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.prime, {'attr': {'class': 'form-select ' ~ (form.prime.vars.valid ? '' : 'is-invalid')}}) }}
+                        <div class="invalid-feedback">{{ form_errors(form.prime) }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+            {% endif %}
+
+            <div style="display: none;">
+                {{ form_rest(form) }}
+            </div>
+
+            <div style="margin-top: 2rem; display: flex; align-items: center; gap: 1.5rem;">
+                <button type="submit" class="btn-submit">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                    Lancer la tâche
+                </button>
+                <a href="{{ back_path }}" class="btn-cancel">Annuler</a>
+            </div>
+        {{ form_end(form) }}
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,76 @@
+<table class="admin-table table-hover mb-0">
+    <thead>
+        <tr>
+            <th>Nom & Profil</th>
+            <th>Contact</th>
+            <th>Formation / Exp.</th>
+            <th>Statut</th>
+            <th class="text-end">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for candidat in candidats %}
+            <tr>
+                <td>
+                    <div class="d-flex align-items-center">
+                        {% if candidat.avatarPath %}
+                            <img src="{{ asset(candidat.avatarPath) }}" class="me-3" alt="" style="width:40px;height:40px;border-radius:10px;object-fit:cover;box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                        {% else %}
+                            <div class="me-3 d-flex align-items-center justify-content-center text-white fw-bold" style="width:40px;height:40px;border-radius:10px;background: var(--purple-mid);">
+                                {{ candidat.prenom|first|upper }}
+                            </div>
+                        {% endif %}
+                        <div>
+                            <div class="fw-bold text-dark">{{ candidat.fullName }}</div>
+                            <div class="text-muted small">Candidat ID #{{ candidat.id }}</div>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <div class="d-flex flex-column">
+                        <span><i class="bi bi-envelope-at me-1 text-muted"></i> {{ candidat.email }}</span>
+                        <span class="small text-muted"><i class="bi bi-phone me-1"></i> {{ candidat.telephone ?: '-' }}</span>
+                    </div>
+                </td>
+                <td>
+                    <div class="d-flex flex-column">
+                        <span class="fw-medium"><i class="bi bi-mortarboard me-1 text-muted"></i> {{ candidat.candidat is not null ? candidat.candidat.niveauEtude|default('-') : '-' }}</span>
+                        <span class="small text-muted"><i class="bi bi-clock-history me-1"></i> {{ candidat.candidat is not null ? candidat.candidat.experience|default(0) ~ ' ans d\'exp.' : '-' }}</span>
+                    </div>
+                </td>
+                <td>
+                    {% if candidat.statut == 'actif' %}
+                        <span class="badge-soft badge-soft-success">✔ ACTIF</span>
+                    {% else %}
+                        <span class="badge-soft badge-soft-warning">⏳ INACTIF</span>
+                    {% endif %}
+                </td>
+                <td class="text-end">
+                    <a href="{{ path('app_rh_user_view', {'id': candidat.id}) }}" class="btn-action-circle outline" title="Voir le profil">
+                        <i class="bi bi-eye"></i>
+                    </a>
+                    <form method="post" action="{{ path('app_rh_user_toggle_statut', {'id': candidat.id}) }}" class="d-inline" onsubmit="return confirm('Changer le statut de ce candidat ?')">
+                        <input type="hidden" name="_token" value="{{ csrf_token('toggle' ~ candidat.id) }}">
+                        <input type="hidden" name="redirect" value="candidats">
+                        {% if candidat.statut == 'actif' %}
+                            <button class="btn-action-circle solid" title="Désactiver">
+                                <i class="bi bi-lock-fill"></i>
+                            </button>
+                        {% else %}
+                            <button class="btn-action-circle outline" title="Activer">
+                                <i class="bi bi-unlock-fill"></i>
+                            </button>
+                        {% endif %}
+                    </form>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="5" class="text-center py-5 text-muted">
+                    <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+                    Aucun candidat trouvé pour cette recherche.
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>

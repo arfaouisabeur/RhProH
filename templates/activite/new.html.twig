@@ -1,0 +1,37 @@
+{% extends 'base.html.twig' %}
+{% block title %}Nouvelle activité — RHPro{% endblock %}
+
+{% block styles %}
+:root { --green: #7c3aed; --green-dark: #6d28d9; --surface: #f5f0ff; --border: #e5e7eb; --text-dark: #111827; --text-muted: #6b7280; }
+body { background: var(--surface); }
+.act-page { min-height: 100vh; background: var(--surface); font-family: 'Inter', sans-serif; padding-bottom: 60px; }
+.act-page-header { background: var(--surface); padding: 36px 0 0; }
+.act-page-header-inner { max-width: 700px; margin: 0 auto; padding: 0 32px; display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap; }
+.act-page-title { font-size: 24px; font-weight: 700; color: var(--green-dark); margin: 0 0 4px; }
+.act-page-subtitle { font-size: 13px; color: var(--text-muted); margin: 0; }
+.back-link { display: inline-flex; align-items: center; gap: 6px; color: var(--green-dark); font-size: 13px; font-weight: 500; text-decoration: none; }
+.back-link:hover { text-decoration: underline; }
+.act-content { max-width: 700px; margin: 28px auto 0; padding: 0 32px; }
+{% endblock %}
+
+{% block body %}
+{{ include('partials/_confirm_modal.html.twig') }}
+<div class="act-page">
+  <div class="act-page-header">
+    <div class="act-page-header-inner">
+      <div>
+        <h1 class="act-page-title">✅ Nouvelle activité</h1>
+        <p class="act-page-subtitle">Créer une activité pour un événement</p>
+      </div>
+      <a href="{{ path('app_evenement_index') }}" class="back-link">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        Retour aux événements
+      </a>
+    </div>
+  </div>
+
+  <div class="act-content">
+    {{ include('activite/_form.html.twig', {'button_label': 'Créer l\'activité', 'isEdit': false}) }}
+  </div>
+</div>
+{% endblock %}

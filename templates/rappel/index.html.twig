@@ -1,0 +1,159 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes Rappels Événements — RHPro{% endblock %}
+
+{% block styles %}
+:root {
+    --glass: rgba(255, 255, 255, 0.8);
+    --glass-border: rgba(255, 255, 255, 0.3);
+    --purple-grad: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.rappel-hero {
+    background: var(--purple-grad);
+    padding: 3rem 0;
+    color: white;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.rappel-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+.rappel-card {
+    background: var(--glass);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    text-decoration: none;
+    color: inherit;
+}
+
+.rappel-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    background: white;
+    color: inherit;
+}
+
+.rappel-icon {
+    width: 60px;
+    height: 60px;
+    background: rgba(102, 126, 234, 0.1);
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+}
+
+.rappel-info {
+    flex: 1;
+}
+
+.rappel-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+    color: #2d3748;
+}
+
+.rappel-meta {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.9rem;
+    color: #718096;
+}
+
+.rappel-meta span {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.rappel-time {
+    background: #fed7d7;
+    color: #c53030;
+    padding: 0.25rem 0.75rem;
+    border-radius: 100px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.rappel-empty {
+    text-align: center;
+    padding: 5rem 1rem;
+    background: white;
+    border-radius: 30px;
+    border: 2px dashed #e2e8f0;
+}
+
+.rappel-empty i {
+    font-size: 4rem;
+    color: #cbd5e0;
+    margin-bottom: 1rem;
+}
+
+@media (max-width: 640px) {
+    .rappel-card {
+        flex-direction: column;
+        align-items: flex-start;
+        text-align: left;
+    }
+}
+{% endblock %}
+
+{% block body %}
+<div class="rappel-hero">
+    <div class="rappel-container text-center">
+        <h1 class="display-5 fw-bold mb-2">🔔 Mes Rappels</h1>
+        <p class="lead opacity-75">Événements commençant dans les prochaines 24 heures</p>
+    </div>
+</div>
+
+<div class="rappel-container pb-5">
+    {% if rappels is empty %}
+        <div class="rappel-empty">
+            <i class="bi bi-bell-slash"></i>
+            <h2 class="h4 text-muted">Aucun rappel pour le moment</h2>
+            <p class="text-secondary">Tous vos événements acceptés sont à jour.</p>
+            <a href="{{ path('app_employe_evenements') }}" class="btn btn-primary mt-3">
+                Découvrir plus d'événements
+            </a>
+        </div>
+    {% else %}
+        {% for p in rappels %}
+            {% set isCancelled = p.evenement.titre starts with '[ANNULÉ]' %}
+            <a href="{{ path('app_employe_evenement_show', {'id': p.evenement.id}) }}" 
+               class="rappel-card {% if isCancelled %}rappel-cancelled{% endif %}">
+                <div class="rappel-icon" style="{% if isCancelled %}background: #fee2e2; color: #ef4444;{% endif %}">
+                    {% if isCancelled %}🚨{% else %}📅{% endif %}
+                </div>
+                <div class="rappel-info">
+                    <div class="rappel-title" style="{% if isCancelled %}color: #ef4444; font-weight: 700;{% endif %}">
+                        {% if isCancelled %}<span style="background: #ef4444; color: #fff; font-size: 9px; padding: 1px 5px; border-radius: 4px; margin-right: 6px; font-weight: 800; vertical-align: middle;">ANNULATION</span>{% endif %}
+                        {{ p.evenement.titre }}
+                    </div>
+                    <div class="rappel-meta">
+                        <span><i class="bi bi-geo-alt"></i> {{ p.evenement.lieu }}</span>
+                        <span><i class="bi bi-calendar-event"></i> {{ p.evenement.dateDebut }}</span>
+                    </div>
+                </div>
+                <div class="rappel-time" style="{% if isCancelled %}background: #ef4444; color: #fff; font-weight: 700;{% endif %}">
+                    {% if isCancelled %}⚠️ ANNULÉ{% else %}Commence bientôt{% endif %}
+                </div>
+            </a>
+        {% endfor %}
+    {% endif %}
+</div>
+{% endblock %}

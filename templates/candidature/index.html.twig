@@ -1,0 +1,810 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des candidatures — RH Pro{% endblock %}
+
+{% block styles %}
+<style>
+    :root{
+        --primary: #8f4ae4;
+        --primary-dark: #6c2bd9;
+        --deep: #1d0f36;
+        --bg: #f6f3fb;
+        --card: #ffffff;
+        --text: #2a2140;
+        --muted: #7b748f;
+        --line: #ece4f8;
+        --success-soft: #eaf8f1;
+        --warning-soft: #fff6df;
+        --danger-soft: #ffe8ec;
+        --info-soft: #f1ebff;
+    }
+
+    *{ box-sizing:border-box; }
+
+    body{
+        margin:0;
+        font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background:var(--bg) !important;
+        color:var(--text);
+    }
+
+    .page-wrap{
+        max-width:1240px;
+        margin:28px auto;
+        padding:0 18px 40px;
+    }
+
+    .page-header{
+        display:flex;
+        justify-content:space-between;
+        align-items:flex-start;
+        gap:20px;
+        flex-wrap:wrap;
+        margin-bottom:22px;
+    }
+
+    .page-title{
+        font-size:2.2rem;
+        font-weight:800;
+        color:#2f224d;
+        margin:0 0 6px;
+    }
+
+    .page-kicker{
+        display:inline-flex;
+        align-items:center;
+        gap:8px;
+        color:#5e2dbb;
+        font-size:.85rem;
+        font-weight:700;
+        margin-bottom:10px;
+    }
+
+    .page-subtitle{
+        color:var(--muted);
+        margin:0;
+        font-size:.98rem;
+    }
+
+    .btn-soft{
+        background:#fff;
+        color:#6d53a8;
+        border:1px solid var(--line);
+        border-radius:999px;
+        padding:12px 18px;
+        font-weight:600;
+        text-decoration:none;
+        display:inline-flex;
+        align-items:center;
+        gap:8px;
+        box-shadow:0 8px 18px rgba(39,19,79,.05);
+    }
+
+    .btn-soft:hover{
+        color:#6d53a8;
+        transform:translateY(-1px);
+    }
+
+    .stats-grid{
+        display:grid;
+        grid-template-columns:repeat(4, 1fr);
+        gap:18px;
+        margin-bottom:28px;
+    }
+
+    .stat-pro{
+        background:linear-gradient(180deg, #ffffff 0%, #fcf9ff 100%);
+        border:1px solid #eee7fb;
+        border-radius:24px;
+        padding:22px;
+        box-shadow:0 10px 30px rgba(39,19,79,.06);
+        min-height:170px;
+        display:flex;
+        flex-direction:column;
+        justify-content:space-between;
+        transition:.25s ease;
+    }
+
+    .stat-pro:hover{
+        transform:translateY(-4px);
+        box-shadow:0 16px 34px rgba(39,19,79,.10);
+    }
+
+    .stat-top{
+        display:flex;
+        justify-content:space-between;
+        align-items:flex-start;
+        gap:12px;
+    }
+
+    .stat-kicker{
+        display:block;
+        font-size:.82rem;
+        font-weight:700;
+        color:#8c80ab;
+        text-transform:uppercase;
+        letter-spacing:.08em;
+        margin-bottom:10px;
+    }
+
+    .stat-number{
+        font-size:2.2rem;
+        font-weight:800;
+        line-height:1;
+        color:#241b43;
+        margin:0;
+    }
+
+    .stat-icon-wrap{
+        width:56px;
+        height:56px;
+        border-radius:18px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        font-size:1.35rem;
+        flex-shrink:0;
+    }
+
+    .stat-meta{
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        gap:12px;
+        margin-top:18px;
+        margin-bottom:14px;
+        flex-wrap:wrap;
+    }
+
+    .stat-label{
+        font-size:.95rem;
+        color:#6f6784;
+        font-weight:500;
+    }
+
+    .stat-trend{
+        display:inline-flex;
+        align-items:center;
+        gap:6px;
+        font-size:.85rem;
+        font-weight:700;
+        padding:6px 10px;
+        border-radius:999px;
+    }
+
+    .stat-trend.up{
+        background:#eaf8f1;
+        color:#1f9d63;
+    }
+
+    .stat-trend.warn{
+        background:#fff6df;
+        color:#d08a00;
+    }
+
+    .stat-progress{
+        width:100%;
+        height:8px;
+        background:#efe8fb;
+        border-radius:999px;
+        overflow:hidden;
+    }
+
+    .stat-progress-fill{
+        height:100%;
+        border-radius:999px;
+    }
+
+    .stat-purple .stat-icon-wrap{
+        background:#f3eaff;
+        color:#7a36d8;
+    }
+    .stat-purple .stat-progress-fill{
+        background:linear-gradient(90deg, #a855f7, #7c3aed);
+    }
+
+    .stat-green .stat-icon-wrap{
+        background:#eaf8f1;
+        color:#28a36a;
+    }
+    .stat-green .stat-progress-fill{
+        background:linear-gradient(90deg, #34d399, #10b981);
+    }
+
+    .stat-orange .stat-icon-wrap{
+        background:#fff6df;
+        color:#d08a00;
+    }
+    .stat-orange .stat-progress-fill{
+        background:linear-gradient(90deg, #fbbf24, #f59e0b);
+    }
+
+    .stat-red .stat-icon-wrap{
+        background:#ffe8ec;
+        color:#dd4d69;
+    }
+    .stat-red .stat-progress-fill{
+        background:linear-gradient(90deg, #fb7185, #e11d48);
+    }
+
+    .panel{
+        background:var(--card);
+        border-radius:22px;
+        border:1px solid #f0ebf7;
+        box-shadow:0 10px 30px rgba(39,19,79,.06);
+        overflow:hidden;
+    }
+
+    .panel-head{
+        padding:18px 24px;
+        border-bottom:1px solid var(--line);
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        flex-wrap:wrap;
+        gap:14px;
+    }
+
+    .panel-title{
+        font-size:1.35rem;
+        font-weight:800;
+        margin:0;
+        display:flex;
+        align-items:center;
+        gap:10px;
+    }
+
+    .sub-note{
+        display:block;
+        margin-top:4px;
+        color:var(--muted);
+        font-size:.92rem;
+    }
+
+    .search-wrap{
+        position:relative;
+        width:380px;
+        max-width:100%;
+        display:flex;
+        align-items:center;
+    }
+
+    .search-wrap .ico-search{
+        position:absolute;
+        left:14px;
+        top:50%;
+        transform:translateY(-50%);
+        color:var(--muted);
+        font-size:14px;
+        pointer-events:none;
+        z-index:2;
+    }
+
+    .search-wrap input{
+        width:100%;
+        height:46px;
+        padding:0 52px 0 40px;
+        border-radius:999px;
+        background:#fff;
+        border:1.5px solid var(--line);
+        font-size:14px;
+        color:#333;
+        box-shadow:0 3px 10px rgba(109,34,105,.03);
+        transition:.2s ease;
+        outline:none;
+    }
+
+    .search-wrap input:focus{
+        border-color:#c9a9ff;
+        box-shadow:0 0 0 0.2rem rgba(143,74,228,.12);
+        background:#fff;
+    }
+
+    .btn-search{
+        position:absolute;
+        right:5px;
+        top:50%;
+        transform:translateY(-50%);
+        width:36px;
+        height:36px;
+        border-radius:50%;
+        background:linear-gradient(135deg, var(--primary), var(--primary-dark));
+        border:none;
+        cursor:pointer;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        color:#fff;
+        font-size:15px;
+        transition:.2s ease;
+        box-shadow:0 3px 10px rgba(143,74,228,.3);
+        z-index:2;
+        flex-shrink:0;
+    }
+
+    .btn-search:hover{
+        transform:translateY(-50%) scale(1.12);
+        box-shadow:0 5px 14px rgba(143,74,228,.45);
+    }
+
+    .filter-tabs{
+        display:flex;
+        border-bottom:1px solid var(--line);
+        padding:0 20px;
+        background:#fff;
+        overflow-x:auto;
+    }
+
+    .ftab{
+        padding:14px 18px;
+        font-size:14px;
+        font-weight:700;
+        color:var(--muted);
+        cursor:pointer;
+        border-bottom:2px solid transparent;
+        margin-bottom:-1px;
+        white-space:nowrap;
+        transition:.2s ease;
+        user-select:none;
+        text-decoration:none;
+        display:inline-block;
+    }
+
+    .ftab:hover{
+        color:#7a36d8;
+    }
+
+    .ftab.active{
+        color:#7a36d8;
+        border-bottom-color:#7a36d8;
+    }
+
+    .ftab-count{
+        display:inline-block;
+        background:#f1ebff;
+        color:#7a36d8;
+        border-radius:999px;
+        padding:2px 8px;
+        font-size:11px;
+        margin-left:6px;
+    }
+
+    .table-modern{
+        width:100%;
+        border-collapse:separate;
+        border-spacing:0;
+    }
+
+    .table-modern thead th{
+        font-size:.78rem;
+        text-transform:uppercase;
+        letter-spacing:.08em;
+        color:#8c80ab;
+        padding:14px 16px;
+        background:#fbf8ff;
+        border-bottom:1px solid var(--line);
+    }
+
+    .table-modern tbody td{
+        padding:16px;
+        border-bottom:1px solid #f0ebf7;
+        vertical-align:middle;
+        font-weight:500;
+    }
+
+    .table-modern tbody tr:last-child td{
+        border-bottom:none;
+    }
+
+    .table-modern tbody tr:hover td{
+        background:#fcf8ff;
+    }
+
+    .cand-cell{
+        display:flex;
+        align-items:center;
+        gap:12px;
+    }
+
+    .cand-avatar{
+        width:44px;
+        height:44px;
+        border-radius:50%;
+        background:linear-gradient(135deg, #FDD6FE, #CFC3E6);
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        font-weight:800;
+        font-size:15px;
+        color:#7a36d8;
+        flex-shrink:0;
+    }
+
+    .cand-name{
+        font-size:15px;
+        font-weight:700;
+        color:#1a1a2e;
+    }
+
+    .cand-email{
+        font-size:13px;
+        color:var(--muted);
+        margin-top:2px;
+    }
+
+    .cand-offre{
+        font-weight:700;
+        font-size:14px;
+        color:#2f224d;
+    }
+
+    .badge-s{
+        display:inline-flex;
+        align-items:center;
+        gap:5px;
+        padding:7px 13px;
+        border-radius:999px;
+        font-size:12px;
+        font-weight:700;
+        white-space:nowrap;
+    }
+
+    .bs-wait{ background:#fff8e1; color:#f59e0b; }
+    .bs-ok{ background:#e8f5e9; color:#22c55e; }
+    .bs-no{ background:#fce8e8; color:#ef4444; }
+    .bs-review{ background:#ede9fe; color:#7c3aed; }
+
+    .score-bar{
+        display:flex;
+        align-items:center;
+        gap:10px;
+        white-space:nowrap;
+    }
+
+    .score-track{
+        width:80px;
+        height:6px;
+        background:#e9ecef;
+        border-radius:99px;
+        overflow:hidden;
+    }
+
+    .score-fill{
+        height:100%;
+        border-radius:99px;
+        background:linear-gradient(90deg, #8f4ae4, #6c2bd9);
+    }
+
+    .cv-pill{
+        display:inline-flex;
+        align-items:center;
+        gap:6px;
+        padding:7px 14px;
+        border-radius:999px;
+        font-size:12px;
+        font-weight:700;
+        background:#f1ebff;
+        color:#7a36d8;
+        text-decoration:none;
+        transition:.2s ease;
+    }
+
+    .cv-pill:hover{
+        background:#7a36d8;
+        color:#fff;
+    }
+
+    .action-circle{
+        width:38px;
+        height:38px;
+        border-radius:12px;
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        text-decoration:none;
+        border:1px solid var(--line);
+        background:#faf7ff;
+        color:#7a36d8;
+        transition:.2s ease;
+    }
+
+    .action-circle:hover{
+        background:#f2e8ff;
+        color:#6c2bd9;
+    }
+
+    .action-edit{
+        color:#d08a00;
+        background:#fffaf0;
+    }
+
+    .action-edit:hover{
+        background:#fff2d9;
+        color:#b77900;
+    }
+
+    .action-delete{
+        color:#dd4d69;
+        background:#fff7f8;
+    }
+
+    .action-delete:hover{
+        background:#ffe8ec;
+        color:#c73a57;
+    }
+
+    .empty-box{
+        text-align:center;
+        padding:48px 20px;
+        color:var(--muted);
+        background:#fbf9fe;
+        border:1px dashed #d9caef;
+        border-radius:18px;
+        margin:24px;
+    }
+
+    @media (max-width: 991px){
+        .stats-grid{
+            grid-template-columns:repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 768px){
+        .page-wrap{
+            padding:0 14px 30px;
+        }
+
+        .stats-grid{
+            grid-template-columns:1fr;
+        }
+
+        .search-wrap{
+            width:100%;
+        }
+    }
+</style>
+{% endblock %}
+{% block body %}
+<div class="page-wrap">
+
+    <div class="page-header">
+        <div>
+            <div class="page-kicker">
+                <i class="bi bi-briefcase-fill"></i>
+                Suivi RH
+            </div>
+            <h1 class="page-title">Candidatures</h1>
+            <p class="page-subtitle">Gérez et suivez toutes les candidatures reçues.</p>
+        </div>
+
+        <a href="{{ path('app_candidature_index') }}" class="btn-soft">
+            <i class="bi bi-arrow-clockwise"></i>
+            Actualiser
+        </a>
+    </div>
+
+    {% set total      = candidatures|length %}
+    {% set enAttente  = candidatures|filter(c => c.statut in ['en_attente','En attente','pending'])|length %}
+    {% set acceptes   = candidatures|filter(c => c.statut in ['acceptee','Acceptée','accepted','entretien','Entretien'])|length %}
+    {% set refuses    = candidatures|filter(c => c.statut in ['refusee','Refusée','rejected'])|length %}
+
+    <div class="stats-grid">
+        <div class="stat-pro stat-purple">
+            <div class="stat-top">
+                <div>
+                    <span class="stat-kicker">Total</span>
+                    <h3 class="stat-number">{{ total }}</h3>
+                </div>
+                <div class="stat-icon-wrap">
+                    <i class="bi bi-send-fill"></i>
+                </div>
+            </div>
+            <div class="stat-meta">
+                <span class="stat-label">Total candidatures</span>
+                <span class="stat-trend up">
+                    <i class="bi bi-bar-chart-line-fill"></i>
+                    100%
+                </span>
+            </div>
+            <div class="stat-progress">
+                <div class="stat-progress-fill" style="width:100%;"></div>
+            </div>
+        </div>
+
+        <div class="stat-pro stat-orange">
+            <div class="stat-top">
+                <div>
+                    <span class="stat-kicker">En attente</span>
+                    <h3 class="stat-number">{{ enAttente }}</h3>
+                </div>
+                <div class="stat-icon-wrap">
+                    <i class="bi bi-hourglass-split"></i>
+                </div>
+            </div>
+            <div class="stat-meta">
+                <span class="stat-label">{{ enAttente }} candidature(s)</span>
+                <span class="stat-trend warn">
+                    <i class="bi bi-pie-chart-fill"></i>
+                    {{ total > 0 ? ((enAttente * 100) / total)|round : 0 }}%
+                </span>
+            </div>
+            <div class="stat-progress">
+                <div class="stat-progress-fill" style="width:{{ total > 0 ? ((enAttente * 100) / total)|round : 0 }}%;"></div>
+            </div>
+        </div>
+
+        <div class="stat-pro stat-green">
+            <div class="stat-top">
+                <div>
+                    <span class="stat-kicker">Acceptées</span>
+                    <h3 class="stat-number">{{ acceptes }}</h3>
+                </div>
+                <div class="stat-icon-wrap">
+                    <i class="bi bi-check-circle-fill"></i>
+                </div>
+            </div>
+            <div class="stat-meta">
+                <span class="stat-label">Acceptées / Entretien</span>
+                <span class="stat-trend up">
+                    <i class="bi bi-graph-up-arrow"></i>
+                    {{ total > 0 ? ((acceptes * 100) / total)|round : 0 }}%
+                </span>
+            </div>
+            <div class="stat-progress">
+                <div class="stat-progress-fill" style="width:{{ total > 0 ? ((acceptes * 100) / total)|round : 0 }}%;"></div>
+            </div>
+        </div>
+
+        <div class="stat-pro stat-red">
+            <div class="stat-top">
+                <div>
+                    <span class="stat-kicker">Refusées</span>
+                    <h3 class="stat-number">{{ refuses }}</h3>
+                </div>
+                <div class="stat-icon-wrap">
+                    <i class="bi bi-x-circle-fill"></i>
+                </div>
+            </div>
+            <div class="stat-meta">
+                <span class="stat-label">Candidatures refusées</span>
+                <span class="stat-trend warn">
+                    <i class="bi bi-bar-chart-fill"></i>
+                    {{ total > 0 ? ((refuses * 100) / total)|round : 0 }}%
+                </span>
+            </div>
+            <div class="stat-progress">
+                <div class="stat-progress-fill" style="width:{{ total > 0 ? ((refuses * 100) / total)|round : 0 }}%;"></div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="panel">
+        <div class="panel-head">
+            <div>
+                <h2 class="panel-title">
+                    <i class="bi bi-file-earmark-person"></i>
+                    Historique des candidatures
+                </h2>
+                <span class="sub-note">Suivi des candidatures reçues</span>
+            </div>
+
+            <div class="search-wrap">
+                <i class="bi bi-search ico-search"></i>
+                <input
+                    type="text"
+                    id="candidature-search"
+                    value="{{ search|default('') }}"
+                    placeholder="Rechercher un candidat ou une offre..."
+                    autocomplete="off"
+                >
+                <span class="search-spinner" id="cand-spinner" style="display:none;
+                    position:absolute;right:14px;top:50%;transform:translateY(-50%);
+                    width:18px;height:18px;border:2px solid #ddd;border-top-color:#8f4ae4;
+                    border-radius:50%;animation:spin .6s linear infinite;">
+                </span>
+            </div>
+        </div>
+
+        <div class="filter-tabs" id="filter-tabs">
+            <a href="#" data-statut="all"
+               class="ftab {{ (current_statut|default('all')) == 'all' ? 'active' : '' }}"
+               onclick="filterTab(this,'all');return false;">
+                Toutes <span class="ftab-count" id="tab-count">{{ total }}</span>
+            </a>
+            <a href="#" data-statut="en_attente"
+               class="ftab {{ current_statut|default('all') == 'en_attente' ? 'active' : '' }}"
+               onclick="filterTab(this,'en_attente');return false;">
+                En attente
+            </a>
+            <a href="#" data-statut="entretien"
+               class="ftab {{ current_statut|default('all') == 'entretien' ? 'active' : '' }}"
+               onclick="filterTab(this,'entretien');return false;">
+                Entretien
+            </a>
+            <a href="#" data-statut="acceptee"
+               class="ftab {{ current_statut|default('all') == 'acceptee' ? 'active' : '' }}"
+               onclick="filterTab(this,'acceptee');return false;">
+                Acceptée
+            </a>
+            <a href="#" data-statut="refusee"
+               class="ftab {{ current_statut|default('all') == 'refusee' ? 'active' : '' }}"
+               onclick="filterTab(this,'refusee');return false;">
+                Refusée
+            </a>
+        </div>
+
+        <div style="overflow-x:auto;">
+            <table class="table-modern">
+                <thead>
+                    <tr>
+                        <th>Candidat</th>
+                        <th>Offre d'emploi</th>
+                        <th>Date</th>
+                        <th>Statut</th>
+                        <th>Score</th>
+                        <th>CV</th>
+                        <th style="text-align:center;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="candidature-tbody">
+                    {{ include('candidature/_rows.html.twig') }}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<style>
+@keyframes spin { to { transform: translateY(-50%) rotate(360deg); } }
+</style>
+
+<script>
+(function () {
+    const input    = document.getElementById('candidature-search');
+    const tbody    = document.getElementById('candidature-tbody');
+    const spinner  = document.getElementById('cand-spinner');
+    const tabCount = document.getElementById('tab-count');
+    const ajaxUrl  = '{{ path('app_candidature_ajax_search') }}';
+
+    let currentStatut = '{{ current_statut|default('all') }}';
+    let debounceTimer;
+
+    function doSearch(q, statut) {
+        spinner.style.display = 'block';
+        const url = ajaxUrl + '?q=' + encodeURIComponent(q) + '&statut=' + encodeURIComponent(statut);
+
+        fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(r => r.text())
+            .then(html => {
+                tbody.innerHTML = html;
+                // update count badge
+                const rows = tbody.querySelectorAll('tr:not(#empty-row)');
+                if (tabCount) tabCount.textContent = rows.length;
+                spinner.style.display = 'none';
+                // update browser URL without reload
+                const newUrl = window.location.pathname + '?q=' + encodeURIComponent(q) + '&statut=' + encodeURIComponent(statut);
+                history.replaceState(null, '', newUrl);
+            })
+            .catch(() => { spinner.style.display = 'none'; });
+    }
+
+    // Live search on keyup with 300ms debounce
+    input.addEventListener('input', function () {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+            doSearch(this.value.trim(), currentStatut);
+        }, 300);
+    });
+
+    // Tab filtering
+    window.filterTab = function (el, statut) {
+        document.querySelectorAll('#filter-tabs .ftab').forEach(t => t.classList.remove('active'));
+        el.classList.add('active');
+        currentStatut = statut;
+        doSearch(input.value.trim(), statut);
+    };
+})();
+</script>
+{% endblock %}

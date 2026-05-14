@@ -1,0 +1,273 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+:root {
+  --mv-950:#2e0d52; --mv-800:#5b2b82; --mv-700:#7c3dac;
+  --mv-600:#8f4cc9; --mv-500:#b39ddb; --mv-400:#c4b0e4;
+  --mv-200:#e9d5ff; --mv-100:#f3e8ff; --mv-50:#faf5ff;
+  --mv-glow: rgba(143,76,201,0.4);
+}
+*, *::before, *::after { box-sizing:border-box; }
+
+/* ── Shell ── */
+.paiements-shell {
+  font-family:'Inter',sans-serif;
+  background: radial-gradient(ellipse at 20% 0%, #f3e8ff 0%, #ffffff 50%, #faf5ff 100%);
+  min-height:100vh; padding:44px 20px; color:#0f172a;
+  position:relative; overflow:hidden;
+}
+.paiements-shell::before {
+  content:''; position:fixed; top:-180px; right:-180px;
+  width:560px; height:560px; border-radius:50%;
+  background: radial-gradient(circle, rgba(143,76,201,.16), transparent 68%);
+  pointer-events:none; z-index:0; animation:orbFloat1 9s ease-in-out infinite;
+}
+.paiements-shell::after {
+  content:''; position:fixed; bottom:-120px; left:-120px;
+  width:420px; height:420px; border-radius:50%;
+  background: radial-gradient(circle, rgba(179,157,219,.14), transparent 68%);
+  pointer-events:none; z-index:0; animation:orbFloat2 11s ease-in-out infinite;
+}
+.paiements-wrap { max-width:1200px; margin:0 auto; position:relative; z-index:1; }
+
+/* ── Header ── */
+.paiements-head {
+  text-align:center; margin-bottom:48px;
+  animation:slideDown .7s cubic-bezier(.16,1,.3,1) both;
+}
+.paiements-title h1 {
+  font-family:'Outfit'; font-weight:900; font-size:3rem; margin:0;
+  background: linear-gradient(135deg, var(--mv-950), var(--mv-600));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  display:flex; align-items:center; justify-content:center; gap:16px;
+}
+.paiements-title h1 i { font-size:2.8rem; -webkit-text-fill-color:var(--mv-600); }
+.paiements-title p { 
+  margin:12px 0 0; color:#64748b; font-size:1.15rem; font-weight:500; 
+  max-width:600px; margin-left:auto; margin-right:auto;
+}
+
+/* Cards Grid */
+.paiements-grid {
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(400px,1fr));
+  gap:32px; margin-top:40px;
+}
+
+/* Payment Cards */
+.payment-card {
+  background:rgba(255,255,255,.87);
+  backdrop-filter:blur(22px); -webkit-backdrop-filter:blur(22px);
+  border:1.5px solid rgba(179,157,219,.28);
+  border-radius:28px; padding:40px 36px;
+  box-shadow:0 10px 40px rgba(143,76,201,.08);
+  transition:all .3s cubic-bezier(.175,.885,.32,1.275);
+  position:relative; overflow:hidden;
+  text-decoration:none; color:inherit;
+  animation:slideUp .7s cubic-bezier(.16,1,.3,1) .2s both;
+}
+.payment-card:hover { 
+  transform:translateY(-8px) scale(1.02); 
+  box-shadow:0 25px 60px rgba(143,76,201,.2);
+  color:inherit; text-decoration:none;
+}
+
+/* Card Gradient Variants */
+.payment-card.salaires {
+  background:linear-gradient(135deg,var(--mv-700),var(--mv-600));
+  color:#fff; border-color:var(--mv-500);
+}
+.payment-card.salaires:hover {
+  box-shadow:0 25px 60px var(--mv-glow);
+}
+
+.payment-card.primes {
+  background:rgba(255,255,255,.92);
+  border:1.5px solid rgba(179,157,219,.35);
+}
+.payment-card.primes:hover {
+  border-color:var(--mv-500);
+  background:rgba(255,255,255,.98);
+}
+
+/* Card Icons */
+.payment-icon {
+  width:80px; height:80px; border-radius:20px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:36px; margin-bottom:24px;
+  transition:all .3s;
+}
+.payment-card.salaires .payment-icon {
+  background:rgba(255,255,255,.2); color:#fff;
+}
+.payment-card.primes .payment-icon {
+  background:linear-gradient(135deg,var(--mv-100),var(--mv-50));
+  color:var(--mv-600);
+}
+.payment-card:hover .payment-icon {
+  transform:scale(1.1) rotate(5deg);
+}
+
+/* Card Content */
+.payment-title {
+  font-family:'Outfit'; font-weight:900; font-size:1.8rem; margin:0 0 12px;
+}
+.payment-card.salaires .payment-title { color:#fff; }
+.payment-card.primes .payment-title { color:var(--mv-950); }
+
+.payment-description {
+  font-size:1.05rem; font-weight:500; margin:0 0 24px;
+  line-height:1.6;
+}
+.payment-card.salaires .payment-description { color:rgba(255,255,255,.85); }
+.payment-card.primes .payment-description { color:#64748b; }
+
+/* Card Features */
+.payment-features {
+  list-style:none; padding:0; margin:0;
+}
+.payment-features li {
+  display:flex; align-items:center; gap:10px;
+  padding:8px 0; font-size:.95rem; font-weight:600;
+}
+.payment-features li i {
+  width:20px; text-align:center; font-size:14px;
+}
+.payment-card.salaires .payment-features li { color:rgba(255,255,255,.9); }
+.payment-card.salaires .payment-features li i { color:#fff; }
+.payment-card.primes .payment-features li { color:#475569; }
+.payment-card.primes .payment-features li i { color:var(--mv-600); }
+
+/* Card Action */
+.payment-action {
+  margin-top:28px; padding-top:24px;
+  border-top:1px solid rgba(255,255,255,.2);
+  display:flex; align-items:center; justify-content:space-between;
+}
+.payment-card.primes .payment-action {
+  border-top-color:rgba(179,157,219,.2);
+}
+
+.payment-btn {
+  display:inline-flex; align-items:center; gap:8px;
+  font-weight:800; font-size:.9rem; text-transform:uppercase;
+  letter-spacing:.05em; transition:all .2s;
+}
+.payment-card.salaires .payment-btn { color:#fff; }
+.payment-card.primes .payment-btn { color:var(--mv-700); }
+.payment-card:hover .payment-btn { transform:translateX(4px); }
+
+.payment-arrow {
+  width:36px; height:36px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:16px; transition:all .2s;
+}
+.payment-card.salaires .payment-arrow {
+  background:rgba(255,255,255,.2); color:#fff;
+}
+.payment-card.primes .payment-arrow {
+  background:var(--mv-100); color:var(--mv-700);
+}
+.payment-card:hover .payment-arrow {
+  transform:scale(1.1);
+}
+
+/* Stats Badge */
+.stats-badge {
+  position:absolute; top:20px; right:20px;
+  background:rgba(255,255,255,.15); backdrop-filter:blur(10px);
+  border-radius:12px; padding:8px 12px;
+  font-size:.8rem; font-weight:800; text-transform:uppercase;
+  letter-spacing:.05em;
+}
+.payment-card.salaires .stats-badge { color:#fff; }
+.payment-card.primes .stats-badge { 
+  background:var(--mv-50); color:var(--mv-700);
+  border:1px solid rgba(179,157,219,.2);
+}
+
+/* Animations */
+@keyframes slideDown { from{opacity:0;transform:translateY(-18px);}to{opacity:1;transform:translateY(0);} }
+@keyframes slideUp   { from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);} }
+@keyframes orbFloat1 { 0%,100%{transform:translate(0,0) scale(1);}50%{transform:translate(-28px,20px) scale(1.05);} }
+@keyframes orbFloat2 { 0%,100%{transform:translate(0,0) scale(1);}50%{transform:translate(20px,-26px) scale(1.07);} }
+
+@media(max-width:768px){
+  .paiements-grid { grid-template-columns:1fr; gap:24px; }
+  .payment-card { padding:32px 24px; }
+  .paiements-title h1 { font-size:2.4rem; }
+}
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="paiements-shell">
+  <div class="paiements-wrap">
+
+    <!-- 🔥 HEADER -->
+    <div class="paiements-head">
+      <div class="paiements-title">
+        <h1><i class="fas fa-credit-card"></i> Paiements</h1>
+      </div>
+    </div>
+
+    <!-- � CARDS GRID -->
+    <div class="paiements-grid">
+
+      <!-- SALAIRES CARD -->
+      <a href="{{ path('app_rh_salaire_index') }}" class="payment-card salaires">
+        
+        
+        <div class="payment-icon">
+          <i class="fas fa-money-bill-wave"></i>
+        </div>
+        
+        <h3 class="payment-title">Salaires</h3>
+        <p class="payment-description">
+          Gérez les salaires mensuels de vos employés, suivez les paiements et générez des rapports détaillés.
+        </p>
+        
+        <div class="payment-action">
+          <span class="payment-btn">
+            <i class="fas fa-arrow-right"></i> Accéder
+          </span>
+          <div class="payment-arrow">
+            <i class="fas fa-arrow-right"></i>
+          </div>
+        </div>
+      </a>
+
+      <!-- PRIMES CARD -->
+      <a href="{{ path('app_rh_prime_index') }}" class="payment-card primes">
+        
+        
+        <div class="payment-icon">
+          <i class="fas fa-gem"></i>
+        </div>
+        
+        <h3 class="payment-title">Primes</h3>
+        <p class="payment-description">
+          Attribuez des primes et récompenses basées sur les performances et les tâches accomplies par vos employés.
+        </p>
+        
+      
+        <div class="payment-action">
+          <span class="payment-btn">
+            <i class="fas fa-arrow-right"></i> Accéder
+          </span>
+          <div class="payment-arrow">
+            <i class="fas fa-arrow-right"></i>
+          </div>
+        </div>
+      </a>
+
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}

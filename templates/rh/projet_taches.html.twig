@@ -1,0 +1,698 @@
+{% extends 'rh/admin_base.html.twig' %}
+
+{% block title %}Tâches du Projet | {{ projet.titre }} | RH Pro{% endblock %}
+
+{% block page_title %}Tâches : {{ projet.titre }}{% endblock %}
+{% block page_subtitle %}Consultez l'état d'avancement des missions opérationnelles{% endblock %}
+
+{% block admin_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <a href="{{ path('app_projet_index') }}" class="btn-light-purple d-inline-flex align-items-center gap-2">
+        <i class="bi bi-arrow-left"></i> Retour aux projets
+    </a>
+    <div class="d-flex gap-2">
+        <span class="badge-soft {% if projet.statut == 'termine' %}badge-soft-success{% else %}badge-soft-warning{% endif %}">
+            Projet: {{ projet.statut|upper }}
+        </span>
+    </div>
+</div>
+
+<div class="admin-card" style="padding: 0;">
+    <div class="d-flex justify-content-between align-items-center p-4 border-bottom">
+        <div class="admin-card-title mb-0">
+            <div class="admin-card-title-icon"><i class="bi bi-list-check"></i></div>
+            Liste des Tâches ({{ taches|length }})
+        </div>
+    </div>
+    
+    <div class="admin-table-container mx-4 mt-4 mb-4">
+        <table class="admin-table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th style="width: 80px;">ID</th>
+                    <th>Titre</th>
+                    <th>Statut</th>
+                    <th>Priorité</th>
+                    <th>Assigné à</th>
+                    <th>Date Début</th>
+                    <th>Date Fin</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for tache in taches %}
+                <tr>
+                    <td class="text-muted fw-bold">#{{ tache.id }}</td>
+                    <td>
+                        <div class="fw-bold text-dark">{{ tache.titre }}</div>
+                        <div class="text-muted small text-truncate" style="max-width: 250px;">{{ tache.description ?: 'Aucune description' }}</div>
+                    </td>
+                    <td>
+                        {% if tache.statut == 'terminee' %}
+                            <span class="badge-soft badge-soft-success">TERMINÉE</span>
+                        {% elseif tache.statut == 'en_cours' %}
+                            <span class="badge-soft badge-soft-purple" style="background: #eef2ff; color: #4f46e5;">EN COURS</span>
+                        {% elseif tache.statut == 'bloquee' %}
+                            <span class="badge-soft" style="background: #fef2f2; color: #ef4444;">BLOQUÉE</span>
+                        {% else %}
+                            <span class="badge-soft badge-soft-warning">À FAIRE</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="badge-soft" style="font-size: 0.7rem; font-weight: 800; border: 1px solid #e2e8f0;">
+                            {{ tache.level|upper ?: 'SIMPLE' }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if tache.employe and tache.employe.user %}
+                            <div class="d-flex align-items-center gap-2">
+                                <div style="width:24px; height:24px; border-radius:50%; background:var(--purple-light); display:flex; align-items:center; justify-content:center; color:var(--purple-dark); font-size:0.7rem; font-weight:700;">
+                                    {{ tache.employe.user.prenom|first|upper }}
+                                </div>
+                                <span style="font-size: 0.85rem;">{{ tache.employe.user.fullName }}</span>
+                            </div>
+                        {% else %}
+                            <span class="text-muted small">Non assigné</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="text-muted small">
+                            <i class="bi bi-calendar-event me-1"></i>
+                            {{ tache.dateDebut ? tache.dateDebut|date('d/m/Y') : '--/--/--' }}
+                        </div>
+                    </td>
+                    <td>
+                        <div class="text-muted small">
+                            <i class="bi bi-calendar-check me-1"></i>
+                            {{ tache.dateFin ? tache.dateFin|date('d/m/Y') : '--/--/--' }}
+                        </div>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="7" class="text-center py-5 text-muted">
+                        Pas encore de tâches pour ce projet.
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{# Chatbot Widget - Styles #}
+<style>
+/* ═══════════════════════════════════════════════════════
+   CHATBOT WIDGET - Floating Assistant
+   ═══════════════════════════════════════════════════════ */
+
+.chatbot-widget {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 9999;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Floating Button */
+.chatbot-toggle-btn {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #9333ea 0%, #7c3aed 100%);
+    border: none;
+    box-shadow: 0 8px 24px rgba(147, 51, 234, 0.4);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+.chatbot-toggle-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 12px 32px rgba(147, 51, 234, 0.5);
+}
+
+.chatbot-toggle-btn:active {
+    transform: scale(0.95);
+}
+
+.chatbot-toggle-btn svg {
+    width: 28px;
+    height: 28px;
+    color: white;
+    transition: transform 0.3s;
+}
+
+.chatbot-toggle-btn.active svg {
+    transform: rotate(180deg);
+}
+
+/* Notification Badge */
+.chatbot-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    width: 20px;
+    height: 20px;
+    background: #ef4444;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: white;
+    border: 2px solid white;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+/* Chat Window */
+.chatbot-window {
+    position: absolute;
+    bottom: 80px;
+    right: 0;
+    width: 400px;
+    height: 600px;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.chatbot-window.active {
+    display: flex;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Header */
+.chatbot-header {
+    background: linear-gradient(135deg, #9333ea 0%, #7c3aed 100%);
+    padding: 20px;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.chatbot-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+}
+
+.chatbot-header-info h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.chatbot-header-info p {
+    margin: 0;
+    font-size: 12px;
+    opacity: 0.9;
+}
+
+.chatbot-status {
+    width: 8px;
+    height: 8px;
+    background: #10b981;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 4px;
+    animation: blink 2s infinite;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
+/* Messages Container */
+.chatbot-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    background: #f8fafc;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.chatbot-messages::-webkit-scrollbar {
+    width: 6px;
+}
+
+.chatbot-messages::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+}
+
+/* Message Bubble */
+.chatbot-message {
+    display: flex;
+    gap: 10px;
+    animation: fadeIn 0.3s;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.chatbot-message.user {
+    flex-direction: row-reverse;
+}
+
+.chatbot-message-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.chatbot-message.bot .chatbot-message-avatar {
+    background: linear-gradient(135deg, #9333ea 0%, #7c3aed 100%);
+    color: white;
+}
+
+.chatbot-message.user .chatbot-message-avatar {
+    background: #e2e8f0;
+    color: #475569;
+}
+
+.chatbot-message-content {
+    max-width: 75%;
+}
+
+.chatbot-message-bubble {
+    padding: 12px 16px;
+    border-radius: 16px;
+    font-size: 14px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+}
+
+.chatbot-message.bot .chatbot-message-bubble {
+    background: white;
+    color: #1e293b;
+    border: 1px solid #e2e8f0;
+    border-bottom-left-radius: 4px;
+}
+
+.chatbot-message.user .chatbot-message-bubble {
+    background: linear-gradient(135deg, #9333ea 0%, #7c3aed 100%);
+    color: white;
+    border-bottom-right-radius: 4px;
+}
+
+.chatbot-message-time {
+    font-size: 11px;
+    color: #94a3b8;
+    margin-top: 4px;
+    padding: 0 4px;
+}
+
+/* Typing Indicator */
+.chatbot-typing {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: white;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    width: fit-content;
+}
+
+.chatbot-typing.active {
+    display: flex;
+}
+
+.chatbot-typing-dots {
+    display: flex;
+    gap: 4px;
+}
+
+.chatbot-typing-dot {
+    width: 8px;
+    height: 8px;
+    background: #9333ea;
+    border-radius: 50%;
+    animation: bounce 1.4s infinite;
+}
+
+.chatbot-typing-dot:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.chatbot-typing-dot:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes bounce {
+    0%, 60%, 100% { transform: translateY(0); }
+    30% { transform: translateY(-8px); }
+}
+
+/* Quick Actions */
+.chatbot-quick-actions {
+    padding: 12px 20px;
+    background: white;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+}
+
+.chatbot-quick-actions::-webkit-scrollbar {
+    height: 4px;
+}
+
+.chatbot-quick-btn {
+    padding: 8px 14px;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    border-radius: 20px;
+    font-size: 12px;
+    color: #475569;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+}
+
+.chatbot-quick-btn:hover {
+    background: #e2e8f0;
+    border-color: #9333ea;
+    color: #9333ea;
+}
+
+/* Input Area */
+.chatbot-input-area {
+    padding: 16px 20px;
+    background: white;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.chatbot-input {
+    flex: 1;
+    padding: 12px 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 24px;
+    font-size: 14px;
+    outline: none;
+    transition: all 0.2s;
+}
+
+.chatbot-input:focus {
+    border-color: #9333ea;
+    box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.1);
+}
+
+.chatbot-send-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #9333ea 0%, #7c3aed 100%);
+    border: none;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.chatbot-send-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(147, 51, 234, 0.3);
+}
+
+.chatbot-send-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.chatbot-send-btn svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .chatbot-window {
+        width: calc(100vw - 40px);
+        height: calc(100vh - 120px);
+        bottom: 90px;
+        right: 20px;
+    }
+    
+    .chatbot-widget {
+        bottom: 20px;
+        right: 20px;
+    }
+}
+</style>
+
+{# Chatbot Widget - HTML #}
+<div class="chatbot-widget">
+    <!-- Toggle Button -->
+    <button class="chatbot-toggle-btn" id="chatbotToggle" aria-label="Ouvrir l'assistant">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C11.4477 2 11 2.44772 11 3V4H8C6.89543 4 6 4.89543 6 6V7H4C3.44772 7 3 7.44772 3 8V10C3 10.5523 3.44772 11 4 11H6V18C6 19.1046 6.89543 20 8 20H16C17.1046 20 18 19.1046 18 18V11H20C20.5523 11 21 10.5523 21 10V8C21 7.44772 20.5523 7 20 7H18V6C18 4.89543 17.1046 4 16 4H13V3C13 2.44772 12.5523 2 12 2ZM9 9C9 8.44772 9.44772 8 10 8C10.5523 8 11 8.44772 11 9C11 9.55228 10.5523 10 10 10C9.44772 10 9 9.55228 9 9ZM14 8C13.4477 8 13 8.44772 13 9C13 9.55228 13.4477 10 14 10C14.5523 10 15 9.55228 15 9C15 8.44772 14.5523 8 14 8ZM9 14C9 13.4477 9.44772 13 10 13H14C14.5523 13 15 13.4477 15 14C15 14.5523 14.5523 15 14 15H10C9.44772 15 9 14.5523 9 14Z"/>
+        </svg>
+        <span class="chatbot-badge" id="chatbotBadge" style="display: none;">1</span>
+    </button>
+
+    <!-- Chat Window -->
+    <div class="chatbot-window" id="chatbotWindow">
+        <!-- Header -->
+        <div class="chatbot-header">
+            <div class="chatbot-avatar">🤖</div>
+            <div class="chatbot-header-info">
+                <h3>Assistant RHPro</h3>
+                <p><span class="chatbot-status"></span>En ligne</p>
+            </div>
+        </div>
+
+        <!-- Messages -->
+        <div class="chatbot-messages" id="chatbotMessages">
+            <div class="chatbot-message bot">
+                <div class="chatbot-message-avatar">🤖</div>
+                <div class="chatbot-message-content">
+                    <div class="chatbot-message-bubble">👋 Bonjour ! Je suis l'assistant RHPro. Posez-moi des questions sur vos projets, tâches ou votre équipe.
+
+💡 Exemples :
+• "Tâches bloquées"
+• "Projets en retard"
+• "Employé surchargé"
+• "Statistiques générales"</div>
+                    <div class="chatbot-message-time">{{ "now"|date("H:i") }}</div>
+                </div>
+            </div>
+            
+            <!-- Typing Indicator -->
+            <div class="chatbot-typing" id="chatbotTyping">
+                <div class="chatbot-message-avatar">🤖</div>
+                <div class="chatbot-typing-dots">
+                    <div class="chatbot-typing-dot"></div>
+                    <div class="chatbot-typing-dot"></div>
+                    <div class="chatbot-typing-dot"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="chatbot-quick-actions">
+            <button class="chatbot-quick-btn" data-question="tâches bloquées">🔴 Tâches bloquées</button>
+            <button class="chatbot-quick-btn" data-question="tâches urgentes">⚡ Tâches urgentes</button>
+            <button class="chatbot-quick-btn" data-question="projets en retard">⏰ Projets en retard</button>
+            <button class="chatbot-quick-btn" data-question="statistiques">📊 Statistiques</button>
+        </div>
+
+        <!-- Input Area -->
+        <div class="chatbot-input-area">
+            <input 
+                type="text" 
+                class="chatbot-input" 
+                id="chatbotInput" 
+                placeholder="Posez votre question..."
+                autocomplete="off"
+            />
+            <button class="chatbot-send-btn" id="chatbotSend" aria-label="Envoyer">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                </svg>
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    'use strict';
+    
+    const chatbotToggle = document.getElementById('chatbotToggle');
+    const chatbotWindow = document.getElementById('chatbotWindow');
+    const chatbotMessages = document.getElementById('chatbotMessages');
+    const chatbotInput = document.getElementById('chatbotInput');
+    const chatbotSend = document.getElementById('chatbotSend');
+    const chatbotTyping = document.getElementById('chatbotTyping');
+    const chatbotBadge = document.getElementById('chatbotBadge');
+    const quickBtns = document.querySelectorAll('.chatbot-quick-btn');
+    
+    let isOpen = false;
+    
+    // Toggle chatbot window
+    chatbotToggle.addEventListener('click', () => {
+        isOpen = !isOpen;
+        chatbotWindow.classList.toggle('active', isOpen);
+        chatbotToggle.classList.toggle('active', isOpen);
+        chatbotBadge.style.display = 'none';
+        
+        if (isOpen) {
+            chatbotInput.focus();
+        }
+    });
+    
+    // Send message
+    async function sendMessage(message) {
+        if (!message.trim()) return;
+        
+        // Add user message
+        addMessage(message, 'user');
+        chatbotInput.value = '';
+        chatbotSend.disabled = true;
+        
+        // Show typing indicator
+        chatbotTyping.classList.add('active');
+        scrollToBottom();
+        
+        try {
+            const response = await fetch('{{ path('app_chatbot_ask') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ message: message })
+            });
+            
+            if (!response.ok) {
+                throw new Error('Erreur réseau');
+            }
+            
+            const data = await response.json();
+            
+            // Hide typing indicator
+            chatbotTyping.classList.remove('active');
+            
+            // Add bot response
+            addMessage(data.reponse || 'Désolé, je n\'ai pas compris.', 'bot');
+            
+        } catch (error) {
+            console.error('Chatbot error:', error);
+            chatbotTyping.classList.remove('active');
+            addMessage('⚠️ Erreur de connexion. Vérifiez que le serveur chatbot est démarré.', 'bot');
+        } finally {
+            chatbotSend.disabled = false;
+        }
+    }
+    
+    // Add message to chat
+    function addMessage(text, sender) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `chatbot-message ${sender}`;
+        
+        const now = new Date();
+        const time = now.getHours().toString().padStart(2, '0') + ':' + 
+                     now.getMinutes().toString().padStart(2, '0');
+        
+        messageDiv.innerHTML = `
+            <div class="chatbot-message-avatar">${sender === 'bot' ? '🤖' : '👤'}</div>
+            <div class="chatbot-message-content">
+                <div class="chatbot-message-bubble">${escapeHtml(text)}</div>
+                <div class="chatbot-message-time">${time}</div>
+            </div>
+        `;
+        
+        // Insert before typing indicator
+        chatbotMessages.insertBefore(messageDiv, chatbotTyping);
+        scrollToBottom();
+    }
+    
+    // Escape HTML
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+    
+    // Scroll to bottom
+    function scrollToBottom() {
+        setTimeout(() => {
+            chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+        }, 100);
+    }
+    
+    // Event listeners
+    chatbotSend.addEventListener('click', () => {
+        sendMessage(chatbotInput.value);
+    });
+    
+    chatbotInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            sendMessage(chatbotInput.value);
+        }
+    });
+    
+    // Quick action buttons
+    quickBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const question = btn.getAttribute('data-question');
+            chatbotInput.value = question;
+            sendMessage(question);
+        });
+    });
+    
+    // Show notification badge after 3 seconds if not opened
+    setTimeout(() => {
+        if (!isOpen) {
+            chatbotBadge.style.display = 'flex';
+        }
+    }, 3000);
+})();
+</script>
+
+{% endblock %}

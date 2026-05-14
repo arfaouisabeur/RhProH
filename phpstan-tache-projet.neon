@@ -1,0 +1,36 @@
+parameters:
+    level: 8
+    paths:
+        # Entities
+        - src/Entity/Projet.php
+        - src/Entity/Tache.php
+        
+        # Controllers
+        - src/Controller/ProjetController.php
+        - src/Controller/TacheController.php
+        
+        # Repositories
+        - src/Repository/ProjetRepository.php
+        - src/Repository/TacheRepository.php
+    
+    tmpDir: var/cache/phpstan
+    
+    # Symfony configuration
+    symfony:
+        containerXmlPath: var/cache/dev/App_KernelDevDebugContainer.xml
+    
+    # Doctrine configuration
+    doctrine:
+        objectManagerLoader: tests/object-manager.php
+    
+    # Ignores for known Symfony/Doctrine patterns
+    ignoreErrors:
+        - '#Call to an undefined method Symfony\\Component\\Form\\FormInterface::[a-zA-Z]+\(\)#'
+        - '#Cannot call method [a-zA-Z]+\(\) on Symfony\\Component\\Security\\Core\\User\\UserInterface\|null#'
+    
+    reportUnmatchedIgnoredErrors: false
+    
+    # Exclude patterns
+    excludePaths:
+        - */var/*
+        - */vendor/*

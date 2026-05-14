@@ -1,0 +1,342 @@
+{% extends 'rh/admin_base.html.twig' %}
+{% block page_title %}QR Code{% endblock %}
+{% block page_subtitle %}Accès public aux tâches du projet via QR Code{% endblock %}
+
+{% block admin_content %}
+<div class="row justify-content-center" style="margin-top:-1rem">
+    <div class="col-lg-6 col-md-8">
+        <div class="qr-card">
+
+            {# Header #}
+            <div class="qr-header">
+                <div class="qr-header-icon"><i class="bi bi-qr-code-scan"></i></div>
+                <div>
+                    <h4 class="qr-header-title">Code QR Public</h4>
+                    <p class="qr-header-sub">{{ projet.titre }}</p>
+                </div>
+            </div>
+
+            {# Body #}
+            <div class="qr-body">
+                <p class="qr-desc">Scannez ce QR Code avec votre téléphone pour accéder aux tâches du projet.</p>
+
+                {# QR Image avec animation scan #}
+                <div class="qr-img-wrap">
+                    <div class="qr-img-inner" id="qrInner">
+                        <div class="qr-scan-line" id="scanLine"></div>
+                        <div class="qr-flash" id="qrFlash"></div>
+                        <img src="{{ qrBase64 ?: apiUrl }}" alt="QR Code" class="qr-img" id="qrImg">
+                    </div>
+                    <div class="qr-corners">
+                        <span class="qr-corner tl"></span>
+                        <span class="qr-corner tr"></span>
+                        <span class="qr-corner bl"></span>
+                        <span class="qr-corner br"></span>
+                    </div>
+                </div>
+
+                {# Info projet #}
+                <div class="qr-info-row">
+                    <div class="qr-info-item"><i class="bi bi-diagram-3-fill"></i><span>{{ projet.titre }}</span></div>
+                    <div class="qr-info-item"><i class="bi bi-activity"></i>
+                        <span>{% if projet.statut == 'termine' %}Terminé{% elseif projet.statut == 'en_cours' %}En cours{% elseif projet.statut == 'en_attente' %}À faire{% else %}Annulé{% endif %}</span>
+                    </div>
+                </div>
+
+                {# Adresse réseau #}
+                <div class="qr-network-box{% if localIp == '127.0.0.1' or localIp starts with '192.168.56.' %} qr-network-warning{% endif %}">
+                    <i class="bi bi-{% if localIp == '127.0.0.1' or localIp starts with '192.168.56.' %}exclamation-triangle{% else %}wifi{% endif %}"></i>
+                    <div style="flex: 1;">
+                        <div class="qr-network-title">
+                            {% if localIp == '127.0.0.1' %}
+                                ⚠️ Accès local uniquement
+                            {% elseif localIp starts with '192.168.56.' %}
+                                ⚠️ IP VirtualBox détectée
+                            {% else %}
+                                Accès depuis votre téléphone
+                            {% endif %}
+                        </div>
+                        <div class="qr-network-url">{{ mobileUrl }}</div>
+                        {% if localIp == '127.0.0.1' or localIp starts with '192.168.56.' %}
+                            <div class="qr-network-help">
+                                L'IP détectée ne fonctionne pas pour les téléphones. Utilisez le bouton ci-dessous pour configurer manuellement votre vraie IP WiFi.
+                            </div>
+                            <button type="button" class="qr-btn-fix" onclick="showIpConfig()">
+                                <i class="bi bi-gear-fill"></i> Configurer l'IP manuellement
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                {# Modal de configuration IP #}
+                <div id="ipConfigModal" class="qr-modal" style="display: none;">
+                    <div class="qr-modal-content">
+                        <div class="qr-modal-header">
+                            <h5><i class="bi bi-wifi"></i> Configuration IP pour téléphone</h5>
+                            <button onclick="hideIpConfig()" class="qr-modal-close">&times;</button>
+                        </div>
+                        <div class="qr-modal-body">
+                            <p><strong>Instructions:</strong></p>
+                            <ol style="margin: 10px 0; padding-left: 20px; line-height: 1.8;">
+                                <li>Ouvrez <strong>Invite de commandes</strong> (cmd) sur votre PC</li>
+                                <li>Tapez: <code style="background: #f1f5f9; padding: 2px 8px; border-radius: 4px;">ipconfig</code></li>
+                                <li>Cherchez votre <strong>Carte réseau WiFi</strong></li>
+                                <li>Trouvez l'<strong>Adresse IPv4</strong> (ex: 192.168.1.100)</li>
+                                <li>Entrez cette IP ci-dessous:</li>
+                            </ol>
+                            
+                            <div style="margin: 20px 0;">
+                                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #1e293b;">
+                                    Votre IP WiFi:
+                                </label>
+                                <input type="text" id="customIp" placeholder="192.168.x.x" 
+                                       style="width: 100%; padding: 10px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 1rem;"
+                                       value="{{ localIp }}">
+                                <small style="color: #64748b; display: block; margin-top: 6px;">
+                                    ⚠️ Évitez les IPs commençant par 192.168.56.x (VirtualBox)
+                                </small>
+                            </div>
+                            
+                            <button onclick="generateCustomQr()" class="qr-btn-primary" style="width: 100%;">
+                                <i class="bi bi-qr-code"></i> Générer le QR Code avec cette IP
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="qr-divider"></div>
+
+                {# Bouton scan #}
+                <div class="qr-direct">
+                    <div class="qr-direct-label"><i class="bi bi-laptop"></i> Tester depuis le navigateur</div>
+                    <p class="qr-direct-desc">Cliquez pour simuler l'accès public (PC uniquement).</p>
+                    <a href="{{ targetUrl }}" class="qr-btn-primary" id="btnScan" onclick="lancerScan(event)">
+                        <i class="bi bi-qr-code-scan"></i> Scanner & Ouvrir
+                    </a>
+                </div>
+            </div>
+
+            {# Footer #}
+            <div class="qr-footer">
+                <a href="{{ path('app_projet_index') }}" class="qr-back"><i class="bi bi-arrow-left"></i> Retour aux projets</a>
+                <a href="{{ apiUrl }}" download="qr-{{ projet.titre|lower|replace({' ':'-'}) }}.png" class="qr-btn-dl"><i class="bi bi-download"></i> Télécharger</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Tâches du projet - supprimé #}
+
+<style>
+.qr-card{background:#fff;border-radius:24px;box-shadow:0 8px 40px rgba(107,45,139,.12),0 0 0 1px rgba(107,45,139,.06);overflow:hidden}
+.qr-header{background:#6b2d8b;padding:28px 32px;display:flex;align-items:center;gap:18px;position:relative;overflow:hidden}
+.qr-header::after{content:'';position:absolute;right:-40px;top:-40px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.06);pointer-events:none}
+.qr-header-icon{width:56px;height:56px;border-radius:16px;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;font-size:1.6rem;color:#fff;flex-shrink:0}
+.qr-header-title{color:#fff;font-size:1.2rem;font-weight:700;margin:0}
+.qr-header-sub{color:rgba(255,255,255,.7);font-size:.9rem;margin:4px 0 0}
+.qr-body{padding:36px 32px}
+.qr-desc{text-align:center;color:#64748b;font-size:.9rem;line-height:1.6;margin-bottom:32px}
+.qr-img-wrap{position:relative;display:flex;justify-content:center;margin-bottom:28px}
+.qr-img-inner{background:#fff;border-radius:20px;padding:20px;box-shadow:0 4px 24px rgba(107,45,139,.15);display:inline-block;position:relative;overflow:hidden}
+.qr-img{width:220px;height:220px;display:block;border-radius:8px}
+.qr-scan-line{display:none;position:absolute;left:10px;right:10px;height:3px;background:linear-gradient(90deg,transparent,#6b2d8b,#a855f7,#6b2d8b,transparent);border-radius:2px;box-shadow:0 0 12px 4px rgba(168,85,247,.7),0 0 24px 8px rgba(107,45,139,.4);animation:qr-scan 1.8s ease-in-out infinite;z-index:10;top:10px}
+.qr-scan-line.active{display:block}
+@keyframes qr-scan{0%{top:10px;opacity:0}5%{opacity:1}50%{top:calc(100% - 13px)}95%{opacity:1}100%{top:10px;opacity:0}}
+.qr-flash{display:none;position:absolute;inset:0;background:rgba(168,85,247,.15);border-radius:12px;animation:qr-flash .3s ease-out forwards;z-index:9}
+.qr-flash.active{display:block}
+@keyframes qr-flash{0%{opacity:1}100%{opacity:0}}
+.qr-corners{position:absolute;inset:-8px;pointer-events:none}
+.qr-corner{position:absolute;width:22px;height:22px;border-color:#6b2d8b;border-style:solid}
+.qr-corner.tl{top:0;left:0;border-width:3px 0 0 3px;border-radius:6px 0 0 0}
+.qr-corner.tr{top:0;right:0;border-width:3px 3px 0 0;border-radius:0 6px 0 0}
+.qr-corner.bl{bottom:0;left:0;border-width:0 0 3px 3px;border-radius:0 0 0 6px}
+.qr-corner.br{bottom:0;right:0;border-width:0 3px 3px 0;border-radius:0 0 6px 0}
+.qr-info-row{display:flex;justify-content:center;gap:16px;margin-bottom:20px;flex-wrap:wrap}
+.qr-info-item{display:flex;align-items:center;gap:7px;background:#f5f3ff;border:1px solid #ede9fe;border-radius:20px;padding:6px 16px;font-size:.82rem;color:#6b2d8b;font-weight:600}
+.qr-network-box{display:flex;align-items:center;gap:12px;background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:14px;padding:14px 18px;margin-bottom:20px}
+.qr-network-box i{font-size:1.3rem;color:#10b981;flex-shrink:0}
+.qr-network-title{font-weight:700;color:#065f46;font-size:.85rem}
+.qr-network-url{font-size:.78rem;color:#059669;font-family:monospace;word-break:break-all}
+.qr-network-warning{background:#fef3c7;border-color:#fcd34d}
+.qr-network-warning i{color:#f59e0b}
+.qr-network-warning .qr-network-title{color:#92400e}
+.qr-network-warning .qr-network-url{color:#b45309}
+.qr-network-help{font-size:.75rem;color:#92400e;margin-top:6px;line-height:1.4}
+.qr-btn-fix{margin-top:10px;background:#fff;border:2px solid #f59e0b;color:#f59e0b;padding:8px 16px;border-radius:8px;font-size:.82rem;font-weight:600;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px}
+.qr-btn-fix:hover{background:#f59e0b;color:#fff}
+.qr-modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px}
+.qr-modal-content{background:#fff;border-radius:16px;max-width:500px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.qr-modal-header{padding:20px 24px;border-bottom:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center}
+.qr-modal-header h5{margin:0;font-size:1.1rem;font-weight:700;color:#1e293b;display:flex;align-items:center;gap:8px}
+.qr-modal-close{background:none;border:none;font-size:1.8rem;color:#94a3b8;cursor:pointer;line-height:1;padding:0;width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:6px;transition:all .2s}
+.qr-modal-close:hover{background:#f1f5f9;color:#1e293b}
+.qr-modal-body{padding:24px}
+.qr-divider{height:1px;background:#f1f5f9;margin:20px 0}
+.qr-direct{text-align:center}
+.qr-direct-label{display:inline-flex;align-items:center;gap:7px;font-weight:700;color:#1e293b;font-size:.9rem;margin-bottom:8px}
+.qr-direct-label i{color:#6b2d8b}
+.qr-direct-desc{color:#94a3b8;font-size:.82rem;margin-bottom:16px}
+.qr-btn-primary{display:inline-flex;align-items:center;gap:8px;background:#6b2d8b;color:#fff;padding:11px 28px;border-radius:12px;font-weight:600;font-size:.9rem;text-decoration:none;box-shadow:0 4px 16px rgba(107,45,139,.35);transition:all .2s}
+.qr-btn-primary:hover{background:#5a2474;color:#fff;transform:translateY(-2px)}
+.qr-footer{padding:18px 32px;background:#faf8ff;border-top:1px solid #f1f5f9;display:flex;justify-content:space-between;align-items:center}
+.qr-back{display:flex;align-items:center;gap:6px;color:#64748b;font-size:.85rem;text-decoration:none;transition:color .2s}
+.qr-back:hover{color:#6b2d8b}
+.qr-btn-dl{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1.5px solid #ddd6fe;color:#6b2d8b;padding:8px 18px;border-radius:10px;font-size:.82rem;font-weight:600;text-decoration:none;transition:all .2s}
+.qr-btn-dl:hover{background:#f3f0ff;border-color:#6b2d8b}
+
+/* Tâches */
+.qr-tasks-card{background:#fff;border-radius:20px;box-shadow:0 4px 24px rgba(107,45,139,.08);overflow:hidden;border:1px solid #ede9fe}
+.qr-tasks-header{background:#6b2d8b;padding:16px 24px;display:flex;justify-content:space-between;align-items:center}
+.qr-tasks-title{color:#fff;font-weight:700;font-size:.95rem;display:flex;align-items:center;gap:8px}
+.qr-tasks-count{background:rgba(255,255,255,.2);color:#fff;font-size:.75rem;font-weight:700;padding:4px 12px;border-radius:20px}
+.qr-tasks-empty{text-align:center;padding:40px 20px;color:#94a3b8}
+.qr-tasks-empty i{font-size:2rem;display:block;margin-bottom:10px;color:#ddd6fe}
+.qr-tasks-list{padding:8px 0}
+.qr-task-item{display:flex;border-bottom:1px solid #f5f3ff;transition:background .15s}
+.qr-task-item:last-child{border-bottom:none}
+.qr-task-item:hover{background:#faf8ff}
+.qr-task-bar{width:4px;flex-shrink:0}
+.bar-high{background:#ef4444}
+.bar-med{background:#f59e0b}
+.bar-low{background:#10b981}
+.qr-task-body{flex:1;padding:14px 20px}
+.qr-task-top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:6px;flex-wrap:wrap}
+.qr-task-name{font-weight:600;color:#1e293b;font-size:.88rem}
+.qr-task-badge{font-size:.7rem;font-weight:700;padding:3px 10px;border-radius:20px;white-space:nowrap}
+.badge-done{background:#d1fae5;color:#065f46}
+.badge-doing{background:#fef3c7;color:#b45309}
+.badge-blocked{background:#fee2e2;color:#b91c1c}
+.badge-todo{background:#ede9fe;color:#6b2d8b}
+.qr-task-desc{font-size:.8rem;color:#64748b;margin:0 0 8px;line-height:1.5}
+.qr-task-meta{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.qr-task-assignee{display:flex;align-items:center;gap:6px;font-size:.78rem;color:#64748b}
+.qr-task-av{width:22px;height:22px;border-radius:6px;background:#6b2d8b;color:#fff;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700}
+.qr-task-date{font-size:.75rem;color:#94a3b8;display:flex;align-items:center;gap:4px}
+</style>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+function showIpConfig() {
+    document.getElementById('ipConfigModal').style.display = 'flex';
+}
+
+function hideIpConfig() {
+    document.getElementById('ipConfigModal').style.display = 'none';
+}
+
+function generateCustomQr() {
+    const customIp = document.getElementById('customIp').value.trim();
+    
+    // Validation basique
+    if (!customIp || !customIp.match(/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/)) {
+        alert('⚠️ Veuillez entrer une adresse IP valide (ex: 192.168.1.100)');
+        return;
+    }
+    
+    // Avertir si c'est une IP VirtualBox
+    if (customIp.startsWith('192.168.56.')) {
+        if (!confirm('⚠️ Cette IP semble être une IP VirtualBox. Êtes-vous sûr de vouloir l\'utiliser?')) {
+            return;
+        }
+    }
+    
+    // Construire la nouvelle URL
+    const currentUrl = '{{ mobileUrl|raw }}';
+    const newUrl = currentUrl.replace(/http:\/\/[^:]+/, 'http://' + customIp);
+    
+    // Générer le nouveau QR code
+    const qrApiUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' + encodeURIComponent(newUrl);
+    
+    // Mettre à jour l'image
+    const qrImg = document.getElementById('qrImg');
+    qrImg.src = qrApiUrl;
+    
+    // Mettre à jour l'URL affichée
+    const urlDisplay = document.querySelector('.qr-network-url');
+    urlDisplay.textContent = newUrl;
+    
+    // Mettre à jour le bouton de téléchargement
+    const dlBtn = document.querySelector('.qr-btn-dl');
+    if (dlBtn) {
+        dlBtn.href = qrApiUrl;
+    }
+    
+    // Changer le style de la box en vert (succès)
+    const networkBox = document.querySelector('.qr-network-box');
+    networkBox.classList.remove('qr-network-warning');
+    networkBox.style.background = '#f0fdf4';
+    networkBox.style.borderColor = '#bbf7d0';
+    
+    const icon = networkBox.querySelector('i');
+    icon.className = 'bi bi-wifi';
+    icon.style.color = '#10b981';
+    
+    const title = networkBox.querySelector('.qr-network-title');
+    title.textContent = '✅ QR Code configuré pour téléphone';
+    title.style.color = '#065f46';
+    
+    // Cacher le bouton "Configurer"
+    const fixBtn = networkBox.querySelector('.qr-btn-fix');
+    if (fixBtn) {
+        fixBtn.style.display = 'none';
+    }
+    
+    // Cacher le message d'aide
+    const helpMsg = networkBox.querySelector('.qr-network-help');
+    if (helpMsg) {
+        helpMsg.style.display = 'none';
+    }
+    
+    // Fermer le modal
+    hideIpConfig();
+    
+    // Animation de succès
+    const qrInner = document.getElementById('qrInner');
+    qrInner.style.boxShadow = '0 0 0 3px rgba(16,185,129,.6),0 4px 24px rgba(16,185,129,.2)';
+    setTimeout(() => {
+        qrInner.style.boxShadow = '';
+    }, 2000);
+    
+    alert('✅ QR Code mis à jour!\n\nNouvelle URL: ' + newUrl + '\n\nScannez le QR code avec votre téléphone.');
+}
+
+function lancerScan(e) {
+    e.preventDefault();
+    const url   = e.currentTarget.href;
+    const line  = document.getElementById('scanLine');
+    const flash = document.getElementById('qrFlash');
+    const btn   = document.getElementById('btnScan');
+    const inner = document.getElementById('qrInner');
+    btn.style.pointerEvents = 'none';
+    btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Scan en cours...';
+    line.classList.add('active');
+    flash.classList.add('active');
+    inner.style.boxShadow = '0 0 0 3px rgba(168,85,247,.5),0 4px 24px rgba(107,45,139,.3)';
+    setTimeout(() => {
+        line.classList.remove('active');
+        flash.classList.remove('active');
+        inner.style.boxShadow = '0 0 0 3px rgba(16,185,129,.6),0 4px 24px rgba(16,185,129,.2)';
+        btn.innerHTML = '<i class="bi bi-check-circle-fill"></i> Scanné !';
+        btn.style.background = '#059669';
+        setTimeout(() => {
+            window.open(url, '_blank');
+            setTimeout(() => {
+                btn.innerHTML = '<i class="bi bi-qr-code-scan"></i> Scanner & Ouvrir';
+                btn.style.background = '';
+                btn.style.pointerEvents = '';
+                inner.style.boxShadow = '';
+            }, 1500);
+        }, 400);
+    }, 3600);
+}
+
+// Fermer le modal en cliquant en dehors
+document.addEventListener('click', function(e) {
+    const modal = document.getElementById('ipConfigModal');
+    if (e.target === modal) {
+        hideIpConfig();
+    }
+});
+</script>
+{% endblock %}

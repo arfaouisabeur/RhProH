@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+
+<style>
+body {
+    font-family: DejaVu Sans, sans-serif;
+    font-size: 12px;
+    color: #2d2d2d;
+    margin: 30px;
+}
+
+/* HEADER */
+.header {
+    text-align: center;
+    border-bottom: 3px solid #7b2ff7;
+    padding-bottom: 12px;
+    margin-bottom: 20px;
+}
+
+.company {
+    font-size: 22px;
+    font-weight: bold;
+    color: #7b2ff7;
+    letter-spacing: 1px;
+}
+
+.subtitle {
+    font-size: 12px;
+    color: #888;
+}
+
+/* TITLE */
+.title {
+    text-align: center;
+    font-size: 20px;
+    font-weight: bold;
+    margin: 25px 0;
+    letter-spacing: 1px;
+}
+
+/* BOX */
+.box {
+    border: 1px solid #e5e5e5;
+    padding: 14px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    background: #fafafa;
+}
+
+/* SECTION */
+.section-title {
+    font-weight: bold;
+    margin-bottom: 6px;
+    color: #7b2ff7;
+    font-size: 13px;
+}
+
+/* TEXT */
+p {
+    margin: 5px 0;
+    line-height: 1.6;
+}
+
+/* ARTICLE STYLE */
+.article {
+    margin-bottom: 12px;
+}
+
+/* STAMP */
+.stamp {
+    margin-top: 80px;
+    text-align: right;
+}
+
+/* FOOTER */
+.footer {
+    margin-top: 50px;
+    font-size: 10px;
+    text-align: center;
+    color: #999;
+    border-top: 1px solid #eee;
+    padding-top: 10px;
+}
+</style>
+
+</head>
+
+<body>
+
+<!-- HEADER -->
+<div class="header">
+    <div class="company">RH Pro</div>
+    <div class="subtitle">Official Employment Agreement</div>
+</div>
+
+{% set type = contract.type|upper %}
+
+<!-- TITLE -->
+<div class="title">
+    {% if type == 'CDI' %}
+        PERMANENT CONTRACT (CDI)
+    {% elseif type == 'CDD' %}
+        FIXED-TERM CONTRACT (CDD)
+    {% elseif type == 'STAGE' %}
+        INTERNSHIP AGREEMENT
+    {% endif %}
+</div>
+
+<div class="box">
+    <div class="section-title">Employee Information</div>
+    <p><strong>Name:</strong> {{ contract.employe.user.fullName }}</p>
+    <p><strong>Start Date:</strong> {{ contract.dateDebut|date('d/m/Y') }}</p>
+
+    {% if contract.dateFin %}
+        <p><strong>End Date:</strong> {{ contract.dateFin|date('d/m/Y') }}</p>
+    {% endif %}
+</div>
+
+<!-- SALARY -->
+<div class="box">
+    <div class="section-title">Compensation</div>
+    <p><strong>Base Salary:</strong> {{ contract.salaireBase }} DT</p>
+    <p><strong>Payment:</strong> Monthly</p>
+</div>
+
+<!-- CONTENT -->
+{% if type == 'CDI' %}
+
+<div class="box">
+    <div class="section-title">Terms of Employment</div>
+
+    <div class="article">
+        <strong>Article 1 — Nature</strong>
+        <p>This contract is concluded for an indefinite duration starting from {{ contract.dateDebut|date('d/m/Y') }}.</p>
+    </div>
+
+    <div class="article">
+        <strong>Article 2 — Duties</strong>
+        <p>The employee agrees to perform assigned duties professionally and comply with company regulations.</p>
+    </div>
+
+    <div class="article">
+        <strong>Article 3 — Salary</strong>
+        <p>The employee will receive a monthly salary of <strong>{{ contract.salaireBase }} DT</strong>.</p>
+    </div>
+
+    <div class="article">
+        <strong>Article 4 — Termination</strong>
+        <p>This contract may be terminated in accordance with labor laws.</p>
+    </div>
+</div>
+
+{% elseif type == 'CDD' %}
+
+<div class="box">
+    <div class="section-title">Contract Details</div>
+
+    <div class="article">
+        <strong>Article 1 — Duration</strong>
+        <p>This contract is valid from {{ contract.dateDebut|date('d/m/Y') }} to {{ contract.dateFin|date('d/m/Y') }}.</p>
+    </div>
+
+    <div class="article">
+        <strong>Article 2 — Role</strong>
+        <p>The employee is hired for a temporary mission or project.</p>
+    </div>
+
+    <div class="article">
+        <strong>Article 3 — Compensation</strong>
+        <p>The employee will receive {{ contract.salaireBase }} DT per month.</p>
+    </div>
+
+    <div class="article">
+        <strong>Article 4 — End</strong>
+        <p>The contract ends automatically on the specified date.</p>
+    </div>
+</div>
+
+{% elseif type == 'STAGE' %}
+
+<div class="box">
+    <div class="section-title">Internship Agreement</div>
+
+    <div class="article">
+        <strong>Article 1 — Purpose</strong>
+        <p>This internship aims to provide professional training and experience.</p>
+    </div>
+
+    <div class="article">
+        <strong>Article 2 — Duration</strong>
+        <p>From {{ contract.dateDebut|date('d/m/Y') }} to {{ contract.dateFin|date('d/m/Y') }}.</p>
+    </div>
+
+    <div class="article">
+        <strong>Article 3 — Allowance</strong>
+        <p>The intern receives a monthly allowance of {{ contract.salaireBase }} DT.</p>
+    </div>
+
+    <div class="article">
+        <strong>Article 4 — Supervision</strong>
+        <p>The intern will be supervised by a company mentor.</p>
+    </div>
+</div>
+
+{% endif %}
+
+<!-- CACHET -->
+<div class="stamp">
+    <p><strong>Validated by Company</strong></p>
+
+    {% if cachet_path and cachet_path is not empty %}
+        <img src="{{ cachet_path }}"
+             style="height:120px; margin-top: 10px; opacity:0.9;">
+    {% else %}
+        <p style="font-style: italic; color: #999; margin-top: 20px;">[Company Stamp]</p>
+    {% endif %}
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+    Generated automatically — {{ "now"|date("d/m/Y H:i") }}
+</div>
+
+</body>
+</html>

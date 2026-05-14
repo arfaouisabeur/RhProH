@@ -1,0 +1,86 @@
+{% if offre_emplois is empty %}
+    <div class="empty-box">
+        <i class="bi bi-inbox" style="font-size:2rem; display:block; margin-bottom:10px;"></i>
+        Aucune offre disponible pour le moment.
+    </div>
+{% else %}
+    <div style="overflow-x:auto;">
+        <table class="table-modern" id="offreTable">
+            <thead>
+                <tr>
+                    <th>Titre</th>
+                    <th>Localisation</th>
+                    <th>Type de contrat</th>
+                    <th>Statut</th>
+                    <th>Publication</th>
+                    <th>Expiration</th>
+                    <th style="text-align:center;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for offre in offre_emplois %}
+                {% set s = offre.statut|lower %}
+                <tr>
+                    <td>
+                        <div class="offer-title">{{ offre.titre }}</div>
+                    </td>
+
+                    <td>
+                        <div class="meta-text">{{ offre.localisation ?: '—' }}</div>
+                    </td>
+
+                    <td>
+                        <span class="type-pill">{{ offre.typeContrat ?: '—' }}</span>
+                    </td>
+
+                    <td>
+                        {% if s in ['active','actif','ouverte','ouvert','open','publiée','publie'] %}
+                            <span class="badge-soft badge-open">
+                                <i class="bi bi-dot"></i> OUVERTE
+                            </span>
+                        {% elseif s in ['fermée','fermee','ferme','closed','inactif'] %}
+                            <span class="badge-soft badge-closed">
+                                <i class="bi bi-dot"></i> FERMÉE
+                            </span>
+                        {% else %}
+                            <span class="badge-soft badge-pending">
+                                <i class="bi bi-dot"></i> {{ offre.statut ?: 'Statut' }}
+                            </span>
+                        {% endif %}
+                    </td>
+
+                    <td class="meta-text">
+                        {{ offre.datePublication ? offre.datePublication|date('d/m/Y') : '—' }}
+                    </td>
+
+                    <td class="meta-text">
+                        {{ offre.dateExpiration ? offre.dateExpiration|date('d/m/Y') : '—' }}
+                    </td>
+
+                    <td style="text-align:center;">
+                        <div style="display:inline-flex; gap:8px;">
+                            <a href="{{ path('app_offre_emploi_show', {'id': offre.id}) }}" class="action-circle" title="Voir">
+                                <i class="bi bi-eye"></i>
+                            </a>
+
+                            <a href="{{ path('app_offre_emploi_edit', {'id': offre.id}) }}" class="action-circle action-edit" title="Modifier">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+
+                            <form method="post"
+                                  action="{{ path('app_offre_emploi_delete', {'id': offre.id}) }}"
+                                  onsubmit="return confirm('Supprimer cette offre ?')"
+                                  style="display:inline;">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ offre.id) }}">
+                                <button type="submit" class="action-circle action-delete" title="Supprimer" style="border:none;">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endif %}

@@ -1,0 +1,133 @@
+{% extends 'rh/admin_base.html.twig' %}
+
+{% block title %}Détail du Projet - RH{% endblock %}
+
+{% block page_title %}Détails du Projet{% endblock %}
+{% block page_subtitle %}Consultez l'état d'avancement et les intervenants du projet #{{ projet.id }}{% endblock %}
+
+{% block admin_content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        
+        <!-- Project Header Card -->
+        <div class="admin-card mb-4">
+            <div class="row align-items-center">
+                <div class="col-md-auto text-center mb-3 mb-md-0">
+                    <div class="mx-auto d-flex align-items-center justify-content-center text-white" style="width:100px; height:100px; border-radius:30px; background: linear-gradient(135deg, var(--purple-dark), var(--purple-mid)); font-size: 2.5rem; font-weight: 800; box-shadow: 0 10px 25px rgba(102, 34, 131, 0.2);">
+                        <i class="bi bi-diagram-3"></i>
+                    </div>
+                </div>
+                <div class="col-md ms-md-4">
+                    <div class="d-flex flex-wrap align-items-center gap-3 mb-2">
+                        <h2 class="fw-bold text-dark mb-0">{{ projet.titre }}</h2>
+                        {% if projet.statut == 'termine' %}
+                            <span class="badge-soft badge-soft-success">✔ DONE</span>
+                        {% elseif projet.statut == 'en_cours' %}
+                            <span class="badge-soft badge-soft-warning">⏳ DOING</span>
+                        {% elseif projet.statut == 'en_attente' %}
+                            <span class="badge-soft badge-soft-warning">🕒 TO DO</span>
+                        {% else %}
+                            <span class="badge-soft badge-soft-purple" style="color:red; background:#ffebee;">✖ CANCELLED</span>
+                        {% endif %}
+                    </div>
+                    <div class="d-flex flex-wrap gap-4 text-muted">
+                        <span><i class="bi bi-calendar-event me-2"></i>Du {{ projet.dateDebut|date('d/m/Y') }} au {{ projet.dateFin|date('d/m/Y') }}</span>
+                        <span><i class="bi bi-person-badge me-2"></i>Ref ID: #{{ projet.id }}</span>
+                    </div>
+                </div>
+                <div class="col-md-auto text-md-end mt-4 mt-md-0">
+                    <div class="d-flex gap-2 flex-wrap justify-content-md-end">
+                        {% if projet.isMeetingRequested %}
+                            <a href="{{ path('app_projet_meeting', {'id': projet.id}) }}" class="btn" style="background:#10b981; color:white; border-radius:12px; padding:0.5rem 1rem; font-weight:600; text-decoration:none; display:flex; align-items:center; gap:0.5rem; transition: background 0.2s;">
+                                <i class="bi bi-camera-video"></i>Rejoindre Réunion
+                            </a>
+                            <form method="post" action="{{ path('app_projet_toggle_meeting', {'id': projet.id}) }}" style="margin:0;">
+                                <input type="hidden" name="_token" value="{{ csrf_token('toggle_meeting' ~ projet.id) }}">
+                                <button class="btn" style="background:#ef4444; border:none; color:white; border-radius:12px; padding:0.5rem 1rem; font-weight:600; text-decoration:none; display:flex; align-items:center; gap:0.5rem; transition: background 0.2s;">
+                                    <i class="bi bi-box-arrow-right"></i>Clôturer
+                                </button>
+                            </form>
+                        {% else %}
+                            <form method="post" action="{{ path('app_projet_toggle_meeting', {'id': projet.id}) }}" style="margin:0;">
+                                <input type="hidden" name="_token" value="{{ csrf_token('toggle_meeting' ~ projet.id) }}">
+                                <button class="btn" style="background:var(--purple-mid); border:none; color:white; border-radius:12px; padding:0.5rem 1rem; font-weight:600; text-decoration:none; display:flex; align-items:center; gap:0.5rem; transition: background 0.2s;">
+                                    <i class="bi bi-camera-video"></i>Demander un Meet
+                                </button>
+                            </form>
+                        {% endif %}
+                        <a href="{{ path('app_projet_edit', {'id': projet.id}) }}" class="btn-purple">
+                            <i class="bi bi-pencil-square me-2"></i>Modifier
+                        </a>
+                        {{ include('projet/_delete_form.html.twig') }}
+                        <a href="{{ path('app_projet_index') }}" class="btn-light-purple">
+                            <i class="bi bi-arrow-left me-2"></i>Retour
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Project Description -->
+            <div class="col-md-7">
+                <div class="admin-card h-100">
+                    <div class="admin-card-title">
+                        <div class="admin-card-title-icon"><i class="bi bi-file-text"></i></div>
+                        Description du projet
+                    </div>
+                    <div class="p-3" style="background: #f8fafc; border-radius: 15px; min-height: 150px; color: #475569; line-height: 1.6;">
+                        {{ projet.description ?: 'Aucune description disponible pour ce projet.' }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Intervenants & Stakeholders -->
+            <div class="col-md-5">
+                <div class="admin-card h-100">
+                    <div class="admin-card-title">
+                        <div class="admin-card-title-icon" style="background: var(--purple-mid);"><i class="bi bi-people-fill"></i></div>
+                        Responsables
+                    </div>
+                    
+                    <div class="d-flex flex-column gap-4 mt-2">
+                        <!-- RH -->
+                        <div class="d-flex align-items-center p-3" style="background: #f8fafc; border-radius: 15px;">
+                            <div class="me-3 d-flex align-items-center justify-content-center text-white fw-bold" style="width:45px;height:45px;border-radius:12px;background: var(--purple-dark);">
+                                <i class="bi bi-shield-check"></i>
+                            </div>
+                            <div>
+                                <label class="text-muted small fw-bold text-uppercase d-block" style="font-size: 0.65rem;">Superviseur RH</label>
+                                <span class="fw-bold text-dark">
+                                    {% if projet.rh and projet.rh.user %}
+                                        {{ projet.rh.user.fullName }}
+                                    {% else %}
+                                        Non assigné
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Employé -->
+                        <div class="d-flex align-items-center p-3" style="background: #f8fafc; border-radius: 15px;">
+                            <div class="me-3 d-flex align-items-center justify-content-center text-white fw-bold" style="width:45px;height:45px;border-radius:12px;background: #198754;">
+                                <i class="bi bi-person-workspace"></i>
+                            </div>
+                            <div>
+                                <label class="text-muted small fw-bold text-uppercase d-block" style="font-size: 0.65rem;">Responsable Opérationnel</label>
+                                <span class="fw-bold text-dark">
+                                    {% if projet.responsableEmploye and projet.responsableEmploye.user %}
+                                        {{ projet.responsableEmploye.user.fullName }}
+                                    {% else %}
+                                        Non assigné
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

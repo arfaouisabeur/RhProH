@@ -1,0 +1,42 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Salaire{% endblock %}
+
+{% block body %}
+    <h1>Salaire</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ salaire.id }}</td>
+            </tr>
+            <tr>
+                <th>Mois</th>
+                <td>{{ salaire.mois }}</td>
+            </tr>
+            <tr>
+                <th>Annee</th>
+                <td>{{ salaire.annee }}</td>
+            </tr>
+            <tr>
+                <th>Montant</th>
+                <td>{{ salaire.montant }}</td>
+            </tr>
+            <tr>
+                <th>Date_paiement</th>
+                <td>{{ salaire.datePaiement }}</td>
+            </tr>
+            <tr>
+                <th>Statut</th>
+                <td>{{ salaire.statut }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_salaire_index') }}">back to list</a>
+
+    <a href="{{ path('app_salaire_edit', {'id': salaire.id}) }}">edit</a>
+
+    {{ include('salaire/_delete_form.html.twig') }}
+{% endblock %}
