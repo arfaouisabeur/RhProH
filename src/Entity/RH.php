@@ -10,21 +10,21 @@ use Doctrine\ORM\Mapping as ORM;
 class RH
 {
     #[ORM\Id]
-    #[ORM\Column(type: 'bigint')]
-    private ?string $userId = null;
+    #[ORM\Column]
+    private ?int $userId = null;
 
     #[ORM\OneToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
     private ?User $user = null;
 
-    public function getUserId(): ?string
+    public function getUserId(): ?int
     {
         return $this->userId;
     }
 
     public function setUserId(int $userId): self
     {
-        $this->userId = (string) $userId;
+        $this->userId = $userId;
         return $this;
     }
 
@@ -37,7 +37,7 @@ class RH
     {
         $this->user = $user;
         if ($user !== null) {
-            $this->userId = (string) $user->getId();
+            $this->userId = $user->getId();
         }
         return $this;
     }

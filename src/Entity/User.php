@@ -18,8 +18,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'bigint')]
-    private ?string $id = null;
+    #[ORM\Column]
+    private ?int $id = null;
 
     #[ORM\Column(type: 'string', length: 120)]
     private string $nom = '';
@@ -60,7 +60,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /** @internal populated by UserProfileSubscriber on postLoad — not a Doctrine mapping */
     private ?RH $rh = null;
 
-    public function getId(): ?string
+    public function getId(): ?int
     {
         return $this->id;
     }
