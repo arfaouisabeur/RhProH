@@ -33,6 +33,9 @@ COPY . .
 
 RUN composer dump-autoload --optimize --no-dev
 
+# Run migrations automatically on deployment
+RUN php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration || true
+
 EXPOSE 10000
 
 CMD php -S 0.0.0.0:10000 -t public
