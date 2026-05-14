@@ -34,8 +34,9 @@ COPY . .
 
 RUN composer dump-autoload --optimize --no-dev
 
-# Run migrations automatically on deployment
-RUN php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration || true
+# Create PostgreSQL schema from entities (skip MySQL migrations)
+RUN php bin/console doctrine:schema:drop --force --full-database || true
+RUN php bin/console doctrine:schema:create || true
 
 # Create admin user automatically
 RUN php bin/console app:create-admin --no-interaction || true
