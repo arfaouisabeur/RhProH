@@ -39,9 +39,12 @@ if (pg_num_rows($result) > 0) {
     echo "Email: admin@rhpro.com<br>";
     echo "Password: admin123";
 } else {
+    // Hash the password using bcrypt (Symfony's default)
+    $hashedPassword = password_hash('admin123', PASSWORD_BCRYPT);
+    
     // Create admin user with correct column names
     $insertQuery = "INSERT INTO \"user\" (nom, prenom, email, mot_de_passe, role, statut) 
-                    VALUES ('Admin', 'RHPro', 'admin@rhpro.com', 'admin123', 'ROLE_ADMIN', 'actif')
+                    VALUES ('Admin', 'RHPro', 'admin@rhpro.com', '$hashedPassword', 'RH', 'actif')
                     RETURNING id, email";
     
     $result = pg_query($conn, $insertQuery);
