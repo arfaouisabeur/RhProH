@@ -39,5 +39,5 @@ EXPOSE 10000
 
 # Run database setup and start server
 CMD psql $DATABASE_URL -f /app/database_schema.sql && \
-    php bin/console app:create-admin --no-interaction && \
+    php /app/create_admin.php && \
     php -S 0.0.0.0:10000 -t public
