@@ -37,6 +37,9 @@ RUN composer dump-autoload --optimize --no-dev
 # Run migrations automatically on deployment
 RUN php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration || true
 
+# Create admin user automatically
+RUN php bin/console app:create-admin --no-interaction || true
+
 EXPOSE 10000
 
 CMD php -S 0.0.0.0:10000 -t public
