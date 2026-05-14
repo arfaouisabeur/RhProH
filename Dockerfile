@@ -10,6 +10,7 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     libicu-dev \
     libpq-dev \
+    postgresql-client \
     && rm -rf /var/lib/apt/lists/*
 
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg
@@ -37,7 +38,6 @@ RUN composer dump-autoload --optimize --no-dev
 EXPOSE 10000
 
 # Run database setup and start server
-CMD php bin/console doctrine:schema:drop --force --full-database && \
-    php bin/console doctrine:schema:create && \
+CMD psql $DATABASE_URL -f /app/database_schema.sql && \
     php bin/console app:create-admin --no-interaction && \
     php -S 0.0.0.0:10000 -t public
